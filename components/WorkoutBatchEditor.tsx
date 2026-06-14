@@ -9,6 +9,7 @@ import {
   EXERCISE_LINE_FORMAT_HINT,
   createEmptyExerciseRow,
   getExerciseLineErrorMessage,
+  inferRestUnit,
   isExerciseRowEmpty,
   normalizeRestInput,
   normalizeSetsInput,
@@ -48,11 +49,24 @@ function createBlankRow(): ExerciseRowState {
 
 type ExerciseField = keyof ExerciseRowInput;
 
-const FIELD_PLACEHOLDERS: Record<ExerciseField, string> = {
-  name: "chest press",
-  sets: "3 sets",
-  rest: "1 min",
+const FIELD_LABELS: Partial<Record<ExerciseField, string>> = {
+  sets: "sets",
+  rest: "min",
 };
+
+const FIELD_PLACEHOLDERS: Record<"name" | "sets" | "rest", string> = {
+  name: "chest press",
+  sets: "3",
+  rest: "1",
+};
+
+function isMobileViewport(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return window.matchMedia("(max-width: 639px)").matches;
+}
 
 export function WorkoutBatchEditor({
   batch,
@@ -66,6 +80,7 @@ export function WorkoutBatchEditor({
   ]);
   const [touched, setTouched] = useState<Record<string, boolean>>({});
   const [submitAttempted, setSubmitAttempted] = useState(false);
+  const [expandedNameRowId, setExpandedNameRowId] = useState<string | null>(null);
 
   const validations = useMemo(
     () => rows.map((row) => validateExerciseRow(row)),
@@ -113,7 +128,12 @@ export function WorkoutBatchEditor({
         }
 
         if (field === "rest") {
-          return { ...row, rest: normalizeRestInput(row.rest) };
+          const rest = normalizeRestInput(row.rest);
+          return {
+            ...row,
+            rest,
+            restUnit: inferRestUnit(rest),
+          };
         }
 
         return row;
@@ -185,6 +205,7 @@ export function WorkoutBatchEditor({
         {rows.map((row, index) => {
           const validation = validations[index];
           const rowError = getExerciseLineErrorMessage(validation.errors);
+          const isNameExpanded = expandedNameRowId === row.id;
 
           return (
             <div
@@ -205,61 +226,105 @@ export function WorkoutBatchEditor({
                 </IconButton>
               </div>
 
-              <div className="inline-gap items-center">
-                {(["name", "sets", "rest"] as ExerciseField[]).map(
-                  (field, fieldIndex) => {
-                    const showError = shouldShowFieldError(
-                      index,
-                      field,
-                      row.id,
-                    );
-                    const fieldError = validation.errors[field];
+              <div className="flex flex-nowrap items-end gap-1 sm:gap-[var(--space-gap)]">
+                <div
+                  className={cn(
+                    "min-w-0 flex-1",
+                    isNameExpanded && "max-sm:w-full max-sm:flex-none",
+                  )}
+                >
+                  <input
+                    type="text"
+                    value={row.name}
+                    placeholder={FIELD_PLACEHOLDERS.name}
+                    onChange={(event) =>
+                      updateField(row.id, "name", event.target.value)
+                    }
+                    onFocus={() => {
+                      if (isMobileViewport()) {
+                        setExpandedNameRowId(row.id);
+                      }
+                    }}
+                    onBlur={() => {
+                      setExpandedNameRowId((current) =>
+                        current === row.id ? null : current,
+                      );
+                      handleFieldBlur(row.id, "name");
+                    }}
+                    spellCheck={false}
+                    className={cn(
+                      "cyber-input min-h-10 w-full font-mono text-xs sm:text-sm",
+                      shouldShowFieldError(index, "name", row.id) &&
+                        validation.errors.name &&
+                        "border-magenta/60",
+                    )}
+                    aria-invalid={
+                      shouldShowFieldError(index, "name", row.id) &&
+                      Boolean(validation.errors.name)
+                    }
+                  />
+                  {shouldShowFieldError(index, "name", row.id) &&
+                  validation.errors.name ? (
+                    <p className="mt-1 text-[11px] text-magenta" role="alert">
+                      {validation.errors.name}
+                    </p>
+                  ) : null}
+                </div>
 
-                    return (
-                      <div
-                        key={field}
-                        className={cn(
-                          "inline-flex min-w-0 items-center gap-[var(--space-gap)]",
-                          field === "name" ? "flex-1 basis-40" : "shrink-0",
-                        )}
+                {(["sets", "rest"] as const).map((field) => {
+                  const showError = shouldShowFieldError(index, field, row.id);
+                  const fieldError = validation.errors[field];
+                  const restLabel =
+                    field === "rest"
+                      ? row.restUnit ?? inferRestUnit(row.rest)
+                      : undefined;
+
+                  return (
+                    <div
+                      key={field}
+                      className={cn(
+                        "inline-flex shrink-0 items-end gap-1 sm:gap-[var(--space-gap)]",
+                        isNameExpanded && "max-sm:hidden",
+                      )}
+                    >
+                      <span
+                        aria-hidden
+                        className="shrink-0 pb-2.5 text-sm font-semibold text-cyan"
                       >
-                        {fieldIndex > 0 ? (
-                          <span
-                            aria-hidden
-                            className="text-sm font-semibold text-cyan"
+                        -
+                      </span>
+                      <div className="w-10 sm:w-12">
+                        <span className="mb-0.5 block text-center text-[10px] tracking-wide text-dim uppercase">
+                          {field === "rest" ? restLabel : FIELD_LABELS[field]}
+                        </span>
+                        <input
+                          type="text"
+                          inputMode="numeric"
+                          value={row[field]}
+                          placeholder={FIELD_PLACEHOLDERS[field]}
+                          onChange={(event) =>
+                            updateField(row.id, field, event.target.value)
+                          }
+                          onBlur={() => handleFieldBlur(row.id, field)}
+                          spellCheck={false}
+                          className={cn(
+                            "cyber-input min-h-10 w-full text-center font-mono text-xs sm:text-sm",
+                            showError && fieldError && "border-magenta/60",
+                          )}
+                          aria-invalid={showError && Boolean(fieldError)}
+                        />
+                        {showError && fieldError ? (
+                          <p
+                            className="mt-1 text-[11px] text-magenta"
+                            role="alert"
                           >
-                            -
-                          </span>
+                            {fieldError}
+                          </p>
                         ) : null}
-                        <div className={cn(field === "name" ? "w-full" : "w-28")}>
-                          <input
-                            type="text"
-                            value={row[field]}
-                            placeholder={FIELD_PLACEHOLDERS[field]}
-                            onChange={(event) =>
-                              updateField(row.id, field, event.target.value)
-                            }
-                            onBlur={() => handleFieldBlur(row.id, field)}
-                            spellCheck={false}
-                            className={cn(
-                              "cyber-input min-h-10 w-full font-mono text-xs sm:text-sm",
-                              field !== "name" && "text-center",
-                              showError &&
-                                fieldError &&
-                                "border-magenta/60",
-                            )}
-                            aria-invalid={showError && Boolean(fieldError)}
-                          />
-                          {showError && fieldError ? (
-                            <p className="mt-1 text-[11px] text-magenta" role="alert">
-                              {fieldError}
-                            </p>
-                          ) : null}
-                        </div>
                       </div>
-                    );
-                  },
-                )}
+                    </div>
+                  );
+                })}
               </div>
 
               {submitAttempted &&

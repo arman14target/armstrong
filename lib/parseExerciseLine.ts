@@ -2,10 +2,13 @@ import { BatchExercisePreset } from "@/lib/workoutBatches";
 
 export const EXERCISE_LINE_FORMAT_HINT = "exercise name - 3 sets - 1 min";
 
+export type RestInputUnit = "min" | "sec";
+
 export interface ExerciseRowInput {
   name: string;
   sets: string;
   rest: string;
+  restUnit?: RestInputUnit;
 }
 
 export interface ExerciseLineFieldErrors {
@@ -25,12 +28,13 @@ export interface ExerciseLineValidation {
 function parseSetsValue(input: string): { value?: number; error?: string } {
   const trimmed = input.trim();
   if (!trimmed) {
-    return { error: "Add sets like: 3 sets" };
+    return { error: "Enter number of sets." };
   }
 
-  const match = trimmed.match(/^(\d+)\s*sets?$/i);
+  const bareMatch = trimmed.match(/^(\d+)$/);
+  const match = bareMatch ?? trimmed.match(/^(\d+)\s*sets?$/i);
   if (!match) {
-    return { error: "Write sets like: 3 sets" };
+    return { error: "Enter a number from 1–20." };
   }
 
   const setCount = parseInt(match[1], 10);
@@ -41,10 +45,29 @@ function parseSetsValue(input: string): { value?: number; error?: string } {
   return { value: setCount };
 }
 
-function parseRestValue(input: string): { value?: number; error?: string } {
+function parseRestValue(
+  input: string,
+  unit: RestInputUnit = "min",
+): { value?: number; error?: string } {
   const trimmed = input.trim();
   if (!trimmed) {
-    return { error: "Add rest like: 1 min" };
+    return { error: "Enter rest time." };
+  }
+
+  const bareMatch = trimmed.match(/^(\d+)$/);
+  if (bareMatch) {
+    const value = parseInt(bareMatch[1], 10);
+    if (unit === "min") {
+      if (value < 1 || value > 30) {
+        return { error: "Minutes must be between 1 and 30." };
+      }
+      return { value: value * 60 };
+    }
+
+    if (value < 5 || value > 600) {
+      return { error: "Seconds must be between 5 and 600." };
+    }
+    return { value };
   }
 
   const minuteMatch =
@@ -66,7 +89,42 @@ function parseRestValue(input: string): { value?: number; error?: string } {
     return { value: seconds };
   }
 
-  return { error: "Write rest like: 1 min or 90s" };
+  return { error: "Enter a number." };
+}
+
+export function inferRestUnit(value: string): RestInputUnit {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return "min";
+  }
+
+  const bareMatch = trimmed.match(/^(\d+)$/);
+  if (bareMatch) {
+    const value = parseInt(bareMatch[1], 10);
+    return value > 30 ? "sec" : "min";
+  }
+
+  if (/^\d+\s*s(?:ec(?:onds?)?)?$/i.test(trimmed)) {
+    return "sec";
+  }
+
+  return "min";
+}
+
+function restUnitFromSeconds(restSeconds: number): RestInputUnit {
+  if (restSeconds >= 60 && restSeconds % 60 === 0) {
+    return "min";
+  }
+
+  return "sec";
+}
+
+function formatRestValueFromSeconds(restSeconds: number): string {
+  if (restSeconds >= 60 && restSeconds % 60 === 0) {
+    return String(restSeconds / 60);
+  }
+
+  return String(restSeconds);
 }
 
 export function isExerciseRowEmpty(row: ExerciseRowInput): boolean {
@@ -92,7 +150,8 @@ export function validateExerciseRow(row: ExerciseRowInput): ExerciseLineValidati
     errors.sets = setsResult.error;
   }
 
-  const restResult = parseRestValue(row.rest);
+  const restUnit = row.restUnit ?? inferRestUnit(row.rest);
+  const restResult = parseRestValue(row.rest, restUnit);
   if (restResult.error) {
     errors.rest = restResult.error;
   }
@@ -139,8 +198,9 @@ export function presetToExerciseRow(
 ): ExerciseRowInput {
   return {
     name: preset.name,
-    sets: `${preset.setCount} sets`,
-    rest: formatRestForInput(preset.restSeconds),
+    sets: String(preset.setCount),
+    rest: formatRestValueFromSeconds(preset.restSeconds),
+    restUnit: restUnitFromSeconds(preset.restSeconds),
   };
 }
 
@@ -149,35 +209,16 @@ export function createEmptyExerciseRow(): ExerciseRowInput {
     name: "",
     sets: "",
     rest: "",
+    restUnit: "min",
   };
 }
 
 export function normalizeSetsInput(value: string): string {
-  const trimmed = value.trim();
-  const match = trimmed.match(/^(\d+)$/);
-  if (match) {
-    return `${match[1]} sets`;
-  }
-
-  const compactMatch = trimmed.match(/^(\d+)s$/i);
-  if (compactMatch) {
-    return `${compactMatch[1]} sets`;
-  }
-
-  return value;
+  const match = value.trim().match(/^(\d+)/);
+  return match ? match[1] : value.trim();
 }
 
 export function normalizeRestInput(value: string): string {
-  const trimmed = value.trim();
-
-  if (/^\d+$/.test(trimmed)) {
-    return `${trimmed} min`;
-  }
-
-  const compactMinuteMatch = trimmed.match(/^(\d+)min$/i);
-  if (compactMinuteMatch) {
-    return `${compactMinuteMatch[1]} min`;
-  }
-
-  return value;
+  const match = value.trim().match(/^(\d+)/);
+  return match ? match[1] : value.trim();
 }
