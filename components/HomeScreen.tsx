@@ -112,7 +112,7 @@ export function HomeScreen() {
         <button
           type="button"
           onClick={() => setShowResetModal(true)}
-          className="text-xs tracking-wide text-dim transition-colors hover:text-magenta"
+          className="text-sm font-medium tracking-wide text-red-400 transition-colors hover:text-red-300"
         >
           Reset app data
         </button>
