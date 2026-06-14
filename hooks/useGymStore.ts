@@ -288,10 +288,6 @@ export function useGymStore() {
           ? session.completedSetIds
           : [...session.completedSetIds, setId];
 
-        const restEndsAt = new Date(
-          Date.now() + restSeconds * 1000,
-        ).toISOString();
-
         const updatedMoves = prev.workouts[workoutType].moves.map((move) =>
           move.id === moveId
             ? {
@@ -302,6 +298,28 @@ export function useGymStore() {
               }
             : move,
         );
+
+        if (alreadyCompleted) {
+          return {
+            ...prev,
+            workouts: {
+              ...prev.workouts,
+              [workoutType]: {
+                ...prev.workouts[workoutType],
+                moves: updatedMoves,
+              },
+            },
+            activeSession: {
+              ...session,
+              setWeights: { ...session.setWeights, [setId]: weight },
+            },
+          };
+        }
+
+        const shouldRest = restSeconds > 0;
+        const restEndsAt = shouldRest
+          ? new Date(Date.now() + restSeconds * 1000).toISOString()
+          : undefined;
 
         return {
           ...prev,
@@ -316,7 +334,7 @@ export function useGymStore() {
             ...session,
             setWeights: { ...session.setWeights, [setId]: weight },
             completedSetIds,
-            activeRestSetId: setId,
+            activeRestSetId: shouldRest ? setId : undefined,
             restEndsAt,
           },
         };

@@ -1,20 +1,49 @@
 "use client";
 
+import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { RevealOnScroll } from "@/components/effects/RevealOnScroll";
 import { DayButton } from "@/components/DayButton";
+import { WorkoutEntryChoiceModal } from "@/components/WorkoutEntryChoiceModal";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { GlitchText } from "@/components/ui/GlitchText";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { useGymStore } from "@/hooks/useGymStore";
-import { WORKOUT_LABELS, WORKOUT_TYPES } from "@/lib/types";
+import { WORKOUT_LABELS, WORKOUT_TYPES, WorkoutType } from "@/lib/types";
+import { setWorkoutSetupIntent } from "@/lib/workoutSetupIntent";
 
 export function HomeScreen() {
+  const router = useRouter();
   const { data, hydrated, resetAll } = useGymStore();
   const [showResetModal, setShowResetModal] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [entryChoiceType, setEntryChoiceType] = useState<WorkoutType | null>(null);
+
+  const needsSetup = (type: WorkoutType) =>
+    data.workouts[type].moves.length === 0 &&
+    !data.workoutSetupSeen?.[type];
+
+  const handleBatchEntry = () => {
+    if (!entryChoiceType) {
+      return;
+    }
+
+    setWorkoutSetupIntent(entryChoiceType, "batch");
+    router.push(`/workout/${entryChoiceType}/`);
+    setEntryChoiceType(null);
+  };
+
+  const handleManualEntry = () => {
+    if (!entryChoiceType) {
+      return;
+    }
+
+    setWorkoutSetupIntent(entryChoiceType, "manual");
+    router.push(`/workout/${entryChoiceType}/`);
+    setEntryChoiceType(null);
+  };
 
   const completedCount = WORKOUT_TYPES.filter(
     (type) => data.workouts[type].lastCompletedAt,
@@ -87,7 +116,6 @@ export function HomeScreen() {
       <RevealOnScroll>
         <SectionHead index="01." title="Pick Your Punishment" />
         <TerminalWindow title="Choose your workout">
-          <p className="mb-[var(--space-gap-md)] text-dim">What are we training today?</p>
           <div className="grid grid-cols-1 gap-[var(--space-gap-md)] sm:grid-cols-2">
             {WORKOUT_TYPES.map((type) => (
               <DayButton
@@ -98,6 +126,8 @@ export function HomeScreen() {
                 lastSessionDurationSeconds={
                   data.workouts[type].lastSessionDurationSeconds
                 }
+                setupRequired={needsSetup(type)}
+                onSetupClick={() => setEntryChoiceType(type)}
               />
             ))}
           </div>
@@ -117,6 +147,16 @@ export function HomeScreen() {
           Reset app data
         </button>
       </footer>
+
+      {entryChoiceType ? (
+        <WorkoutEntryChoiceModal
+          open
+          workoutType={entryChoiceType}
+          onBatch={handleBatchEntry}
+          onManual={handleManualEntry}
+          onClose={() => setEntryChoiceType(null)}
+        />
+      ) : null}
 
       <ConfirmModal
         open={showResetModal}

@@ -263,15 +263,42 @@
     }
   }
 
-  .sticky-header {
-    position: sticky;
-    top: 0;
-    z-index: 20;
+  .workout-sticky-bar {
     margin-bottom: var(--space-section);
-    padding-bottom: var(--space-gap);
+    padding-block: 0.5rem;
+  }
+
+  .workout-sticky-bar__inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-gap);
+    width: 100%;
+  }
+
+  .workout-sticky-bar-spacer {
+    margin-bottom: var(--space-section);
+  }
+
+  .workout-sticky-bar--stuck {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 40;
+    margin-bottom: 0;
+    padding-inline: calc(var(--space-page-x) + var(--safe-left))
+      calc(var(--space-page-x) + var(--safe-right));
+    padding-top: calc(0.5rem + var(--safe-top));
+    padding-bottom: 0.5rem;
     border-bottom: 1px solid var(--color-line);
-    background: color-mix(in srgb, var(--color-bg) 90%, transparent);
+    background: color-mix(in srgb, var(--color-bg) 92%, transparent);
     backdrop-filter: blur(12px);
+  }
+
+  .workout-sticky-bar--stuck .workout-sticky-bar__inner {
+    max-width: 48rem;
+    margin-inline: auto;
   }
 
   .fixed-footer {

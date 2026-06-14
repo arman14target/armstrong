@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckIcon, TrashIcon } from "@/components/icons/ActionIcons";
 import { RestTimer } from "@/components/RestTimer";
 import { IconButton } from "@/components/ui/IconButton";
@@ -12,20 +12,23 @@ interface SetRowProps {
   restSeconds: number;
   lastWeight?: number;
   sessionWeight?: number;
+  fallbackWeight?: number;
   isCompleted: boolean;
   showRestTimer: boolean;
   restEndsAt?: string;
   onRestSecondsChange: (seconds: number) => void;
   onComplete: (weight: number, restSeconds: number) => void;
-  onRestComplete: () => void;
+  onRestComplete: (setId: string) => void;
   onDelete: () => void;
 }
 
 export function SetRow({
   index,
+  setId,
   restSeconds,
   lastWeight,
   sessionWeight,
+  fallbackWeight,
   isCompleted,
   showRestTimer,
   restEndsAt,
@@ -40,15 +43,75 @@ export function SetRow({
     defaultWeight === "" ? "" : String(defaultWeight),
   );
   const [rest, setRest] = useState(String(restSeconds));
+  const [weightError, setWeightError] = useState(false);
+  const [restError, setRestError] = useState(false);
 
-  const handleComplete = () => {
-    const parsedWeight = parseFloat(weight);
-    const parsedRest = parseInt(rest, 10);
-    if (Number.isNaN(parsedWeight) || parsedWeight < 0) {
+  useEffect(() => {
+    if (sessionWeight !== undefined) {
+      setWeight(String(sessionWeight));
+      setWeightError(false);
       return;
     }
-    onComplete(parsedWeight, Number.isNaN(parsedRest) ? 90 : parsedRest);
+
+    if (fallbackWeight !== undefined) {
+      setWeight((current) => (current === "" ? String(fallbackWeight) : current));
+      setWeightError(false);
+    }
+  }, [sessionWeight, fallbackWeight]);
+
+  const isValidWeight = (value: string) => {
+    const trimmed = value.trim();
+    if (trimmed === "") {
+      return false;
+    }
+
+    const parsed = parseFloat(trimmed);
+    return !Number.isNaN(parsed) && parsed >= 0;
   };
+
+  const isValidRest = (value: string) => {
+    const trimmed = value.trim();
+    if (trimmed === "") {
+      return false;
+    }
+
+    const parsed = parseInt(trimmed, 10);
+    return !Number.isNaN(parsed) && parsed >= 0;
+  };
+
+  const handleWeightChange = (value: string) => {
+    setWeight(value);
+    if (isValidWeight(value)) {
+      setWeightError(false);
+    }
+  };
+
+  const handleRestChange = (value: string) => {
+    setRest(value);
+    const parsed = parseInt(value, 10);
+    if (!Number.isNaN(parsed)) {
+      onRestSecondsChange(parsed);
+    }
+    if (isValidRest(value)) {
+      setRestError(false);
+    }
+  };
+
+  const handleComplete = () => {
+    const weightValid = isValidWeight(weight);
+    const restValid = isValidRest(rest);
+
+    setWeightError(!weightValid);
+    setRestError(!restValid);
+
+    if (!weightValid || !restValid) {
+      return;
+    }
+
+    onComplete(parseFloat(weight.trim()), parseInt(rest.trim(), 10));
+  };
+
+  const inputErrorClass = "border-red-500/60 focus:border-red-400";
 
   return (
     <div
@@ -71,35 +134,41 @@ export function SetRow({
 
       <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end gap-2">
         <label className="flex min-w-0 flex-col gap-1 text-xs text-dim">
-          <span className="text-cyan">kg</span>
+          <span className={cn(weightError ? "text-red-400" : "text-cyan")}>
+            kg
+          </span>
           <input
             type="number"
             inputMode="decimal"
             min="0"
             step="0.5"
             value={weight}
-            onChange={(e) => setWeight(e.target.value)}
+            onChange={(event) => handleWeightChange(event.target.value)}
             placeholder="0"
-            className="cyber-input min-h-10 tabular-nums sm:min-h-11"
+            className={cn(
+              "cyber-input min-h-10 tabular-nums sm:min-h-11",
+              weightError && inputErrorClass,
+            )}
+            aria-invalid={weightError}
           />
         </label>
 
         <label className="flex min-w-0 flex-col gap-1 text-xs text-dim">
-          <span className="text-cyan">sec</span>
+          <span className={cn(restError ? "text-red-400" : "text-cyan")}>
+            sec
+          </span>
           <input
             type="number"
             inputMode="numeric"
             min="0"
             step="5"
             value={rest}
-            onChange={(e) => {
-              setRest(e.target.value);
-              const parsed = parseInt(e.target.value, 10);
-              if (!Number.isNaN(parsed)) {
-                onRestSecondsChange(parsed);
-              }
-            }}
-            className="cyber-input min-h-10 tabular-nums sm:min-h-11"
+            onChange={(event) => handleRestChange(event.target.value)}
+            className={cn(
+              "cyber-input min-h-10 tabular-nums sm:min-h-11",
+              restError && inputErrorClass,
+            )}
+            aria-invalid={restError}
           />
         </label>
 
@@ -117,7 +186,7 @@ export function SetRow({
         <RestTimer
           endsAt={restEndsAt}
           durationSeconds={restSeconds}
-          onComplete={onRestComplete}
+          onComplete={() => onRestComplete(setId)}
         />
       ) : null}
     </div>

@@ -12,6 +12,8 @@ interface DayButtonProps {
   label: string;
   lastCompletedAt?: string;
   lastSessionDurationSeconds?: number;
+  setupRequired?: boolean;
+  onSetupClick?: () => void;
 }
 
 const accentStyles: Record<
@@ -45,42 +47,58 @@ export function DayButton({
   label,
   lastCompletedAt,
   lastSessionDurationSeconds,
+  setupRequired = false,
+  onSetupClick,
 }: DayButtonProps) {
   const accent = accentStyles[type];
   const lastWorkoutAgo = useTimeAgo(lastCompletedAt);
 
-  return (
-    <Link
-      href={`/workout/${type}/`}
-      className={cn(
-        "group relative block overflow-hidden rounded-panel border bg-panel/80 p-[var(--space-card)] transition-all duration-250",
-        accent.border,
-        accent.hover,
-      )}
-    >
-      <span
-        aria-hidden
-        className="absolute top-[var(--space-gap)] right-[var(--space-gap)] text-dim transition-all duration-250 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 group-hover:text-magenta"
-      >
-        ↗
-      </span>
-      <div className="mb-[var(--space-gap)] transition-transform duration-250 group-hover:scale-110">
+  const className = cn(
+    "group relative block w-full overflow-hidden rounded-panel border bg-panel/80 p-[var(--space-card)] text-left transition-all duration-250",
+    accent.border,
+    accent.hover,
+  );
+
+  const content = (
+    <div className="flex items-center gap-[var(--space-gap-md)]">
+      <div className="shrink-0 transition-transform duration-250 group-hover:scale-110">
         <WorkoutDayIcon type={type} />
       </div>
-      <p className={cn("mb-[var(--space-gap)] text-base font-semibold tracking-wide text-heading", accent.labelColor)}>
-        {label}
-      </p>
-      <div className="text-xs text-dim">
-        <p>
-          <span className="text-green">Last workout:</span> {lastWorkoutAgo}
+      <div className="min-w-0 flex-1">
+        <p
+          className={cn(
+            "mb-1 text-base font-semibold tracking-wide text-heading",
+            accent.labelColor,
+          )}
+        >
+          {label}
         </p>
-        {lastSessionDurationSeconds !== undefined ? (
+        <div className="text-xs text-dim">
           <p>
-            <span className="text-green">Session:</span>{" "}
-            {formatDuration(lastSessionDurationSeconds)}
+            <span className="text-green">Last workout:</span> {lastWorkoutAgo}
           </p>
-        ) : null}
+          {lastSessionDurationSeconds !== undefined ? (
+            <p>
+              <span className="text-green">Session:</span>{" "}
+              {formatDuration(lastSessionDurationSeconds)}
+            </p>
+          ) : null}
+        </div>
       </div>
+    </div>
+  );
+
+  if (setupRequired && onSetupClick) {
+    return (
+      <button type="button" onClick={onSetupClick} className={className}>
+        {content}
+      </button>
+    );
+  }
+
+  return (
+    <Link href={`/workout/${type}/`} className={className}>
+      {content}
     </Link>
   );
 }
