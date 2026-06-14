@@ -1,9 +1,53 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
+import { JetBrains_Mono, Orbitron } from "next/font/google";
+import { AppShell } from "@/components/AppShell";
+import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { ThemeProvider } from "@/components/ThemeProvider";
+import { ThemeScript } from "@/components/ThemeScript";
 import "./globals.css";
 
+const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets: ["latin"],
+  variable: "--font-jetbrains-mono",
+  display: "swap",
+});
+
+const orbitron = Orbitron({
+  subsets: ["latin"],
+  variable: "--font-orbitron",
+  display: "swap",
+});
+
 export const metadata: Metadata = {
-  title: "Armstrong",
-  description: "A simple Next.js app",
+  title: "Armstrong — Gym Tracker",
+  description: "Gym workout tracker for push, leg, abs, and pull days",
+  manifest: `${basePath}/manifest.json`,
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Armstrong",
+  },
+  icons: {
+    icon: [
+      { url: `${basePath}/icons/favicon-32.png`, sizes: "32x32", type: "image/png" },
+      { url: `${basePath}/icons/icon-192.png`, sizes: "192x192", type: "image/png" },
+      { url: `${basePath}/icons/icon-512.png`, sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: `${basePath}/icons/apple-touch-icon.png`, sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: `${basePath}/icons/icon-192.png`,
+  },
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  viewportFit: "cover",
+  themeColor: "#04060d",
 };
 
 export default function RootLayout({
@@ -12,8 +56,20 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body>{children}</body>
+    <html
+      lang="en"
+      className={`${jetbrainsMono.variable} ${orbitron.variable}`}
+    >
+      <head>
+        {basePath ? <base href={`${basePath}/`} /> : null}
+        <ThemeScript />
+      </head>
+      <body>
+        <ThemeProvider>
+          <AppShell>{children}</AppShell>
+        </ThemeProvider>
+        <ServiceWorkerRegister />
+      </body>
     </html>
   );
 }
