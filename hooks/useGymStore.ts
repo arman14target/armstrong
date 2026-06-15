@@ -8,9 +8,15 @@ import {
   getWorkoutBatch,
 } from "@/lib/workoutBatches";
 import {
+  applyWorkoutTemplate,
+  createCustomWorkoutDay,
+  getWorkoutTemplate,
+  isBuiltinWorkoutType,
+  updateWorkoutMoves,
+} from "@/lib/workouts";
+import {
   AppData,
   SetConfig,
-  WorkoutType,
   createDefaultAppData,
   createDefaultMove,
   createDefaultSet,
@@ -34,22 +40,29 @@ export function useGymStore() {
   }, []);
 
   const startSession = useCallback(
-    (workoutType: WorkoutType) => {
+    (workoutId: string) => {
       persist((prev) => {
+        const template = getWorkoutTemplate(prev, workoutId);
+        if (!template) {
+          return prev;
+        }
+
         if (
-          prev.activeSession?.workoutType === workoutType &&
+          prev.activeSession?.workoutType === workoutId &&
           prev.activeSession.startedAt
         ) {
           return prev;
         }
+
         return {
           ...prev,
           activeSession: {
-            workoutType,
+            workoutType: workoutId,
             startedAt: new Date().toISOString(),
             setWeights: {},
+            setReps: {},
             completedSetIds: [],
-            baselineWorkout: structuredClone(prev.workouts[workoutType]),
+            baselineWorkout: structuredClone(template),
           },
         };
       });
@@ -58,27 +71,30 @@ export function useGymStore() {
   );
 
   const addMove = useCallback(
-    (workoutType: WorkoutType, name: string) => {
-      persist((prev) => ({
-        ...prev,
-        workouts: {
-          ...prev.workouts,
-          [workoutType]: {
-            ...prev.workouts[workoutType],
-            moves: [...prev.workouts[workoutType].moves, createDefaultMove(name)],
+    (workoutId: string, name: string) => {
+      persist((prev) => {
+        const template = getWorkoutTemplate(prev, workoutId);
+        if (!template) {
+          return prev;
+        }
+
+        return {
+          ...updateWorkoutMoves(prev, workoutId, (moves) => [
+            ...moves,
+            createDefaultMove(name),
+          ]),
+          workoutSetupSeen: {
+            ...prev.workoutSetupSeen,
+            [workoutId]: true,
           },
-        },
-        workoutSetupSeen: {
-          ...prev.workoutSetupSeen,
-          [workoutType]: true,
-        },
-      }));
+        };
+      });
     },
     [persist],
   );
 
   const importWorkoutPresets = useCallback(
-    (workoutType: WorkoutType, exercises: BatchExercisePreset[]) => {
+    (workoutId: string, exercises: BatchExercisePreset[]) => {
       if (exercises.length === 0) {
         return;
       }
@@ -86,24 +102,25 @@ export function useGymStore() {
       const importedMoves = exercises.map(createMoveFromPreset);
 
       persist((prev) => {
-        const existingMoves = prev.workouts[workoutType].moves;
+        const template = getWorkoutTemplate(prev, workoutId);
+        if (!template) {
+          return prev;
+        }
+
+        const existingMoves = template.moves;
         const moves =
           existingMoves.length === 0
             ? importedMoves
             : [...existingMoves, ...importedMoves];
 
         return {
-          ...prev,
-          workouts: {
-            ...prev.workouts,
-            [workoutType]: {
-              ...prev.workouts[workoutType],
-              moves,
-            },
-          },
+          ...applyWorkoutTemplate(prev, workoutId, {
+            ...template,
+            moves,
+          }),
           workoutSetupSeen: {
             ...prev.workoutSetupSeen,
-            [workoutType]: true,
+            [workoutId]: true,
           },
         };
       });
@@ -112,24 +129,28 @@ export function useGymStore() {
   );
 
   const importWorkoutBatch = useCallback(
-    (workoutType: WorkoutType, batchId: string) => {
-      const batch = getWorkoutBatch(workoutType, batchId);
+    (workoutId: string, batchId: string) => {
+      if (!isBuiltinWorkoutType(workoutId)) {
+        return;
+      }
+
+      const batch = getWorkoutBatch(workoutId, batchId);
       if (!batch) {
         return;
       }
 
-      importWorkoutPresets(workoutType, batch.exercises);
+      importWorkoutPresets(workoutId, batch.exercises);
     },
     [importWorkoutPresets],
   );
 
   const markWorkoutSetupSeen = useCallback(
-    (workoutType: WorkoutType) => {
+    (workoutId: string) => {
       persist((prev) => ({
         ...prev,
         workoutSetupSeen: {
           ...prev.workoutSetupSeen,
-          [workoutType]: true,
+          [workoutId]: true,
         },
       }));
     },
@@ -137,69 +158,61 @@ export function useGymStore() {
   );
 
   const updateMoveName = useCallback(
-    (workoutType: WorkoutType, moveId: string, name: string) => {
-      persist((prev) => ({
-        ...prev,
-        workouts: {
-          ...prev.workouts,
-          [workoutType]: {
-            ...prev.workouts[workoutType],
-            moves: prev.workouts[workoutType].moves.map((move) =>
-              move.id === moveId ? { ...move, name } : move,
-            ),
-          },
-        },
-      }));
+    (workoutId: string, moveId: string, name: string) => {
+      persist((prev) =>
+        updateWorkoutMoves(prev, workoutId, (moves) =>
+          moves.map((move) =>
+            move.id === moveId ? { ...move, name } : move,
+          ),
+        ),
+      );
     },
     [persist],
   );
 
   const deleteMove = useCallback(
-    (workoutType: WorkoutType, moveId: string) => {
-      persist((prev) => ({
-        ...prev,
-        workouts: {
-          ...prev.workouts,
-          [workoutType]: {
-            ...prev.workouts[workoutType],
-            moves: prev.workouts[workoutType].moves.filter(
-              (move) => move.id !== moveId,
-            ),
-          },
-        },
-      }));
+    (workoutId: string, moveId: string) => {
+      persist((prev) =>
+        updateWorkoutMoves(prev, workoutId, (moves) =>
+          moves.filter((move) => move.id !== moveId),
+        ),
+      );
     },
     [persist],
   );
 
   const addSet = useCallback(
-    (workoutType: WorkoutType, moveId: string) => {
-      persist((prev) => ({
-        ...prev,
-        workouts: {
-          ...prev.workouts,
-          [workoutType]: {
-            ...prev.workouts[workoutType],
-            moves: prev.workouts[workoutType].moves.map((move) =>
-              move.id === moveId
-                ? { ...move, sets: [...move.sets, createDefaultSet()] }
-                : move,
-            ),
-          },
-        },
-      }));
+    (workoutId: string, moveId: string) => {
+      persist((prev) =>
+        updateWorkoutMoves(prev, workoutId, (moves) =>
+          moves.map((move) => {
+            if (move.id !== moveId) {
+              return move;
+            }
+
+            const lastSet = move.sets[move.sets.length - 1];
+            const nextSet = createDefaultSet();
+            if (lastSet) {
+              nextSet.restSeconds = lastSet.restSeconds;
+            }
+
+            return { ...move, sets: [...move.sets, nextSet] };
+          }),
+        ),
+      );
     },
     [persist],
   );
 
   const deleteSet = useCallback(
-    (workoutType: WorkoutType, moveId: string, setId: string) => {
+    (workoutId: string, moveId: string, setId: string) => {
       persist((prev) => {
         const session = prev.activeSession;
         let activeSession = session;
 
-        if (session?.workoutType === workoutType) {
+        if (session?.workoutType === workoutId) {
           const { [setId]: _removedWeight, ...setWeights } = session.setWeights;
+          const { [setId]: _removedReps, ...setReps } = session.setReps ?? {};
           const completedSetIds = session.completedSetIds.filter(
             (id) => id !== setId,
           );
@@ -208,6 +221,7 @@ export function useGymStore() {
           activeSession = {
             ...session,
             setWeights,
+            setReps,
             completedSetIds,
             activeRestSetId: clearingRest
               ? undefined
@@ -217,21 +231,16 @@ export function useGymStore() {
         }
 
         return {
-          ...prev,
-          workouts: {
-            ...prev.workouts,
-            [workoutType]: {
-              ...prev.workouts[workoutType],
-              moves: prev.workouts[workoutType].moves.map((move) =>
-                move.id === moveId
-                  ? {
-                      ...move,
-                      sets: move.sets.filter((set) => set.id !== setId),
-                    }
-                  : move,
-              ),
-            },
-          },
+          ...updateWorkoutMoves(prev, workoutId, (moves) =>
+            moves.map((move) =>
+              move.id === moveId
+                ? {
+                    ...move,
+                    sets: move.sets.filter((set) => set.id !== setId),
+                  }
+                : move,
+            ),
+          ),
           activeSession,
         };
       });
@@ -241,45 +250,46 @@ export function useGymStore() {
 
   const updateSet = useCallback(
     (
-      workoutType: WorkoutType,
+      workoutId: string,
       moveId: string,
       setId: string,
       updates: Partial<SetConfig>,
     ) => {
-      persist((prev) => ({
-        ...prev,
-        workouts: {
-          ...prev.workouts,
-          [workoutType]: {
-            ...prev.workouts[workoutType],
-            moves: prev.workouts[workoutType].moves.map((move) =>
-              move.id === moveId
-                ? {
-                    ...move,
-                    sets: move.sets.map((set) =>
-                      set.id === setId ? { ...set, ...updates } : set,
-                    ),
-                  }
-                : move,
-            ),
-          },
-        },
-      }));
+      persist((prev) =>
+        updateWorkoutMoves(prev, workoutId, (moves) =>
+          moves.map((move) =>
+            move.id === moveId
+              ? {
+                  ...move,
+                  sets: move.sets.map((set) =>
+                    set.id === setId ? { ...set, ...updates } : set,
+                  ),
+                }
+              : move,
+          ),
+        ),
+      );
     },
     [persist],
   );
 
   const completeSet = useCallback(
     (
-      workoutType: WorkoutType,
+      workoutId: string,
       moveId: string,
       setId: string,
       weight: number,
+      reps: number,
       restSeconds: number,
     ) => {
       persist((prev) => {
         const session = prev.activeSession;
-        if (!session || session.workoutType !== workoutType) {
+        if (!session || session.workoutType !== workoutId) {
+          return prev;
+        }
+
+        const template = getWorkoutTemplate(prev, workoutId);
+        if (!template) {
           return prev;
         }
 
@@ -288,7 +298,7 @@ export function useGymStore() {
           ? session.completedSetIds
           : [...session.completedSetIds, setId];
 
-        const updatedMoves = prev.workouts[workoutType].moves.map((move) =>
+        const updatedMoves = template.moves.map((move) =>
           move.id === moveId
             ? {
                 ...move,
@@ -299,19 +309,16 @@ export function useGymStore() {
             : move,
         );
 
+        const nextTemplate = { ...template, moves: updatedMoves };
+        const nextData = applyWorkoutTemplate(prev, workoutId, nextTemplate);
+
         if (alreadyCompleted) {
           return {
-            ...prev,
-            workouts: {
-              ...prev.workouts,
-              [workoutType]: {
-                ...prev.workouts[workoutType],
-                moves: updatedMoves,
-              },
-            },
+            ...nextData,
             activeSession: {
               ...session,
               setWeights: { ...session.setWeights, [setId]: weight },
+              setReps: { ...(session.setReps ?? {}), [setId]: reps },
             },
           };
         }
@@ -322,17 +329,11 @@ export function useGymStore() {
           : undefined;
 
         return {
-          ...prev,
-          workouts: {
-            ...prev.workouts,
-            [workoutType]: {
-              ...prev.workouts[workoutType],
-              moves: updatedMoves,
-            },
-          },
+          ...nextData,
           activeSession: {
             ...session,
             setWeights: { ...session.setWeights, [setId]: weight },
+            setReps: { ...(session.setReps ?? {}), [setId]: reps },
             completedSetIds,
             activeRestSetId: shouldRest ? setId : undefined,
             restEndsAt,
@@ -356,22 +357,21 @@ export function useGymStore() {
   }, [persist]);
 
   const cancelSession = useCallback(
-    (workoutType: WorkoutType) => {
+    (workoutId: string) => {
       persist((prev) => {
         const session = prev.activeSession;
-        if (!session || session.workoutType !== workoutType) {
+        if (!session || session.workoutType !== workoutId) {
           return prev;
         }
 
         const baselineWorkout =
-          session.baselineWorkout ?? prev.workouts[workoutType];
+          session.baselineWorkout ?? getWorkoutTemplate(prev, workoutId);
+        if (!baselineWorkout) {
+          return { ...prev, activeSession: null };
+        }
 
         return {
-          ...prev,
-          workouts: {
-            ...prev.workouts,
-            [workoutType]: structuredClone(baselineWorkout),
-          },
+          ...applyWorkoutTemplate(prev, workoutId, structuredClone(baselineWorkout)),
           activeSession: null,
         };
       });
@@ -396,17 +396,27 @@ export function useGymStore() {
   }, [persist]);
 
   const finishDay = useCallback(
-    (workoutType: WorkoutType) => {
+    (workoutId: string) => {
       persist((prev) => {
         const session = prev.activeSession;
-        const workout = prev.workouts[workoutType];
+        const template = getWorkoutTemplate(prev, workoutId);
+        if (!template) {
+          return prev;
+        }
 
-        const updatedMoves = workout.moves.map((move) => ({
+        const updatedMoves = template.moves.map((move) => ({
           ...move,
           sets: move.sets.map((set) => {
             const sessionWeight = session?.setWeights[set.id];
-            if (sessionWeight !== undefined) {
-              return { ...set, lastWeight: sessionWeight };
+            const sessionReps = session?.setReps?.[set.id];
+            if (sessionWeight !== undefined || sessionReps !== undefined) {
+              return {
+                ...set,
+                ...(sessionWeight !== undefined
+                  ? { lastWeight: sessionWeight }
+                  : {}),
+                ...(sessionReps !== undefined ? { lastReps: sessionReps } : {}),
+              };
             }
             return set;
           }),
@@ -423,15 +433,11 @@ export function useGymStore() {
           : undefined;
 
         return {
-          ...prev,
-          workouts: {
-            ...prev.workouts,
-            [workoutType]: {
-              moves: updatedMoves,
-              lastCompletedAt: completedAt,
-              lastSessionDurationSeconds,
-            },
-          },
+          ...applyWorkoutTemplate(prev, workoutId, {
+            moves: updatedMoves,
+            lastCompletedAt: completedAt,
+            lastSessionDurationSeconds,
+          }),
           activeSession: null,
         };
       });
@@ -439,9 +445,43 @@ export function useGymStore() {
     [persist],
   );
 
+  const addCustomDay = useCallback(
+    (name: string) => {
+      const customDay = createCustomWorkoutDay(name);
+      persist((prev) => ({
+        ...prev,
+        customWorkouts: [...prev.customWorkouts, customDay],
+      }));
+      return customDay.id;
+    },
+    [persist],
+  );
+
+  const removeCustomDay = useCallback(
+    (workoutId: string) => {
+      persist((prev) => {
+        const { [workoutId]: _removed, ...workoutSetupSeen } =
+          prev.workoutSetupSeen ?? {};
+
+        return {
+          ...prev,
+          customWorkouts: prev.customWorkouts.filter(
+            (workout) => workout.id !== workoutId,
+          ),
+          workoutSetupSeen,
+          activeSession:
+            prev.activeSession?.workoutType === workoutId
+              ? null
+              : prev.activeSession,
+        };
+      });
+    },
+    [persist],
+  );
+
   const getWorkout = useCallback(
-    (workoutType: WorkoutType) => data.workouts[workoutType],
-    [data.workouts],
+    (workoutId: string) => getWorkoutTemplate(data, workoutId),
+    [data],
   );
 
   const getSession = useCallback(
@@ -472,6 +512,8 @@ export function useGymStore() {
     clearSession,
     cancelSession,
     finishDay,
+    addCustomDay,
+    removeCustomDay,
     getWorkout,
     getSession,
     resetAll,

@@ -12,6 +12,7 @@ import {
   inferRestUnit,
   isExerciseRowEmpty,
   normalizeRestInput,
+  normalizeRepsInput,
   normalizeSetsInput,
   presetToExerciseRow,
   validateExerciseRow,
@@ -51,12 +52,14 @@ type ExerciseField = keyof ExerciseRowInput;
 
 const FIELD_LABELS: Partial<Record<ExerciseField, string>> = {
   sets: "sets",
+  reps: "reps",
   rest: "min",
 };
 
-const FIELD_PLACEHOLDERS: Record<"name" | "sets" | "rest", string> = {
+const FIELD_PLACEHOLDERS: Record<"name" | "sets" | "reps" | "rest", string> = {
   name: "chest press",
   sets: "3",
+  reps: "12",
   rest: "1",
 };
 
@@ -127,6 +130,10 @@ export function WorkoutBatchEditor({
           return { ...row, sets: normalizeSetsInput(row.sets) };
         }
 
+        if (field === "reps") {
+          return { ...row, reps: normalizeRepsInput(row.reps) };
+        }
+
         if (field === "rest") {
           const rest = normalizeRestInput(row.rest);
           return {
@@ -175,6 +182,7 @@ export function WorkoutBatchEditor({
       rows.forEach((row) => {
         next[`${row.id}:name`] = true;
         next[`${row.id}:sets`] = true;
+        next[`${row.id}:reps`] = true;
         next[`${row.id}:rest`] = true;
       });
       return next;
@@ -271,7 +279,7 @@ export function WorkoutBatchEditor({
                   ) : null}
                 </div>
 
-                {(["sets", "rest"] as const).map((field) => {
+                {(["sets", "reps", "rest"] as const).map((field) => {
                   const showError = shouldShowFieldError(index, field, row.id);
                   const fieldError = validation.errors[field];
                   const restLabel =
@@ -333,6 +341,7 @@ export function WorkoutBatchEditor({
               rowError &&
               !validation.errors.name &&
               !validation.errors.sets &&
+              !validation.errors.reps &&
               !validation.errors.rest ? (
                 <p className="mt-[var(--space-gap)] text-xs text-magenta" role="alert">
                   {rowError}

@@ -21,6 +21,7 @@ export function loadAppData(): AppData {
         ...createDefaultAppData().workouts,
         ...parsed.workouts,
       },
+      customWorkouts: parsed.customWorkouts ?? [],
     };
   } catch {
     return createDefaultAppData();

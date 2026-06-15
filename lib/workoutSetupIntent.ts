@@ -1,28 +1,26 @@
-import { WorkoutType } from "@/lib/types";
-
 const STORAGE_KEY = "armstrong-workout-setup-intent";
 
 export type WorkoutSetupMode = "batch" | "manual";
 
 interface WorkoutSetupIntent {
-  type: WorkoutType;
+  workoutId: string;
   mode: WorkoutSetupMode;
 }
 
 export function setWorkoutSetupIntent(
-  type: WorkoutType,
+  workoutId: string,
   mode: WorkoutSetupMode,
 ): void {
   if (typeof window === "undefined") {
     return;
   }
 
-  const intent: WorkoutSetupIntent = { type, mode };
+  const intent: WorkoutSetupIntent = { workoutId, mode };
   sessionStorage.setItem(STORAGE_KEY, JSON.stringify(intent));
 }
 
 export function consumeWorkoutSetupIntent(
-  type: WorkoutType,
+  workoutId: string,
 ): WorkoutSetupMode | null {
   if (typeof window === "undefined") {
     return null;
@@ -36,8 +34,11 @@ export function consumeWorkoutSetupIntent(
   sessionStorage.removeItem(STORAGE_KEY);
 
   try {
-    const intent = JSON.parse(raw) as WorkoutSetupIntent;
-    if (intent.type === type && (intent.mode === "batch" || intent.mode === "manual")) {
+    const intent = JSON.parse(raw) as WorkoutSetupIntent & {
+      type?: string;
+    };
+    const id = intent.workoutId ?? intent.type;
+    if (id === workoutId && (intent.mode === "batch" || intent.mode === "manual")) {
       return intent.mode;
     }
   } catch {

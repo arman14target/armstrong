@@ -6,11 +6,9 @@ import { CyberButton } from "@/components/ui/CyberButton";
 import { IconButton } from "@/components/ui/IconButton";
 import { PanelDot } from "@/components/ui/PanelDot";
 import { cn } from "@/lib/cn";
-import { WORKOUT_LABELS, WorkoutType } from "@/lib/types";
-
 interface WorkoutEntryChoiceModalProps {
   open: boolean;
-  workoutType: WorkoutType;
+  label: string;
   onBatch: () => void;
   onManual: () => void;
   onClose: () => void;
@@ -18,12 +16,11 @@ interface WorkoutEntryChoiceModalProps {
 
 export function WorkoutEntryChoiceModal({
   open,
-  workoutType,
+  label,
   onBatch,
   onManual,
   onClose,
 }: WorkoutEntryChoiceModalProps) {
-  const label = WORKOUT_LABELS[workoutType];
 
   useEffect(() => {
     if (!open) {

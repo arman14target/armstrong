@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { Fragment, useEffect, useRef, useState } from "react";
 import { Move, SetConfig } from "@/lib/types";
 import { cn } from "@/lib/cn";
 import {
@@ -8,13 +8,17 @@ import {
   CloseIcon,
   PlusIcon,
 } from "@/components/icons/ActionIcons";
+import { SetRestDivider } from "@/components/SetRestDivider";
 import { SetRow } from "@/components/SetRow";
+import { SwipeToDeleteRow } from "@/components/SwipeToDeleteRow";
 import { IconButton } from "@/components/ui/IconButton";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
+import { formatRestLabel } from "@/lib/formatSetDisplay";
 
 interface MoveCardProps {
   move: Move;
   sessionWeights: Record<string, number>;
+  sessionReps: Record<string, number>;
   completedSetIds: string[];
   activeRestSetId?: string;
   restEndsAt?: string;
@@ -25,6 +29,7 @@ interface MoveCardProps {
   onCompleteSet: (
     setId: string,
     weight: number,
+    reps: number,
     restSeconds: number,
   ) => void;
   onDeleteSet: (setId: string) => void;
@@ -35,6 +40,7 @@ interface MoveCardProps {
 export function MoveCard({
   move,
   sessionWeights,
+  sessionReps,
   completedSetIds,
   activeRestSetId,
   restEndsAt,
@@ -54,6 +60,8 @@ export function MoveCard({
     move.sets.every((set) => completedSetIds.includes(set.id));
   const [collapsed, setCollapsed] = useState(allSetsComplete);
   const wasAllSetsCompleteRef = useRef(allSetsComplete);
+  const defaultRestForNewSet =
+    move.sets[move.sets.length - 1]?.restSeconds ?? 90;
 
   useEffect(() => {
     if (allSetsComplete) {
@@ -114,43 +122,70 @@ export function MoveCard({
         </div>
       }
     >
-      <div className="stack-sm">
+      <div className="set-table">
+        <div className="set-table-header" aria-hidden>
+          <span>Set</span>
+          <span>Previous</span>
+          <span>kg</span>
+          <span>Reps</span>
+          <span />
+        </div>
+
         {move.sets.map((set, index) => {
           const previousSet = index > 0 ? move.sets[index - 1] : undefined;
           const fallbackWeight = previousSet
             ? sessionWeights[previousSet.id] ?? previousSet.lastWeight
             : undefined;
+          const fallbackReps = previousSet
+            ? sessionReps[previousSet.id] ?? previousSet.lastReps
+            : undefined;
+          const isLastSet = index === move.sets.length - 1;
+          const showRestDivider =
+            !isLastSet || activeRestSetId === set.id;
 
           return (
-            <SetRow
-              key={set.id}
-              index={index}
-              setId={set.id}
-              restSeconds={set.restSeconds}
-              lastWeight={set.lastWeight}
-              sessionWeight={sessionWeights[set.id]}
-              fallbackWeight={fallbackWeight}
-              isCompleted={completedSetIds.includes(set.id)}
-              showRestTimer={activeRestSetId === set.id}
-              restEndsAt={restEndsAt}
-              onRestSecondsChange={(seconds) =>
-                onUpdateSet(set.id, { restSeconds: seconds })
-              }
-              onComplete={(weight, restSeconds) =>
-                onCompleteSet(set.id, weight, restSeconds)
-              }
-              onRestComplete={() => onRestComplete(set.id)}
-              onDelete={() => onDeleteSet(set.id)}
-            />
+            <Fragment key={set.id}>
+              <SwipeToDeleteRow onDelete={() => onDeleteSet(set.id)}>
+                <SetRow
+                  index={index}
+                  lastWeight={set.lastWeight}
+                  lastReps={set.lastReps}
+                  sessionWeight={sessionWeights[set.id]}
+                  sessionReps={sessionReps[set.id]}
+                  fallbackWeight={fallbackWeight}
+                  fallbackReps={fallbackReps}
+                  isCompleted={completedSetIds.includes(set.id)}
+                  onComplete={(weight, reps) =>
+                    onCompleteSet(set.id, weight, reps, set.restSeconds)
+                  }
+                />
+              </SwipeToDeleteRow>
+
+              {showRestDivider ? (
+                <SetRestDivider
+                  restSeconds={set.restSeconds}
+                  isActive={activeRestSetId === set.id}
+                  restEndsAt={restEndsAt}
+                  onRestSecondsChange={(seconds) =>
+                    onUpdateSet(set.id, { restSeconds: seconds })
+                  }
+                  onRestComplete={() => onRestComplete(set.id)}
+                />
+              ) : null}
+            </Fragment>
           );
         })}
       </div>
 
-      <div className="flex justify-center">
-        <IconButton label="Add set" variant="ghost" onClick={onAddSet}>
-          <PlusIcon />
-        </IconButton>
-      </div>
+      <button
+        type="button"
+        onClick={onAddSet}
+        className="set-add-button"
+        aria-label={`Add set with ${formatRestLabel(defaultRestForNewSet)} rest`}
+      >
+        <PlusIcon />
+        <span>Add Set ({formatRestLabel(defaultRestForNewSet)})</span>
+      </button>
     </TerminalWindow>
   );
 }

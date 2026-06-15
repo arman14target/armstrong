@@ -1,63 +1,66 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { CheckIcon, TrashIcon } from "@/components/icons/ActionIcons";
-import { RestTimer } from "@/components/RestTimer";
+import { CheckIcon } from "@/components/icons/ActionIcons";
 import { IconButton } from "@/components/ui/IconButton";
+import { formatPreviousSet } from "@/lib/formatSetDisplay";
 import { cn } from "@/lib/cn";
 
 interface SetRowProps {
   index: number;
-  setId: string;
-  restSeconds: number;
   lastWeight?: number;
+  lastReps?: number;
   sessionWeight?: number;
+  sessionReps?: number;
   fallbackWeight?: number;
+  fallbackReps?: number;
   isCompleted: boolean;
-  showRestTimer: boolean;
-  restEndsAt?: string;
-  onRestSecondsChange: (seconds: number) => void;
-  onComplete: (weight: number, restSeconds: number) => void;
-  onRestComplete: (setId: string) => void;
-  onDelete: () => void;
+  onComplete: (weight: number, reps: number) => void;
 }
 
 export function SetRow({
   index,
-  setId,
-  restSeconds,
   lastWeight,
+  lastReps,
   sessionWeight,
+  sessionReps,
   fallbackWeight,
+  fallbackReps,
   isCompleted,
-  showRestTimer,
-  restEndsAt,
-  onRestSecondsChange,
   onComplete,
-  onRestComplete,
-  onDelete,
 }: SetRowProps) {
   const defaultWeight =
     sessionWeight !== undefined ? sessionWeight : (lastWeight ?? "");
+  const defaultReps =
+    sessionReps !== undefined ? sessionReps : (lastReps ?? "");
   const [weight, setWeight] = useState<string>(
     defaultWeight === "" ? "" : String(defaultWeight),
   );
-  const [rest, setRest] = useState(String(restSeconds));
+  const [reps, setReps] = useState<string>(
+    defaultReps === "" ? "" : String(defaultReps),
+  );
   const [weightError, setWeightError] = useState(false);
-  const [restError, setRestError] = useState(false);
+  const [repsError, setRepsError] = useState(false);
 
   useEffect(() => {
     if (sessionWeight !== undefined) {
       setWeight(String(sessionWeight));
       setWeightError(false);
-      return;
-    }
-
-    if (fallbackWeight !== undefined) {
+    } else if (fallbackWeight !== undefined) {
       setWeight((current) => (current === "" ? String(fallbackWeight) : current));
       setWeightError(false);
     }
   }, [sessionWeight, fallbackWeight]);
+
+  useEffect(() => {
+    if (sessionReps !== undefined) {
+      setReps(String(sessionReps));
+      setRepsError(false);
+    } else if (fallbackReps !== undefined) {
+      setReps((current) => (current === "" ? String(fallbackReps) : current));
+      setRepsError(false);
+    }
+  }, [sessionReps, fallbackReps]);
 
   const isValidWeight = (value: string) => {
     const trimmed = value.trim();
@@ -69,14 +72,14 @@ export function SetRow({
     return !Number.isNaN(parsed) && parsed >= 0;
   };
 
-  const isValidRest = (value: string) => {
+  const isValidReps = (value: string) => {
     const trimmed = value.trim();
     if (trimmed === "") {
       return false;
     }
 
     const parsed = parseInt(trimmed, 10);
-    return !Number.isNaN(parsed) && parsed >= 0;
+    return !Number.isNaN(parsed) && parsed >= 1;
   };
 
   const handleWeightChange = (value: string) => {
@@ -86,109 +89,95 @@ export function SetRow({
     }
   };
 
-  const handleRestChange = (value: string) => {
-    setRest(value);
-    const parsed = parseInt(value, 10);
-    if (!Number.isNaN(parsed)) {
-      onRestSecondsChange(parsed);
-    }
-    if (isValidRest(value)) {
-      setRestError(false);
+  const handleRepsChange = (value: string) => {
+    setReps(value);
+    if (isValidReps(value)) {
+      setRepsError(false);
     }
   };
 
   const handleComplete = () => {
     const weightValid = isValidWeight(weight);
-    const restValid = isValidRest(rest);
+    const repsValid = isValidReps(reps);
 
     setWeightError(!weightValid);
-    setRestError(!restValid);
+    setRepsError(!repsValid);
 
-    if (!weightValid || !restValid) {
+    if (!weightValid || !repsValid) {
       return;
     }
 
-    onComplete(parseFloat(weight.trim()), parseInt(rest.trim(), 10));
+    onComplete(parseFloat(weight.trim()), parseInt(reps.trim(), 10));
   };
 
+  const previous = formatPreviousSet(lastWeight, lastReps);
   const inputErrorClass = "border-red-500/60 focus:border-red-400";
 
   return (
     <div
       className={cn(
-        "rounded-cyber border border-line bg-bg/60 p-[var(--space-panel)]",
-        isCompleted && "border-green/50",
+        "set-table-row",
+        isCompleted && "set-table-row--completed",
       )}
     >
-      <div className="mb-[var(--space-gap)] flex items-center justify-between gap-[var(--space-gap)]">
-        <span className="text-xs text-dim">Set {index + 1}</span>
-        <IconButton
-          label={`Remove set ${index + 1}`}
-          variant="danger"
-          className="size-8"
-          onClick={onDelete}
-        >
-          <TrashIcon />
-        </IconButton>
+      <div className="set-table-row__set">
+        <span className="set-table-row__set-badge">{index + 1}</span>
       </div>
 
-      <div className="grid grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto] items-end gap-2">
-        <label className="flex min-w-0 flex-col gap-1 text-xs text-dim">
-          <span className={cn(weightError ? "text-red-400" : "text-cyan")}>
-            kg
-          </span>
-          <input
-            type="number"
-            inputMode="decimal"
-            min="0"
-            step="0.5"
-            value={weight}
-            onChange={(event) => handleWeightChange(event.target.value)}
-            placeholder="0"
-            className={cn(
-              "cyber-input min-h-10 tabular-nums sm:min-h-11",
-              weightError && inputErrorClass,
-            )}
-            aria-invalid={weightError}
-          />
-        </label>
+      <div className="set-table-row__previous">
+        {previous ? (
+          <span className="truncate">{previous}</span>
+        ) : (
+          <span className="text-dim/50">—</span>
+        )}
+      </div>
 
-        <label className="flex min-w-0 flex-col gap-1 text-xs text-dim">
-          <span className={cn(restError ? "text-red-400" : "text-cyan")}>
-            sec
-          </span>
-          <input
-            type="number"
-            inputMode="numeric"
-            min="0"
-            step="5"
-            value={rest}
-            onChange={(event) => handleRestChange(event.target.value)}
-            className={cn(
-              "cyber-input min-h-10 tabular-nums sm:min-h-11",
-              restError && inputErrorClass,
-            )}
-            aria-invalid={restError}
-          />
-        </label>
+      <label className="set-table-row__field">
+        <span className="sr-only">Weight in kg for set {index + 1}</span>
+        <input
+          type="number"
+          inputMode="decimal"
+          min="0"
+          step="0.5"
+          value={weight}
+          onChange={(event) => handleWeightChange(event.target.value)}
+          placeholder="0"
+          className={cn(
+            "set-table-row__input",
+            weightError && inputErrorClass,
+          )}
+          aria-invalid={weightError}
+        />
+      </label>
 
+      <label className="set-table-row__field">
+        <span className="sr-only">Reps for set {index + 1}</span>
+        <input
+          type="number"
+          inputMode="numeric"
+          min="1"
+          step="1"
+          value={reps}
+          onChange={(event) => handleRepsChange(event.target.value)}
+          placeholder="0"
+          className={cn(
+            "set-table-row__input",
+            repsError && inputErrorClass,
+          )}
+          aria-invalid={repsError}
+        />
+      </label>
+
+      <div className="set-table-row__action">
         <IconButton
           label={isCompleted ? `Set ${index + 1} completed` : `Complete set ${index + 1}`}
           variant={isCompleted ? "green" : "cyan"}
-          className="size-10 shrink-0 sm:size-11"
+          className="size-9 sm:size-10"
           onClick={handleComplete}
         >
           <CheckIcon />
         </IconButton>
       </div>
-
-      {showRestTimer ? (
-        <RestTimer
-          endsAt={restEndsAt}
-          durationSeconds={restSeconds}
-          onComplete={() => onRestComplete(setId)}
-        />
-      ) : null}
     </div>
   );
 }

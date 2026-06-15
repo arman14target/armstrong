@@ -13,6 +13,7 @@ export interface SetConfig {
   id: string;
   restSeconds: number;
   lastWeight?: number;
+  lastReps?: number;
 }
 
 export interface Move {
@@ -27,10 +28,16 @@ export interface WorkoutTemplate {
   lastSessionDurationSeconds?: number;
 }
 
+export interface CustomWorkoutDay extends WorkoutTemplate {
+  id: string;
+  name: string;
+}
+
 export interface ActiveSession {
-  workoutType: WorkoutType;
+  workoutType: string;
   startedAt: string;
   setWeights: Record<string, number>;
+  setReps: Record<string, number>;
   completedSetIds: string[];
   activeRestSetId?: string;
   restEndsAt?: string;
@@ -40,8 +47,9 @@ export interface ActiveSession {
 
 export interface AppData {
   workouts: Record<WorkoutType, WorkoutTemplate>;
+  customWorkouts: CustomWorkoutDay[];
   activeSession: ActiveSession | null;
-  workoutSetupSeen?: Partial<Record<WorkoutType, boolean>>;
+  workoutSetupSeen?: Partial<Record<string, boolean>>;
 }
 
 export function isWorkoutType(value: string): value is WorkoutType {
@@ -71,6 +79,7 @@ export function createDefaultAppData(): AppData {
       abs: { moves: [] },
       pull: { moves: [] },
     },
+    customWorkouts: [],
     activeSession: null,
   };
 }

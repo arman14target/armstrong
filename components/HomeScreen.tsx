@@ -2,6 +2,8 @@
 
 import { useRouter } from "next/navigation";
 import { useState } from "react";
+import { AddDayButton } from "@/components/AddDayButton";
+import { AddDayModal } from "@/components/AddDayModal";
 import { RevealOnScroll } from "@/components/effects/RevealOnScroll";
 import { DayButton } from "@/components/DayButton";
 import { WorkoutEntryChoiceModal } from "@/components/WorkoutEntryChoiceModal";
@@ -11,43 +13,73 @@ import { SectionHead } from "@/components/ui/SectionHead";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { useGymStore } from "@/hooks/useGymStore";
-import { WORKOUT_LABELS, WORKOUT_TYPES, WorkoutType } from "@/lib/types";
+import { WORKOUT_LABELS, WORKOUT_TYPES } from "@/lib/types";
+import {
+  countLoggedWorkouts,
+  getWorkoutLabel,
+  getWorkoutTemplate,
+} from "@/lib/workouts";
 import { setWorkoutSetupIntent } from "@/lib/workoutSetupIntent";
 
 export function HomeScreen() {
   const router = useRouter();
-  const { data, hydrated, resetAll } = useGymStore();
+  const { data, hydrated, resetAll, addCustomDay, removeCustomDay } =
+    useGymStore();
   const [showResetModal, setShowResetModal] = useState(false);
+  const [showAddDayModal, setShowAddDayModal] = useState(false);
   const [resetting, setResetting] = useState(false);
-  const [entryChoiceType, setEntryChoiceType] = useState<WorkoutType | null>(null);
+  const [entryChoiceId, setEntryChoiceId] = useState<string | null>(null);
+  const [removeDayId, setRemoveDayId] = useState<string | null>(null);
 
-  const needsSetup = (type: WorkoutType) =>
-    data.workouts[type].moves.length === 0 &&
-    !data.workoutSetupSeen?.[type];
+  const needsSetup = (workoutId: string) => {
+    const template = getWorkoutTemplate(data, workoutId);
+    return (
+      (template?.moves.length ?? 0) === 0 && !data.workoutSetupSeen?.[workoutId]
+    );
+  };
 
   const handleBatchEntry = () => {
-    if (!entryChoiceType) {
+    if (!entryChoiceId) {
       return;
     }
 
-    setWorkoutSetupIntent(entryChoiceType, "batch");
-    router.push(`/workout/${entryChoiceType}/`);
-    setEntryChoiceType(null);
+    setWorkoutSetupIntent(entryChoiceId, "batch");
+    router.push(`/workout/${entryChoiceId}/`);
+    setEntryChoiceId(null);
   };
 
   const handleManualEntry = () => {
-    if (!entryChoiceType) {
+    if (!entryChoiceId) {
       return;
     }
 
-    setWorkoutSetupIntent(entryChoiceType, "manual");
-    router.push(`/workout/${entryChoiceType}/`);
-    setEntryChoiceType(null);
+    setWorkoutSetupIntent(entryChoiceId, "manual");
+    router.push(`/workout/${entryChoiceId}/`);
+    setEntryChoiceId(null);
   };
 
-  const completedCount = WORKOUT_TYPES.filter(
-    (type) => data.workouts[type].lastCompletedAt,
-  ).length;
+  const handleAddDay = (name: string) => {
+    const workoutId = addCustomDay(name);
+    setEntryChoiceId(workoutId);
+  };
+
+  const handleRemoveDayConfirm = () => {
+    if (!removeDayId) {
+      return;
+    }
+
+    removeCustomDay(removeDayId);
+    setRemoveDayId(null);
+  };
+
+  const splitCount = WORKOUT_TYPES.length + data.customWorkouts.length;
+  const completedCount = countLoggedWorkouts(data);
+  const entryChoiceLabel = entryChoiceId
+    ? getWorkoutLabel(data, entryChoiceId)
+    : "";
+  const removeDayLabel = removeDayId
+    ? getWorkoutLabel(data, removeDayId)
+    : "";
 
   const handleResetConfirm = async () => {
     setResetting(true);
@@ -86,7 +118,7 @@ export function HomeScreen() {
         <div className="mt-2 grid w-full grid-cols-3 gap-2 sm:gap-3">
           <div className="rounded-cyber border border-line bg-bg/40 px-2 py-2 text-center sm:px-3">
             <p className="font-display text-lg text-heading sm:text-xl">
-              {WORKOUT_TYPES.length}
+              {splitCount}
               <span className="text-cyan">+</span>
             </p>
             <p className="mt-0.5 text-[10px] tracking-wide text-dim uppercase sm:text-[11px]">
@@ -120,16 +152,32 @@ export function HomeScreen() {
             {WORKOUT_TYPES.map((type) => (
               <DayButton
                 key={type}
-                type={type}
+                workoutId={type}
                 label={WORKOUT_LABELS[type]}
                 lastCompletedAt={data.workouts[type].lastCompletedAt}
                 lastSessionDurationSeconds={
                   data.workouts[type].lastSessionDurationSeconds
                 }
                 setupRequired={needsSetup(type)}
-                onSetupClick={() => setEntryChoiceType(type)}
+                onSetupClick={() => setEntryChoiceId(type)}
               />
             ))}
+
+            {data.customWorkouts.map((workout) => (
+              <DayButton
+                key={workout.id}
+                workoutId={workout.id}
+                label={workout.name}
+                lastCompletedAt={workout.lastCompletedAt}
+                lastSessionDurationSeconds={workout.lastSessionDurationSeconds}
+                setupRequired={needsSetup(workout.id)}
+                removable
+                onSetupClick={() => setEntryChoiceId(workout.id)}
+                onRemove={() => setRemoveDayId(workout.id)}
+              />
+            ))}
+
+            <AddDayButton onClick={() => setShowAddDayModal(true)} />
           </div>
         </TerminalWindow>
       </RevealOnScroll>
@@ -148,15 +196,37 @@ export function HomeScreen() {
         </button>
       </footer>
 
-      {entryChoiceType ? (
+      <AddDayModal
+        open={showAddDayModal}
+        onAdd={handleAddDay}
+        onClose={() => setShowAddDayModal(false)}
+      />
+
+      {entryChoiceId ? (
         <WorkoutEntryChoiceModal
           open
-          workoutType={entryChoiceType}
+          label={entryChoiceLabel}
           onBatch={handleBatchEntry}
           onManual={handleManualEntry}
-          onClose={() => setEntryChoiceType(null)}
+          onClose={() => setEntryChoiceId(null)}
         />
       ) : null}
+
+      <ConfirmModal
+        open={Boolean(removeDayId)}
+        title="Remove workout day?"
+        message={
+          <>
+            This will permanently delete{" "}
+            <span className="text-magenta">{removeDayLabel}</span> and all of its
+            exercises and history.
+          </>
+        }
+        confirmLabel="Remove day"
+        cancelLabel="Keep day"
+        onConfirm={handleRemoveDayConfirm}
+        onCancel={() => setRemoveDayId(null)}
+      />
 
       <ConfirmModal
         open={showResetModal}

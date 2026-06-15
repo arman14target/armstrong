@@ -17,15 +17,19 @@ import {
   notifyRestComplete,
   scheduleRestNotification,
 } from "@/lib/restNotifications";
-import { WORKOUT_LABELS, WorkoutType } from "@/lib/types";
 import { BatchExercisePreset } from "@/lib/workoutBatches";
 import { consumeWorkoutSetupIntent } from "@/lib/workoutSetupIntent";
+import {
+  getWorkoutLabel,
+  getWorkoutTemplate,
+  isValidWorkoutId,
+} from "@/lib/workouts";
 
 interface WorkoutScreenProps {
-  workoutType: WorkoutType;
+  workoutId: string;
 }
 
-export function WorkoutScreen({ workoutType }: WorkoutScreenProps) {
+export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
   const router = useRouter();
   const {
     data,
@@ -45,9 +49,9 @@ export function WorkoutScreen({ workoutType }: WorkoutScreenProps) {
     finishDay,
   } = useGymStore();
 
-  const workout = data.workouts[workoutType];
+  const workout = getWorkoutTemplate(data, workoutId);
   const session =
-    data.activeSession?.workoutType === workoutType
+    data.activeSession?.workoutType === workoutId
       ? data.activeSession
       : null;
   const [showEntryChoice, setShowEntryChoice] = useState(false);
@@ -62,9 +66,9 @@ export function WorkoutScreen({ workoutType }: WorkoutScreenProps) {
 
   useEffect(() => {
     if (hydrated) {
-      startSession(workoutType);
+      startSession(workoutId);
     }
-  }, [hydrated, workoutType, startSession]);
+  }, [hydrated, workoutId, startSession]);
 
   useEffect(() => {
     const sentinel = headerSentinelRef.current;
@@ -93,15 +97,20 @@ export function WorkoutScreen({ workoutType }: WorkoutScreenProps) {
     const observer = new ResizeObserver(updateHeight);
     observer.observe(bar);
     return () => observer.disconnect();
-  }, [hydrated, workoutType]);
+  }, [hydrated, workoutId]);
 
   useEffect(() => {
     if (!hydrated || setupIntentHandled) {
       return;
     }
 
+    if (!workout) {
+      setSetupIntentHandled(true);
+      return;
+    }
+
     const isFirstVisit =
-      workout.moves.length === 0 && !data.workoutSetupSeen?.[workoutType];
+      workout.moves.length === 0 && !data.workoutSetupSeen?.[workoutId];
 
     if (!isFirstVisit) {
       setShowSetupModal(false);
@@ -110,13 +119,13 @@ export function WorkoutScreen({ workoutType }: WorkoutScreenProps) {
       return;
     }
 
-    const setupMode = consumeWorkoutSetupIntent(workoutType);
+    const setupMode = consumeWorkoutSetupIntent(workoutId);
 
     if (setupMode === "batch") {
       setShowSetupModal(true);
       setShowEntryChoice(false);
     } else if (setupMode === "manual") {
-      markWorkoutSetupSeen(workoutType);
+      markWorkoutSetupSeen(workoutId);
       setShowSetupModal(false);
       setShowEntryChoice(false);
     } else {
@@ -128,18 +137,19 @@ export function WorkoutScreen({ workoutType }: WorkoutScreenProps) {
   }, [
     hydrated,
     setupIntentHandled,
-    workout.moves.length,
+    workout?.moves.length,
     data.workoutSetupSeen,
-    workoutType,
+    workoutId,
     markWorkoutSetupSeen,
+    workout,
   ]);
 
   const handleImportPresets = useCallback(
     (exercises: BatchExercisePreset[]) => {
-      importWorkoutPresets(workoutType, exercises);
+      importWorkoutPresets(workoutId, exercises);
       setShowSetupModal(false);
     },
-    [importWorkoutPresets, workoutType],
+    [importWorkoutPresets, workoutId],
   );
 
   const handleEntryBatch = useCallback(() => {
@@ -148,15 +158,15 @@ export function WorkoutScreen({ workoutType }: WorkoutScreenProps) {
   }, []);
 
   const handleEntryManual = useCallback(() => {
-    markWorkoutSetupSeen(workoutType);
+    markWorkoutSetupSeen(workoutId);
     setShowEntryChoice(false);
-  }, [markWorkoutSetupSeen, workoutType]);
+  }, [markWorkoutSetupSeen, workoutId]);
 
   const handleSetupCancel = useCallback(() => {
     cancelRestNotification();
-    cancelSession(workoutType);
+    cancelSession(workoutId);
     router.push("/");
-  }, [cancelSession, router, workoutType]);
+  }, [cancelSession, router, workoutId]);
 
   const handleLeaveRequest = useCallback(() => {
     if (showSetupModal || showEntryChoice) {
@@ -171,20 +181,31 @@ export function WorkoutScreen({ workoutType }: WorkoutScreenProps) {
   }, [handleSetupCancel, router, session, showEntryChoice, showSetupModal]);
 
   const handleSaveAndLeave = useCallback(() => {
+    const completedSetCount = session?.completedSetIds.length ?? 0;
+
+    if (completedSetCount === 0) {
+      const confirmed = window.confirm(
+        "No sets completed yet. Finish the day anyway?",
+      );
+      if (!confirmed) {
+        return;
+      }
+    }
+
     cancelRestNotification();
-    clearRestTimer();
+    finishDay(workoutId);
     setShowLeaveModal(false);
     router.push("/");
-  }, [clearRestTimer, router]);
+  }, [cancelRestNotification, finishDay, router, session?.completedSetIds.length, workoutId]);
 
   const handleCancelSessionAndLeave = useCallback(() => {
     cancelRestNotification();
-    cancelSession(workoutType);
+    cancelSession(workoutId);
     setShowLeaveModal(false);
     router.push("/");
-  }, [cancelSession, router, workoutType]);
+  }, [cancelSession, router, workoutId]);
 
-  const label = WORKOUT_LABELS[workoutType];
+  const label = getWorkoutLabel(data, workoutId);
   const restNotificationBody = `${label} — time for your next set`;
 
   const handleRestComplete = useCallback(
@@ -212,17 +233,18 @@ export function WorkoutScreen({ workoutType }: WorkoutScreenProps) {
       moveId: string,
       setId: string,
       weight: number,
+      reps: number,
       restSeconds: number,
     ) => {
       cancelRestNotification();
-      completeSet(workoutType, moveId, setId, weight, restSeconds);
+      completeSet(workoutId, moveId, setId, weight, reps, restSeconds);
     },
-    [cancelRestNotification, completeSet, workoutType],
+    [cancelRestNotification, completeSet, workoutId],
   );
 
   const handleMoveAllSetsComplete = useCallback(
     (moveIndex: number) => {
-      const nextMove = workout.moves[moveIndex + 1];
+      const nextMove = workout?.moves[moveIndex + 1];
       if (!nextMove) {
         return;
       }
@@ -234,7 +256,7 @@ export function WorkoutScreen({ workoutType }: WorkoutScreenProps) {
         });
       }, 320);
     },
-    [workout.moves],
+    [workout?.moves],
   );
 
   useEffect(() => {
@@ -274,7 +296,23 @@ export function WorkoutScreen({ workoutType }: WorkoutScreenProps) {
     );
   }
 
+  if (!isValidWorkoutId(data, workoutId) || !workout) {
+    return (
+      <main className="page-shell--center stack-md text-center">
+        <p className="text-sm text-magenta">Workout not found.</p>
+        <button
+          type="button"
+          onClick={() => router.push("/")}
+          className="text-sm text-cyan transition-colors hover:text-magenta"
+        >
+          ← Back home
+        </button>
+      </main>
+    );
+  }
+
   const sessionWeights = session?.setWeights ?? {};
+  const sessionReps = session?.setReps ?? {};
   const completedSetIds = session?.completedSetIds ?? [];
 
   return (
@@ -331,20 +369,21 @@ export function WorkoutScreen({ workoutType }: WorkoutScreenProps) {
               <MoveCard
                 move={move}
                 sessionWeights={sessionWeights}
+                sessionReps={sessionReps}
                 completedSetIds={completedSetIds}
                 activeRestSetId={session?.activeRestSetId}
                 restEndsAt={session?.restEndsAt}
                 onUpdateName={(name) =>
-                  updateMoveName(workoutType, move.id, name)
+                  updateMoveName(workoutId, move.id, name)
                 }
-                onDelete={() => deleteMove(workoutType, move.id)}
-                onAddSet={() => addSet(workoutType, move.id)}
+                onDelete={() => deleteMove(workoutId, move.id)}
+                onAddSet={() => addSet(workoutId, move.id)}
                 onUpdateSet={(setId, updates) =>
-                  updateSet(workoutType, move.id, setId, updates)
+                  updateSet(workoutId, move.id, setId, updates)
                 }
-                onDeleteSet={(setId) => deleteSet(workoutType, move.id, setId)}
-                onCompleteSet={(setId, weight, restSeconds) =>
-                  handleCompleteSet(move.id, setId, weight, restSeconds)
+                onDeleteSet={(setId) => deleteSet(workoutId, move.id, setId)}
+                onCompleteSet={(setId, weight, reps, restSeconds) =>
+                  handleCompleteSet(move.id, setId, weight, reps, restSeconds)
                 }
                 onRestComplete={handleRestComplete}
                 onAllSetsComplete={() => handleMoveAllSetsComplete(moveIndex)}
@@ -352,16 +391,16 @@ export function WorkoutScreen({ workoutType }: WorkoutScreenProps) {
             </div>
           ))
         )}
-        <AddMoveForm onAdd={(name) => addMove(workoutType, name)} />
+        <AddMoveForm onAdd={(name) => addMove(workoutId, name)} />
         <FinishDayButton
-          onFinish={() => finishDay(workoutType)}
+          onFinish={() => finishDay(workoutId)}
           hasCompletedSets={completedSetIds.length > 0}
         />
       </section>
 
       <WorkoutEntryChoiceModal
         open={showEntryChoice}
-        workoutType={workoutType}
+        label={label}
         onBatch={handleEntryBatch}
         onManual={handleEntryManual}
         onClose={handleSetupCancel}
@@ -369,14 +408,15 @@ export function WorkoutScreen({ workoutType }: WorkoutScreenProps) {
 
       <WorkoutSetupModal
         open={showSetupModal}
-        workoutType={workoutType}
+        workoutId={workoutId}
+        label={label}
         onImport={handleImportPresets}
         onCancel={handleSetupCancel}
       />
 
       <LeaveWorkoutModal
         open={showLeaveModal}
-        workoutType={workoutType}
+        label={label}
         completedSetCount={completedSetIds.length}
         onSave={handleSaveAndLeave}
         onCancelSession={handleCancelSessionAndLeave}

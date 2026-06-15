@@ -7,12 +7,14 @@ interface RestTimerProps {
   endsAt?: string;
   durationSeconds: number;
   onComplete?: () => void;
+  className?: string;
 }
 
 export function RestTimer({
   endsAt,
   durationSeconds,
   onComplete,
+  className,
 }: RestTimerProps) {
   const remaining = useCountdown(endsAt, onComplete);
 
@@ -27,8 +29,9 @@ export function RestTimer({
   return (
     <div
       className={cn(
-        "relative mt-[var(--space-gap)] h-11 overflow-hidden rounded-cyber border bg-bg/80 shadow-[var(--shadow-inset)]",
+        "relative h-9 overflow-hidden rounded-cyber border bg-bg/80 shadow-[var(--shadow-inset)] sm:h-10",
         isUrgent ? "border-magenta/50" : "border-amber/35",
+        className,
       )}
       role="timer"
       aria-live="polite"

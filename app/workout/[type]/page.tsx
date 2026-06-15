@@ -1,6 +1,7 @@
 import { WorkoutScreen } from "@/components/WorkoutScreen";
-import { WORKOUT_TYPES, isWorkoutType } from "@/lib/types";
-import { notFound } from "next/navigation";
+import { WORKOUT_TYPES } from "@/lib/types";
+
+export const dynamicParams = true;
 
 export function generateStaticParams() {
   return WORKOUT_TYPES.map((type) => ({ type }));
@@ -13,9 +14,5 @@ interface WorkoutPageProps {
 export default async function WorkoutPage({ params }: WorkoutPageProps) {
   const { type } = await params;
 
-  if (!isWorkoutType(type)) {
-    notFound();
-  }
-
-  return <WorkoutScreen workoutType={type} />;
+  return <WorkoutScreen workoutId={type} />;
 }

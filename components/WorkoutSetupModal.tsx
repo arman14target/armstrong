@@ -6,24 +6,38 @@ import { CloseIcon } from "@/components/icons/ActionIcons";
 import { IconButton } from "@/components/ui/IconButton";
 import { PanelDot } from "@/components/ui/PanelDot";
 import { cn } from "@/lib/cn";
-import { BatchExercisePreset, getDefaultWorkoutBatch } from "@/lib/workoutBatches";
-import { WORKOUT_LABELS, WorkoutType } from "@/lib/types";
+import {
+  BatchExercisePreset,
+  WorkoutBatch,
+  createEmptyWorkoutBatch,
+  getDefaultWorkoutBatch,
+} from "@/lib/workoutBatches";
+import { isBuiltinWorkoutType } from "@/lib/workouts";
 
 interface WorkoutSetupModalProps {
   open: boolean;
-  workoutType: WorkoutType;
+  workoutId: string;
+  label: string;
   onImport: (exercises: BatchExercisePreset[]) => void;
   onCancel: () => void;
 }
 
+function getSetupBatch(workoutId: string, label: string): WorkoutBatch {
+  if (isBuiltinWorkoutType(workoutId)) {
+    return getDefaultWorkoutBatch(workoutId);
+  }
+
+  return createEmptyWorkoutBatch(label);
+}
+
 export function WorkoutSetupModal({
   open,
-  workoutType,
+  workoutId,
+  label,
   onImport,
   onCancel,
 }: WorkoutSetupModalProps) {
-  const batch = getDefaultWorkoutBatch(workoutType);
-  const label = WORKOUT_LABELS[workoutType];
+  const batch = getSetupBatch(workoutId, label);
 
   useEffect(() => {
     if (!open) {
@@ -91,7 +105,9 @@ export function WorkoutSetupModal({
             Set up {label}
           </h2>
           <p className="mt-[var(--space-gap)] text-sm leading-relaxed text-dim">
-            Edit the default plan below, then import all when you&apos;re ready.
+            {isBuiltinWorkoutType(workoutId)
+              ? "Edit the default plan below, then import all when you're ready."
+              : "Add your exercises below, then import all when you're ready."}
           </p>
 
           <div className="mt-[var(--space-gap-md)] rounded-cyber border border-line bg-bg/50 p-[var(--space-panel)]">

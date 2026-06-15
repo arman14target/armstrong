@@ -1,12 +1,13 @@
 import { BatchExercisePreset } from "@/lib/workoutBatches";
 
-export const EXERCISE_LINE_FORMAT_HINT = "exercise name - 3 sets - 1 min";
+export const EXERCISE_LINE_FORMAT_HINT = "exercise name - 3 sets - 12 reps - 1 min";
 
 export type RestInputUnit = "min" | "sec";
 
 export interface ExerciseRowInput {
   name: string;
   sets: string;
+  reps: string;
   rest: string;
   restUnit?: RestInputUnit;
 }
@@ -14,6 +15,7 @@ export interface ExerciseRowInput {
 export interface ExerciseLineFieldErrors {
   name?: string;
   sets?: string;
+  reps?: string;
   rest?: string;
   general?: string;
 }
@@ -43,6 +45,26 @@ function parseSetsValue(input: string): { value?: number; error?: string } {
   }
 
   return { value: setCount };
+}
+
+function parseRepsValue(input: string): { value?: number; error?: string } {
+  const trimmed = input.trim();
+  if (!trimmed) {
+    return { error: "Enter number of reps." };
+  }
+
+  const bareMatch = trimmed.match(/^(\d+)$/);
+  const match = bareMatch ?? trimmed.match(/^(\d+)\s*reps?$/i);
+  if (!match) {
+    return { error: "Enter a number from 1–100." };
+  }
+
+  const reps = parseInt(match[1], 10);
+  if (reps < 1 || reps > 100) {
+    return { error: "Reps must be between 1 and 100." };
+  }
+
+  return { value: reps };
 }
 
 function parseRestValue(
@@ -128,7 +150,12 @@ function formatRestValueFromSeconds(restSeconds: number): string {
 }
 
 export function isExerciseRowEmpty(row: ExerciseRowInput): boolean {
-  return !row.name.trim() && !row.sets.trim() && !row.rest.trim();
+  return (
+    !row.name.trim() &&
+    !row.sets.trim() &&
+    !row.reps.trim() &&
+    !row.rest.trim()
+  );
 }
 
 export function validateExerciseRow(row: ExerciseRowInput): ExerciseLineValidation {
@@ -150,6 +177,11 @@ export function validateExerciseRow(row: ExerciseRowInput): ExerciseLineValidati
     errors.sets = setsResult.error;
   }
 
+  const repsResult = parseRepsValue(row.reps);
+  if (repsResult.error) {
+    errors.reps = repsResult.error;
+  }
+
   const restUnit = row.restUnit ?? inferRestUnit(row.rest);
   const restResult = parseRestValue(row.rest, restUnit);
   if (restResult.error) {
@@ -160,6 +192,7 @@ export function validateExerciseRow(row: ExerciseRowInput): ExerciseLineValidati
     Boolean(name) &&
     name.length >= 2 &&
     setsResult.value !== undefined &&
+    repsResult.value !== undefined &&
     restResult.value !== undefined;
 
   if (!valid) {
@@ -173,6 +206,7 @@ export function validateExerciseRow(row: ExerciseRowInput): ExerciseLineValidati
     parsed: {
       name,
       setCount: setsResult.value!,
+      reps: repsResult.value!,
       weightKg: 0,
       restSeconds: restResult.value!,
     },
@@ -182,7 +216,7 @@ export function validateExerciseRow(row: ExerciseRowInput): ExerciseLineValidati
 export function getExerciseLineErrorMessage(
   errors: ExerciseLineFieldErrors,
 ): string | undefined {
-  return errors.general ?? errors.name ?? errors.sets ?? errors.rest;
+  return errors.general ?? errors.name ?? errors.sets ?? errors.reps ?? errors.rest;
 }
 
 export function formatRestForInput(restSeconds: number): string {
@@ -199,6 +233,7 @@ export function presetToExerciseRow(
   return {
     name: preset.name,
     sets: String(preset.setCount),
+    reps: String(preset.reps),
     rest: formatRestValueFromSeconds(preset.restSeconds),
     restUnit: restUnitFromSeconds(preset.restSeconds),
   };
@@ -208,12 +243,18 @@ export function createEmptyExerciseRow(): ExerciseRowInput {
   return {
     name: "",
     sets: "",
+    reps: "",
     rest: "",
     restUnit: "min",
   };
 }
 
 export function normalizeSetsInput(value: string): string {
+  const match = value.trim().match(/^(\d+)/);
+  return match ? match[1] : value.trim();
+}
+
+export function normalizeRepsInput(value: string): string {
   const match = value.trim().match(/^(\d+)/);
   return match ? match[1] : value.trim();
 }

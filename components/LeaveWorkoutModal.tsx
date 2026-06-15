@@ -4,11 +4,9 @@ import { useEffect } from "react";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { PanelDot } from "@/components/ui/PanelDot";
 import { cn } from "@/lib/cn";
-import { WORKOUT_LABELS, WorkoutType } from "@/lib/types";
-
 interface LeaveWorkoutModalProps {
   open: boolean;
-  workoutType: WorkoutType;
+  label: string;
   completedSetCount: number;
   onSave: () => void;
   onCancelSession: () => void;
@@ -17,13 +15,12 @@ interface LeaveWorkoutModalProps {
 
 export function LeaveWorkoutModal({
   open,
-  workoutType,
+  label,
   completedSetCount,
   onSave,
   onCancelSession,
   onStay,
 }: LeaveWorkoutModalProps) {
-  const label = WORKOUT_LABELS[workoutType];
 
   useEffect(() => {
     if (!open) {
