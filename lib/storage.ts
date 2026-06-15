@@ -23,6 +23,7 @@ export function loadAppData(): AppData {
         ...parsed.workouts,
       },
       customWorkouts: parsed.customWorkouts ?? [],
+      nutritionProfile: parsed.nutritionProfile,
       workoutCompletionDates:
         parsed.workoutCompletionDates ?? collectLegacyCompletionDates(parsed),
     };

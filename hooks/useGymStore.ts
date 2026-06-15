@@ -22,6 +22,7 @@ import {
   createDefaultMove,
   createDefaultSet,
 } from "@/lib/types";
+import { NutritionProfile } from "@/lib/nutrition";
 
 export function useGymStore() {
   const [data, setData] = useState<AppData>(createDefaultAppData);
@@ -499,6 +500,16 @@ export function useGymStore() {
     setData(createDefaultAppData());
   }, []);
 
+  const saveNutritionProfile = useCallback(
+    (profile: NutritionProfile) => {
+      persist((prev) => ({
+        ...prev,
+        nutritionProfile: profile,
+      }));
+    },
+    [persist],
+  );
+
   return {
     data,
     hydrated,
@@ -522,5 +533,6 @@ export function useGymStore() {
     getWorkout,
     getSession,
     resetAll,
+    saveNutritionProfile,
   };
 }

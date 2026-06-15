@@ -45,6 +45,8 @@ export interface ActiveSession {
   baselineWorkout: WorkoutTemplate;
 }
 
+import type { NutritionProfile } from "./nutrition";
+
 export interface AppData {
   workouts: Record<WorkoutType, WorkoutTemplate>;
   customWorkouts: CustomWorkoutDay[];
@@ -52,6 +54,7 @@ export interface AppData {
   workoutSetupSeen?: Partial<Record<string, boolean>>;
   /** Local YYYY-MM-DD dates when any workout was finished. */
   workoutCompletionDates?: string[];
+  nutritionProfile?: NutritionProfile;
 }
 
 export function isWorkoutType(value: string): value is WorkoutType {

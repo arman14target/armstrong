@@ -109,3 +109,67 @@ export function ChevronUpIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function DumbbellIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={cn("size-4", className)}
+      aria-hidden
+    >
+      <path d="M3 9.5v5" />
+      <path d="M6 7.5v9" />
+      <path d="M7.5 12h9" />
+      <path d="M18 7.5v9" />
+      <path d="M21 9.5v5" />
+    </svg>
+  );
+}
+
+export function CalendarIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={cn("size-4", className)}
+      aria-hidden
+    >
+      <path d="M7 3v3" />
+      <path d="M17 3v3" />
+      <path d="M4 7h16" />
+      <path d="M5 7v13a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V7" />
+      <path d="M8 11h3" />
+      <path d="M13 11h3" />
+      <path d="M8 15h3" />
+    </svg>
+  );
+}
+
+export function FoodIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={cn("size-4", className)}
+      aria-hidden
+    >
+      <path d="M6 2v6a2 2 0 0 0 4 0V2" />
+      <path d="M8 8v14" />
+      <path d="M16 2v20" />
+      <path d="M16 2c2.5 0 4 2 4 4.5S18.5 11 16 11" />
+    </svg>
+  );
+}

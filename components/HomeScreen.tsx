@@ -8,12 +8,19 @@ import { RevealOnScroll } from "@/components/effects/RevealOnScroll";
 import { DayButton } from "@/components/DayButton";
 import { WorkoutEntryChoiceModal } from "@/components/WorkoutEntryChoiceModal";
 import { WorkoutMonthCalendar } from "@/components/WorkoutMonthCalendar";
+import {
+  CalendarIcon,
+  DumbbellIcon,
+  FoodIcon,
+} from "@/components/icons/ActionIcons";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
+import { FoodTrackerSection } from "@/components/FoodTrackerSection";
 import { GlitchText } from "@/components/ui/GlitchText";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { useGymStore } from "@/hooks/useGymStore";
+import { cn } from "@/lib/cn";
 import { WORKOUT_LABELS, WORKOUT_TYPES } from "@/lib/types";
 import {
   countLoggedWorkouts,
@@ -22,13 +29,26 @@ import {
 } from "@/lib/workouts";
 import { setWorkoutSetupIntent } from "@/lib/workoutSetupIntent";
 
+type HomeTab = "punishment" | "calendar" | "food-tracker";
+
+const homeTabs: Array<{
+  id: HomeTab;
+  label: string;
+  icon: typeof DumbbellIcon;
+}> = [
+  { id: "punishment", label: "Punishment", icon: DumbbellIcon },
+  { id: "calendar", label: "Calendar", icon: CalendarIcon },
+  { id: "food-tracker", label: "Food tracker", icon: FoodIcon },
+];
+
 export function HomeScreen() {
   const router = useRouter();
-  const { data, hydrated, resetAll, addCustomDay, removeCustomDay } =
+  const { data, hydrated, resetAll, addCustomDay, removeCustomDay, saveNutritionProfile } =
     useGymStore();
   const [showResetModal, setShowResetModal] = useState(false);
   const [showAddDayModal, setShowAddDayModal] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [activeTab, setActiveTab] = useState<HomeTab>("punishment");
   const [entryChoiceId, setEntryChoiceId] = useState<string | null>(null);
   const [removeDayId, setRemoveDayId] = useState<string | null>(null);
 
@@ -73,7 +93,6 @@ export function HomeScreen() {
     setRemoveDayId(null);
   };
 
-  const splitCount = WORKOUT_TYPES.length + data.customWorkouts.length;
   const completedCount = countLoggedWorkouts(data);
   const entryChoiceLabel = entryChoiceId
     ? getWorkoutLabel(data, entryChoiceId)
@@ -117,78 +136,93 @@ export function HomeScreen() {
         </div>
 
         <div className="mt-2 grid w-full grid-cols-3 gap-2 sm:gap-3">
-          <div className="rounded-cyber border border-line bg-bg/40 px-2 py-2 text-center sm:px-3">
-            <p className="font-display text-lg text-heading sm:text-xl">
-              {splitCount}
-              <span className="text-cyan">+</span>
-            </p>
-            <p className="mt-0.5 text-[10px] tracking-wide text-dim uppercase sm:text-[11px]">
-              splits
-            </p>
-          </div>
-          <div className="rounded-cyber border border-line bg-bg/40 px-2 py-2 text-center sm:px-3">
-            <p className="font-display text-lg text-heading sm:text-xl">
-              {completedCount}
-              <span className="text-cyan">+</span>
-            </p>
-            <p className="mt-0.5 text-[10px] tracking-wide text-dim uppercase sm:text-[11px]">
-              logged
-            </p>
-          </div>
-          <div className="rounded-cyber border border-line bg-bg/40 px-2 py-2 text-center sm:px-3">
-            <p className="font-display text-lg text-heading sm:text-xl">
-              <span className="text-green">●</span> GO
-            </p>
-            <p className="mt-0.5 text-[10px] tracking-wide text-dim uppercase sm:text-[11px]">
-              ready
-            </p>
-          </div>
+          {homeTabs.map(({ id, label, icon: Icon }) => {
+            const isActive = activeTab === id;
+
+            return (
+              <button
+                key={id}
+                type="button"
+                aria-pressed={isActive}
+                onClick={() => setActiveTab(id)}
+                className={cn(
+                  "rounded-cyber border px-2 py-2 text-center transition-colors sm:px-3",
+                  isActive
+                    ? "border-cyan/50 bg-cyan/10"
+                    : "border-line bg-bg/40 hover:border-cyan/30",
+                )}
+              >
+                <Icon className="mx-auto size-5 text-heading sm:size-6" />
+                <p className="mt-1 text-[10px] tracking-wide text-dim uppercase sm:text-[11px]">
+                  {label}
+                </p>
+              </button>
+            );
+          })}
         </div>
       </section>
 
-      <RevealOnScroll>
-        <SectionHead index="01." title="Pick Your Punishment" />
-        <TerminalWindow title="Choose your workout">
-          <div className="grid grid-cols-1 gap-[var(--space-gap-md)] sm:grid-cols-2">
-            {WORKOUT_TYPES.map((type) => (
-              <DayButton
-                key={type}
-                workoutId={type}
-                label={WORKOUT_LABELS[type]}
-                lastCompletedAt={data.workouts[type].lastCompletedAt}
-                lastSessionDurationSeconds={
-                  data.workouts[type].lastSessionDurationSeconds
-                }
-                setupRequired={needsSetup(type)}
-                onSetupClick={() => setEntryChoiceId(type)}
-              />
-            ))}
+      {activeTab === "punishment" ? (
+        <RevealOnScroll>
+          <SectionHead index="01." title="Pick Your Punishment" />
+          <TerminalWindow title="Choose your workout">
+            <div className="grid grid-cols-1 gap-[var(--space-gap-md)] sm:grid-cols-2">
+              {WORKOUT_TYPES.map((type) => (
+                <DayButton
+                  key={type}
+                  workoutId={type}
+                  label={WORKOUT_LABELS[type]}
+                  lastCompletedAt={data.workouts[type].lastCompletedAt}
+                  lastSessionDurationSeconds={
+                    data.workouts[type].lastSessionDurationSeconds
+                  }
+                  setupRequired={needsSetup(type)}
+                  onSetupClick={() => setEntryChoiceId(type)}
+                />
+              ))}
 
-            {data.customWorkouts.map((workout) => (
-              <DayButton
-                key={workout.id}
-                workoutId={workout.id}
-                label={workout.name}
-                lastCompletedAt={workout.lastCompletedAt}
-                lastSessionDurationSeconds={workout.lastSessionDurationSeconds}
-                setupRequired={needsSetup(workout.id)}
-                removable
-                onSetupClick={() => setEntryChoiceId(workout.id)}
-                onRemove={() => setRemoveDayId(workout.id)}
-              />
-            ))}
+              {data.customWorkouts.map((workout) => (
+                <DayButton
+                  key={workout.id}
+                  workoutId={workout.id}
+                  label={workout.name}
+                  lastCompletedAt={workout.lastCompletedAt}
+                  lastSessionDurationSeconds={workout.lastSessionDurationSeconds}
+                  setupRequired={needsSetup(workout.id)}
+                  removable
+                  onSetupClick={() => setEntryChoiceId(workout.id)}
+                  onRemove={() => setRemoveDayId(workout.id)}
+                />
+              ))}
 
-            <AddDayButton onClick={() => setShowAddDayModal(true)} />
-          </div>
-        </TerminalWindow>
-      </RevealOnScroll>
+              <AddDayButton onClick={() => setShowAddDayModal(true)} />
+            </div>
+          </TerminalWindow>
+        </RevealOnScroll>
+      ) : null}
 
-      <RevealOnScroll>
-        <SectionHead index="02." title="Punished days" />
-        <WorkoutMonthCalendar completionDates={data.workoutCompletionDates} />
-      </RevealOnScroll>
+      {activeTab === "calendar" ? (
+        <RevealOnScroll>
+          <SectionHead index="02." title="Punished days" />
+          <WorkoutMonthCalendar completionDates={data.workoutCompletionDates} />
+        </RevealOnScroll>
+      ) : null}
+
+      {activeTab === "food-tracker" ? (
+        <RevealOnScroll>
+          <SectionHead index="03." title="Food tracker" />
+          <FoodTrackerSection
+            profile={data.nutritionProfile}
+            onSave={saveNutritionProfile}
+          />
+        </RevealOnScroll>
+      ) : null}
 
       <footer className="mt-[var(--space-section-lg)] stack-md text-center">
+        <p className="text-xs tracking-wide text-dim">
+          {completedCount}
+          <span className="text-cyan">+</span> logged
+        </p>
         <p className="text-xs tracking-wide text-dim">
           Built with <span className="text-magenta">♥</span> and protein shakes
           — Armstrong
