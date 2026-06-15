@@ -196,7 +196,7 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
     finishDay(workoutId);
     setShowLeaveModal(false);
     router.push("/");
-  }, [cancelRestNotification, finishDay, router, session?.completedSetIds.length, workoutId]);
+  }, [finishDay, router, session?.completedSetIds.length, workoutId]);
 
   const handleCancelSessionAndLeave = useCallback(() => {
     cancelRestNotification();
@@ -239,7 +239,7 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
       cancelRestNotification();
       completeSet(workoutId, moveId, setId, weight, reps, restSeconds);
     },
-    [cancelRestNotification, completeSet, workoutId],
+    [completeSet, workoutId],
   );
 
   const handleMoveAllSetsComplete = useCallback(

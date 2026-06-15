@@ -132,7 +132,7 @@ export function DayButton({
   }
 
   return (
-    <Link href={`/workout/${workoutId}/`} className={className}>
+    <Link href={`/workout/?type=${workoutId}`} className={className}>
       {content}
     </Link>
   );

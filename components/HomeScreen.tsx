@@ -65,7 +65,7 @@ export function HomeScreen() {
     }
 
     setWorkoutSetupIntent(entryChoiceId, "batch");
-    router.push(`/workout/${entryChoiceId}/`);
+    router.push(`/workout/?type=${entryChoiceId}`);
     setEntryChoiceId(null);
   };
 
@@ -75,7 +75,7 @@ export function HomeScreen() {
     }
 
     setWorkoutSetupIntent(entryChoiceId, "manual");
-    router.push(`/workout/${entryChoiceId}/`);
+    router.push(`/workout/?type=${entryChoiceId}`);
     setEntryChoiceId(null);
   };
 
