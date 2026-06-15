@@ -9,6 +9,7 @@ import {
 } from "@/lib/workoutBatches";
 import {
   applyWorkoutTemplate,
+  addCompletionDate,
   createCustomWorkoutDay,
   getWorkoutTemplate,
   isBuiltinWorkoutType,
@@ -438,6 +439,10 @@ export function useGymStore() {
             lastCompletedAt: completedAt,
             lastSessionDurationSeconds,
           }),
+          workoutCompletionDates: addCompletionDate(
+            prev.workoutCompletionDates,
+            completedAt,
+          ),
           activeSession: null,
         };
       });

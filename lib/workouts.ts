@@ -8,6 +8,7 @@ import {
   WorkoutType,
   isWorkoutType,
 } from "@/lib/types";
+import { toLocalDateKey } from "@/lib/workoutCalendar";
 
 export function isBuiltinWorkoutType(id: string): id is WorkoutType {
   return isWorkoutType(id);
@@ -119,4 +120,48 @@ export function createCustomWorkoutDay(name: string): CustomWorkoutDay {
     name: name.trim(),
     moves: [],
   };
+}
+
+export function collectLegacyCompletionDates(data: AppData): string[] {
+  const dates = new Set<string>();
+
+  for (const type of WORKOUT_TYPES) {
+    const completedAt = data.workouts[type].lastCompletedAt;
+    if (completedAt) {
+      dates.add(toLocalDateKey(new Date(completedAt)));
+    }
+  }
+
+  for (const workout of data.customWorkouts ?? []) {
+    if (workout.lastCompletedAt) {
+      dates.add(toLocalDateKey(new Date(workout.lastCompletedAt)));
+    }
+  }
+
+  return [...dates];
+}
+
+export function addCompletionDate(
+  dates: string[] | undefined,
+  completedAt: string,
+): string[] {
+  const dateKey = toLocalDateKey(new Date(completedAt));
+  const current = dates ?? [];
+
+  if (current.includes(dateKey)) {
+    return current;
+  }
+
+  return [...current, dateKey];
+}
+
+export function getCompletionDatesForMonth(
+  dates: string[] | undefined,
+  year: number,
+  month: number,
+): Set<string> {
+  const monthPrefix = `${year}-${String(month + 1).padStart(2, "0")}`;
+  return new Set(
+    (dates ?? []).filter((dateKey) => dateKey.startsWith(monthPrefix)),
+  );
 }

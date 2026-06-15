@@ -7,6 +7,7 @@ import { AddDayModal } from "@/components/AddDayModal";
 import { RevealOnScroll } from "@/components/effects/RevealOnScroll";
 import { DayButton } from "@/components/DayButton";
 import { WorkoutEntryChoiceModal } from "@/components/WorkoutEntryChoiceModal";
+import { WorkoutMonthCalendar } from "@/components/WorkoutMonthCalendar";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { GlitchText } from "@/components/ui/GlitchText";
 import { SectionHead } from "@/components/ui/SectionHead";
@@ -180,6 +181,11 @@ export function HomeScreen() {
             <AddDayButton onClick={() => setShowAddDayModal(true)} />
           </div>
         </TerminalWindow>
+      </RevealOnScroll>
+
+      <RevealOnScroll>
+        <SectionHead index="02." title="Punished days" />
+        <WorkoutMonthCalendar completionDates={data.workoutCompletionDates} />
       </RevealOnScroll>
 
       <footer className="mt-[var(--space-section-lg)] stack-md text-center">

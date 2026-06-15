@@ -1,5 +1,6 @@
 import { AppData, createDefaultAppData } from "./types";
 import { THEME_STORAGE_KEY } from "./theme";
+import { collectLegacyCompletionDates } from "./workouts";
 
 export const STORAGE_KEY = "armstrong-gym-v1";
 
@@ -22,6 +23,8 @@ export function loadAppData(): AppData {
         ...parsed.workouts,
       },
       customWorkouts: parsed.customWorkouts ?? [],
+      workoutCompletionDates:
+        parsed.workoutCompletionDates ?? collectLegacyCompletionDates(parsed),
     };
   } catch {
     return createDefaultAppData();

@@ -50,6 +50,8 @@ export interface AppData {
   customWorkouts: CustomWorkoutDay[];
   activeSession: ActiveSession | null;
   workoutSetupSeen?: Partial<Record<string, boolean>>;
+  /** Local YYYY-MM-DD dates when any workout was finished. */
+  workoutCompletionDates?: string[];
 }
 
 export function isWorkoutType(value: string): value is WorkoutType {
