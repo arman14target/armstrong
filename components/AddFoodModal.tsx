@@ -1,12 +1,16 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
 import { CloseIcon } from "@/components/icons/ActionIcons";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { IconButton } from "@/components/ui/IconButton";
 import { PanelDot } from "@/components/ui/PanelDot";
 import { cn } from "@/lib/cn";
+import { searchFoods, type FoodSearchResult } from "@/lib/foodSearch";
 import type { FoodEntry } from "@/lib/nutrition";
+
+/** Wait for typing to pause before querying USDA. */
+const SEARCH_DEBOUNCE_MS = 400;
 
 export type FoodEntryInput = Pick<
   FoodEntry,
@@ -19,12 +23,37 @@ interface AddFoodModalProps {
   onClose: () => void;
 }
 
-function parseOptionalNumber(value: string): number {
-  const parsed = Number.parseFloat(value);
+function parseMacroOrZero(value: string): number {
+  const trimmed = value.trim();
+  if (!trimmed) {
+    return 0;
+  }
+
+  const parsed = Number.parseFloat(trimmed);
   if (!Number.isFinite(parsed) || parsed < 0) {
     return 0;
   }
-  return parsed;
+
+  return Math.round(parsed);
+}
+
+function formatMacro(value: number): string {
+  return String(Math.round(value));
+}
+
+function FieldLabel({
+  children,
+  required = false,
+}: {
+  children: string;
+  required?: boolean;
+}) {
+  return (
+    <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
+      {children}
+      {required ? <span className="text-magenta"> *</span> : null}
+    </span>
+  );
 }
 
 export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
@@ -34,6 +63,13 @@ export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
   const [carbsG, setCarbsG] = useState("");
   const [fatG, setFatG] = useState("");
   const [errors, setErrors] = useState<Record<string, boolean>>({});
+  const [suggestions, setSuggestions] = useState<FoodSearchResult[]>([]);
+  const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState<string | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
+  const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const searchRequestId = useRef(0);
+  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!open) {
@@ -43,6 +79,11 @@ export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
       setCarbsG("");
       setFatG("");
       setErrors({});
+      setSuggestions([]);
+      setSearching(false);
+      setSearchError(null);
+      setShowSuggestions(false);
+      setHighlightedIndex(-1);
       return;
     }
 
@@ -61,20 +102,94 @@ export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
     };
   }, [open, onClose]);
 
+  useEffect(() => {
+    if (!open) {
+      return;
+    }
+
+    const trimmed = name.trim();
+    if (trimmed.length < 2) {
+      setSuggestions([]);
+      setSearching(false);
+      setSearchError(null);
+      return;
+    }
+
+    const requestId = searchRequestId.current + 1;
+    searchRequestId.current = requestId;
+    setSearching(false);
+    setSearchError(null);
+
+    const timeoutId = window.setTimeout(() => {
+      setSearching(true);
+
+      void searchFoods(trimmed)
+        .then((results) => {
+          if (searchRequestId.current !== requestId) {
+            return;
+          }
+
+          setSuggestions(results);
+          setShowSuggestions(results.length > 0);
+          setHighlightedIndex(-1);
+        })
+        .catch((error: unknown) => {
+          if (searchRequestId.current !== requestId) {
+            return;
+          }
+
+          setSuggestions([]);
+          setSearchError(
+            error instanceof Error
+              ? error.message
+              : "Food search failed. Try again.",
+          );
+        })
+        .finally(() => {
+          if (searchRequestId.current === requestId) {
+            setSearching(false);
+          }
+        });
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [name, open]);
+
+  useEffect(() => {
+    return () => {
+      if (blurTimeoutRef.current) {
+        clearTimeout(blurTimeoutRef.current);
+      }
+    };
+  }, []);
+
   if (!open) {
     return null;
   }
 
+  const applySuggestion = (result: FoodSearchResult) => {
+    setName(result.name);
+    setCalories(formatMacro(result.calories));
+    setProteinG(formatMacro(result.proteinG));
+    setCarbsG(formatMacro(result.carbsG));
+    setFatG(formatMacro(result.fatG));
+    setShowSuggestions(false);
+    setHighlightedIndex(-1);
+    setErrors({});
+  };
+
   const handleSubmit = () => {
     const trimmedName = name.trim();
-    const caloriesValue = Number.parseFloat(calories);
+    const proteinValue = Number.parseFloat(proteinG);
     const nextErrors: Record<string, boolean> = {};
 
     if (trimmedName.length < 2) {
       nextErrors.name = true;
     }
-    if (!Number.isFinite(caloriesValue) || caloriesValue <= 0) {
-      nextErrors.calories = true;
+    if (!Number.isFinite(proteinValue) || proteinValue <= 0) {
+      nextErrors.proteinG = true;
     }
 
     if (Object.keys(nextErrors).length > 0) {
@@ -84,12 +199,45 @@ export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
 
     onAdd({
       name: trimmedName,
-      calories: Math.round(caloriesValue),
-      proteinG: Math.round(parseOptionalNumber(proteinG)),
-      carbsG: Math.round(parseOptionalNumber(carbsG)),
-      fatG: Math.round(parseOptionalNumber(fatG)),
+      calories: parseMacroOrZero(calories),
+      proteinG: Math.round(proteinValue),
+      carbsG: parseMacroOrZero(carbsG),
+      fatG: parseMacroOrZero(fatG),
     });
     onClose();
+  };
+
+  const handleNameKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
+    if (!showSuggestions || suggestions.length === 0) {
+      return;
+    }
+
+    if (event.key === "ArrowDown") {
+      event.preventDefault();
+      setHighlightedIndex((prev) =>
+        prev < suggestions.length - 1 ? prev + 1 : 0,
+      );
+      return;
+    }
+
+    if (event.key === "ArrowUp") {
+      event.preventDefault();
+      setHighlightedIndex((prev) =>
+        prev > 0 ? prev - 1 : suggestions.length - 1,
+      );
+      return;
+    }
+
+    if (event.key === "Enter" && highlightedIndex >= 0) {
+      event.preventDefault();
+      applySuggestion(suggestions[highlightedIndex]);
+      return;
+    }
+
+    if (event.key === "Escape") {
+      setShowSuggestions(false);
+      setHighlightedIndex(-1);
+    }
   };
 
   return (
@@ -131,83 +279,151 @@ export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
             What did you eat?
           </h2>
           <p className="mt-[var(--space-gap)] text-sm leading-relaxed text-dim">
-            Add the meal and its nutrition so your daily totals stay accurate.
+            Search for a meal to auto-fill nutrition, or type any food name and
+            enter protein yourself.
           </p>
 
           <label className="mt-[var(--space-gap-md)] block">
-            <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
-              Food name
-            </span>
-            <input
-              type="text"
-              value={name}
-              onChange={(event) => {
-                setName(event.target.value);
-                if (errors.name) {
-                  setErrors((prev) => ({ ...prev, name: false }));
-                }
-              }}
-              placeholder="e.g. Chicken rice bowl"
-              autoFocus
-              className={cn("cyber-input", errors.name && "border-magenta/60")}
-              aria-invalid={errors.name}
-            />
+            <FieldLabel required>Food name</FieldLabel>
+            <div className="relative">
+              <input
+                type="text"
+                value={name}
+                required
+                onChange={(event) => {
+                  setName(event.target.value);
+                  setShowSuggestions(true);
+                  if (errors.name) {
+                    setErrors((prev) => ({ ...prev, name: false }));
+                  }
+                }}
+                onFocus={() => {
+                  if (blurTimeoutRef.current) {
+                    clearTimeout(blurTimeoutRef.current);
+                  }
+                  if (suggestions.length > 0) {
+                    setShowSuggestions(true);
+                  }
+                }}
+                onBlur={() => {
+                  blurTimeoutRef.current = setTimeout(() => {
+                    setShowSuggestions(false);
+                    setHighlightedIndex(-1);
+                  }, 150);
+                }}
+                onKeyDown={handleNameKeyDown}
+                placeholder="e.g. Chicken rice bowl"
+                autoFocus
+                autoComplete="off"
+                role="combobox"
+                aria-expanded={showSuggestions}
+                aria-autocomplete="list"
+                aria-controls="food-suggestions-list"
+                className={cn(
+                  "cyber-input",
+                  errors.name && "border-magenta/60",
+                )}
+                aria-invalid={errors.name}
+              />
+
+              {showSuggestions && (searching || suggestions.length > 0) ? (
+                <ul
+                  id="food-suggestions-list"
+                  role="listbox"
+                  className="absolute z-10 mt-1 max-h-52 w-full overflow-y-auto rounded-cyber border border-line bg-panel shadow-[var(--shadow-panel)]"
+                >
+                  {searching ? (
+                    <li className="px-3 py-2 text-xs text-dim">Searching...</li>
+                  ) : (
+                    suggestions.map((result, index) => (
+                      <li
+                        key={result.id}
+                        role="option"
+                        aria-selected={index === highlightedIndex}
+                      >
+                        <button
+                          type="button"
+                          className={cn(
+                            "w-full px-3 py-2 text-left transition-colors hover:bg-cyan/10",
+                            index === highlightedIndex && "bg-cyan/10",
+                          )}
+                          onMouseDown={(event) => {
+                            event.preventDefault();
+                            applySuggestion(result);
+                          }}
+                        >
+                          <span className="block text-sm text-heading">
+                            {result.name}
+                          </span>
+                          <span className="mt-0.5 block text-[11px] text-dim">
+                            {result.calories} kcal · P {result.proteinG}g · C{" "}
+                            {result.carbsG}g · F {result.fatG}g ·{" "}
+                            {result.servingNote}
+                          </span>
+                        </button>
+                      </li>
+                    ))
+                  )}
+                </ul>
+              ) : null}
+            </div>
             {errors.name ? (
               <p className="mt-1 text-xs text-magenta" role="alert">
                 Enter a name with at least 2 characters.
               </p>
             ) : null}
+            {searchError ? (
+              <p className="mt-1 text-xs text-dim">{searchError}</p>
+            ) : null}
           </label>
 
           <label className="mt-[var(--space-gap)] block">
-            <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
-              Calories (kcal)
-            </span>
+            <FieldLabel>Calories (kcal)</FieldLabel>
             <input
               type="number"
               inputMode="decimal"
+              min={0}
               value={calories}
-              onChange={(event) => {
-                setCalories(event.target.value);
-                if (errors.calories) {
-                  setErrors((prev) => ({ ...prev, calories: false }));
-                }
-              }}
+              onChange={(event) => setCalories(event.target.value)}
               placeholder="450"
-              className={cn(
-                "cyber-input",
-                errors.calories && "border-magenta/60",
-              )}
-              aria-invalid={errors.calories}
+              className="cyber-input"
             />
-            {errors.calories ? (
-              <p className="mt-1 text-xs text-magenta" role="alert">
-                Enter a valid calorie amount.
-              </p>
-            ) : null}
           </label>
 
           <div className="mt-[var(--space-gap)] grid grid-cols-3 gap-[var(--space-gap)]">
             <label className="block">
-              <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
-                Protein (g)
-              </span>
+              <FieldLabel required>Protein (g)</FieldLabel>
               <input
                 type="number"
                 inputMode="decimal"
+                min={0}
+                required
                 value={proteinG}
-                onChange={(event) => setProteinG(event.target.value)}
-                placeholder="0"
-                className="cyber-input"
+                onChange={(event) => {
+                  setProteinG(event.target.value);
+                  if (errors.proteinG) {
+                    setErrors((prev) => ({ ...prev, proteinG: false }));
+                  }
+                }}
+                placeholder="30"
+                className={cn(
+                  "cyber-input",
+                  errors.proteinG && "border-magenta/60",
+                )}
+                aria-invalid={errors.proteinG}
               />
+              {errors.proteinG ? (
+                <p className="mt-1 text-xs text-magenta" role="alert">
+                  Protein is required.
+                </p>
+              ) : null}
             </label>
             <label className="block">
-              <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
-                Carbs (g)
-              </span>
+              <FieldLabel>Carbs (g)</FieldLabel>
               <input
                 type="number"
                 inputMode="decimal"
+                min={0}
                 value={carbsG}
                 onChange={(event) => setCarbsG(event.target.value)}
                 placeholder="0"
@@ -215,12 +431,11 @@ export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
               />
             </label>
             <label className="block">
-              <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
-                Fat (g)
-              </span>
+              <FieldLabel>Fat (g)</FieldLabel>
               <input
                 type="number"
                 inputMode="decimal"
+                min={0}
                 value={fatG}
                 onChange={(event) => setFatG(event.target.value)}
                 placeholder="0"

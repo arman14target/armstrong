@@ -40,7 +40,7 @@ export function AddMoveForm({ onAdd }: AddMoveFormProps) {
           type="submit"
           label="Add exercise"
           variant="ghost"
-          className="border-green text-green hover:bg-green hover:text-heading"
+          className="cyber-btn--green rounded-cyber border px-[var(--space-btn-x)] py-[var(--space-btn-y)]"
         >
           <PlusIcon />
         </IconButton>

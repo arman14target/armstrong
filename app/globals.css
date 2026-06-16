@@ -241,10 +241,18 @@
   }
 
   .home-screen__content {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  .home-screen__tab-content {
     flex: 1 1 auto;
   }
 
   .home-screen__brand {
+    flex-shrink: 0;
     margin-top: auto;
     padding-top: var(--space-section-lg);
     text-align: left;
@@ -290,6 +298,24 @@
   .workout-sticky-bar--stuck .workout-sticky-bar__inner {
     max-width: 48rem;
     margin-inline: auto;
+  }
+
+  .fixed-banner-top {
+    position: fixed;
+    right: 0;
+    top: 0;
+    left: 0;
+    z-index: 40;
+    padding-inline: calc(var(--space-page-x) + var(--safe-left))
+      calc(var(--space-page-x) + var(--safe-right));
+    padding-top: max(var(--space-gap), var(--safe-top));
+    padding-bottom: var(--space-gap-lg);
+    background: linear-gradient(
+      to bottom,
+      var(--color-bg),
+      color-mix(in srgb, var(--color-bg) 95%, transparent),
+      transparent
+    );
   }
 
   .fixed-footer {
@@ -551,6 +577,61 @@
   .cyber-btn {
     padding-inline: var(--space-btn-x);
     padding-block: var(--space-btn-y);
+  }
+
+  .cyber-btn--cyan,
+  .cyber-btn--magenta,
+  .cyber-btn--green {
+    transition:
+      color 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+      background-color 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+      border-color 0.35s cubic-bezier(0.2, 0.8, 0.2, 1),
+      box-shadow 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  }
+
+  .cyber-btn--cyan {
+    border-color: color-mix(in srgb, var(--color-cyan) 55%, transparent);
+    color: var(--color-cyan);
+  }
+
+  .cyber-btn--cyan:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-cyan) 80%, transparent);
+    background-color: color-mix(in srgb, var(--color-cyan) 10%, transparent);
+    box-shadow: inset 0 0 14px color-mix(in srgb, var(--color-cyan) 5%, transparent);
+  }
+
+  .cyber-btn--cyan:active:not(:disabled) {
+    background-color: color-mix(in srgb, var(--color-cyan) 16%, transparent);
+  }
+
+  .cyber-btn--magenta {
+    border-color: color-mix(in srgb, var(--color-magenta) 55%, transparent);
+    color: var(--color-magenta);
+  }
+
+  .cyber-btn--magenta:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-magenta) 80%, transparent);
+    background-color: color-mix(in srgb, var(--color-magenta) 10%, transparent);
+    box-shadow: inset 0 0 14px color-mix(in srgb, var(--color-magenta) 5%, transparent);
+  }
+
+  .cyber-btn--magenta:active:not(:disabled) {
+    background-color: color-mix(in srgb, var(--color-magenta) 16%, transparent);
+  }
+
+  .cyber-btn--green {
+    border-color: color-mix(in srgb, var(--color-green) 55%, transparent);
+    color: var(--color-green);
+  }
+
+  .cyber-btn--green:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-green) 80%, transparent);
+    background-color: color-mix(in srgb, var(--color-green) 10%, transparent);
+    box-shadow: inset 0 0 14px color-mix(in srgb, var(--color-green) 5%, transparent);
+  }
+
+  .cyber-btn--green:active:not(:disabled) {
+    background-color: color-mix(in srgb, var(--color-green) 16%, transparent);
   }
 
   .cyber-input:focus {

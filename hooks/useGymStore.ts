@@ -23,6 +23,10 @@ import {
   createDefaultMove,
   createDefaultSet,
 } from "@/lib/types";
+import {
+  applyWorkoutChange,
+  type CoachWorkoutChange,
+} from "@/lib/coachWorkout";
 import { createFoodEntry, FoodEntry, NutritionProfile } from "@/lib/nutrition";
 
 export function useGymStore() {
@@ -537,6 +541,13 @@ export function useGymStore() {
     [persist],
   );
 
+  const applyCoachWorkoutChange = useCallback(
+    (change: CoachWorkoutChange) => {
+      persist((prev) => applyWorkoutChange(prev, change));
+    },
+    [persist],
+  );
+
   const removeFoodEntry = useCallback(
     (dateKey: string, entryId: string) => {
       persist((prev) => {
@@ -589,5 +600,6 @@ export function useGymStore() {
     saveNutritionProfile,
     addFoodEntry,
     removeFoodEntry,
+    applyCoachWorkoutChange,
   };
 }

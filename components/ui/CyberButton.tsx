@@ -4,11 +4,9 @@ import { cn } from "@/lib/cn";
 type CyberButtonVariant = "cyan" | "magenta" | "green";
 
 const variantStyles: Record<CyberButtonVariant, string> = {
-  cyan: "border-cyan text-cyan hover:text-heading before:bg-cyan",
-  magenta:
-    "border-magenta text-magenta hover:text-heading before:bg-magenta",
-  green:
-    "border-green text-green hover:text-heading before:bg-green",
+  cyan: "cyber-btn--cyan",
+  magenta: "cyber-btn--magenta",
+  green: "cyber-btn--green",
 };
 
 interface CyberButtonBaseProps {
@@ -24,7 +22,7 @@ type CyberButtonProps = CyberButtonBaseProps &
   );
 
 const baseClass =
-  "cyber-btn relative inline-flex items-center justify-center overflow-hidden rounded-cyber border text-sm tracking-wide transition-all duration-250 before:absolute before:inset-0 before:z-0 before:-translate-x-full before:transition-transform before:duration-300 before:ease-[cubic-bezier(0.2,0.8,0.2,1)] hover:before:translate-x-0";
+  "cyber-btn relative inline-flex items-center justify-center rounded-cyber border text-sm tracking-wide";
 
 export function CyberButton({
   children,
@@ -38,7 +36,7 @@ export function CyberButton({
     const { href, ...linkProps } = props;
     return (
       <Link href={href} className={classes} {...linkProps}>
-        <span className="relative z-10">{children}</span>
+        {children}
       </Link>
     );
   }
@@ -46,7 +44,7 @@ export function CyberButton({
   const buttonProps = props as React.ButtonHTMLAttributes<HTMLButtonElement>;
   return (
     <button type="button" className={classes} {...buttonProps}>
-      <span className="relative z-10">{children}</span>
+      {children}
     </button>
   );
 }

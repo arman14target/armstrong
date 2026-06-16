@@ -29,10 +29,10 @@ export function FinishDayButton({
   return (
     <button
       type="button"
-      className="relative w-full min-h-12 overflow-hidden rounded-[3px] border border-green text-sm tracking-wide text-green transition-all before:absolute before:inset-0 before:z-0 before:-translate-x-full before:bg-green before:transition-transform before:duration-300 hover:text-heading hover:before:translate-x-0"
+      className="cyber-btn cyber-btn--green w-full min-h-12 rounded-cyber text-sm tracking-wide"
       onClick={handleClick}
     >
-      <span className="relative z-10">Finish workout</span>
+      Finish workout
     </button>
   );
 }

@@ -67,7 +67,7 @@ export function RestNotificationBanner() {
           type="button"
           onClick={handleEnable}
           disabled={requesting}
-          className="min-h-10 rounded-cyber border border-cyan px-[var(--space-inline)] text-xs text-cyan transition-colors hover:bg-cyan hover:text-heading disabled:opacity-60"
+          className="cyber-btn--cyan min-h-10 rounded-cyber border px-[var(--space-inline)] text-xs disabled:opacity-60"
         >
           {requesting ? "Enabling..." : "Enable notifications"}
         </button>

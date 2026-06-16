@@ -36,14 +36,14 @@ const homeTabs: Array<{
   icon: typeof DumbbellIcon;
 }> = [
   { id: "workout", label: "Workout", icon: DumbbellIcon },
-  { id: "calendar", label: "Calendar", icon: CalendarIcon },
   { id: "food-tracker", label: "Food tracker", icon: FoodIcon },
+  { id: "calendar", label: "Calendar", icon: CalendarIcon },
   { id: "coach", label: "Coach", icon: CoachIcon },
 ];
 
 export function HomeScreen() {
   const router = useRouter();
-  const { data, hydrated, resetAll, addCustomDay, removeCustomDay, saveNutritionProfile, addFoodEntry, removeFoodEntry } =
+  const { data, hydrated, resetAll, addCustomDay, removeCustomDay, saveNutritionProfile, addFoodEntry, removeFoodEntry, applyCoachWorkoutChange } =
     useGymStore();
   const [showResetModal, setShowResetModal] = useState(false);
   const [showAddDayModal, setShowAddDayModal] = useState(false);
@@ -122,6 +122,7 @@ export function HomeScreen() {
   return (
     <main className="page-shell page-shell--home page-shell--footer">
       <div className="home-screen__content">
+      <div className="home-screen__tab-content">
       {activeTab === "workout" ? (
         <RevealOnScroll>
           <SectionHead index="01." title="Pick Your Workout" />
@@ -193,7 +194,10 @@ export function HomeScreen() {
       {activeTab === "coach" ? (
         <RevealOnScroll>
           <SectionHead index="04." title="Coach" />
-          <CoachChatSection />
+          <CoachChatSection
+            appData={data}
+            onApplyWorkoutChange={applyCoachWorkoutChange}
+          />
         </RevealOnScroll>
       ) : null}
       </div>
@@ -209,6 +213,7 @@ export function HomeScreen() {
           </p>
         </div>
       </section>
+      </div>
 
       <footer className="home-screen__footer stack-md text-center">
         <p className="text-xs tracking-wide text-dim">

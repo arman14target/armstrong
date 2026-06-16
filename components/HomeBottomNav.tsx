@@ -8,7 +8,7 @@ import {
 } from "react";
 import { cn } from "@/lib/cn";
 
-export type HomeTab = "workout" | "calendar" | "food-tracker" | "coach";
+export type HomeTab = "workout" | "food-tracker" | "calendar" | "coach";
 
 type TabConfig = {
   id: HomeTab;

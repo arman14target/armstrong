@@ -8,6 +8,15 @@ import {
   loadCoachChatMessages,
   saveCoachChatMessages,
 } from "@/lib/coachChatStorage";
+import {
+  buildCoachSystemPrompt,
+  canApplyWorkoutChange,
+  describeWorkoutChange,
+  getWorkoutChangeApplyLabel,
+  parseWorkoutChange,
+  stripWorkoutChangeMarker,
+  type CoachWorkoutChange,
+} from "@/lib/coachWorkout";
 import { cn } from "@/lib/cn";
 import {
   type CoachChatMessage,
@@ -15,6 +24,7 @@ import {
   isGeminiConfigured,
   sendCoachMessage,
 } from "@/lib/gemini";
+import type { AppData } from "@/lib/types";
 
 function createMessage(role: CoachChatMessage["role"], content: string): CoachChatMessage {
   return {
@@ -74,6 +84,9 @@ function SetupPanel() {
 
 function MessageBubble({ message }: { message: CoachChatMessage }) {
   const isUser = message.role === "user";
+  const displayContent = isUser
+    ? message.content
+    : stripWorkoutChangeMarker(message.content);
 
   return (
     <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
@@ -89,19 +102,30 @@ function MessageBubble({ message }: { message: CoachChatMessage }) {
           {isUser ? "You" : "Coach"} · {formatTime(message.createdAt)}
         </p>
         <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-heading">
-          {message.content}
+          {displayContent}
         </p>
       </div>
     </div>
   );
 }
 
-export function CoachChatSection() {
+interface CoachChatSectionProps {
+  appData: AppData;
+  onApplyWorkoutChange: (change: CoachWorkoutChange) => void;
+}
+
+export function CoachChatSection({
+  appData,
+  onApplyWorkoutChange,
+}: CoachChatSectionProps) {
   const [messages, setMessages] = useState<CoachChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
+  const [dismissedChangeIds, setDismissedChangeIds] = useState<Set<string>>(
+    () => new Set(),
+  );
   const scrollRef = useRef<HTMLDivElement>(null);
   const configured = isGeminiConfigured();
 
@@ -127,6 +151,12 @@ export function CoachChatSection() {
     node.scrollTop = node.scrollHeight;
   }, [messages, loading]);
 
+  const lastMessage = messages[messages.length - 1];
+  const pendingChange =
+    lastMessage?.role === "coach" ? parseWorkoutChange(lastMessage.content) : null;
+  const showWorkoutChangeActions =
+    pendingChange !== null && !dismissedChangeIds.has(lastMessage.id);
+
   const handleSend = async () => {
     const trimmed = input.trim();
     if (!trimmed || loading || !configured) {
@@ -142,7 +172,8 @@ export function CoachChatSection() {
     setLoading(true);
 
     try {
-      const reply = await sendCoachMessage(messages, trimmed);
+      const systemPrompt = buildCoachSystemPrompt(appData);
+      const reply = await sendCoachMessage(messages, trimmed, systemPrompt);
       setMessages([...nextMessages, createMessage("coach", reply)]);
     } catch (sendError) {
       setError(formatCoachError(sendError));
@@ -153,9 +184,38 @@ export function CoachChatSection() {
     }
   };
 
+  const handleKeepChatting = () => {
+    if (!lastMessage) {
+      return;
+    }
+
+    setDismissedChangeIds((prev) => new Set(prev).add(lastMessage.id));
+    setError(null);
+  };
+
+  const handleApplyChange = () => {
+    if (!pendingChange || !lastMessage) {
+      return;
+    }
+
+    if (!canApplyWorkoutChange(appData, pendingChange)) {
+      setError("Could not find that exercise in your plan. Ask the coach to try again.");
+      return;
+    }
+
+    onApplyWorkoutChange(pendingChange);
+    setDismissedChangeIds((prev) => new Set(prev).add(lastMessage.id));
+    setError(null);
+    setMessages((prev) => [
+      ...prev,
+      createMessage("coach", describeWorkoutChange(appData, pendingChange)),
+    ]);
+  };
+
   const handleClear = () => {
     setMessages([]);
     clearCoachChatMessages();
+    setDismissedChangeIds(new Set());
     setError(null);
   };
 
@@ -198,8 +258,8 @@ export function CoachChatSection() {
               <div className="rounded-cyber border border-dashed border-line bg-bg/40 p-[var(--space-panel)] text-center">
                 <p className="text-sm text-heading">Ask your coach anything</p>
                 <p className="mt-2 text-xs leading-relaxed text-dim">
-                  Splits, macros, form, prep, recovery — short, straight answers
-                  from a young bodybuilding coach.
+                  Splits, macros, form, prep, recovery — or ask to swap exercises
+                  in your plan.
                 </p>
               </div>
             ) : (
@@ -220,43 +280,64 @@ export function CoachChatSection() {
                 </div>
               </div>
             ) : null}
+
+            {showWorkoutChangeActions && pendingChange ? (
+              <div className="flex flex-col gap-2 pt-1 sm:flex-row">
+                <CyberButton
+                  variant="green"
+                  className="min-h-[2.75rem] flex-1 px-4 disabled:opacity-50"
+                  onClick={handleApplyChange}
+                >
+                  {getWorkoutChangeApplyLabel(pendingChange)}
+                </CyberButton>
+                <CyberButton
+                  variant="cyan"
+                  className="min-h-[2.75rem] flex-1 px-4"
+                  onClick={handleKeepChatting}
+                >
+                  Keep chatting
+                </CyberButton>
+              </div>
+            ) : null}
           </div>
 
           <div className="border-t border-line p-[var(--space-panel)]">
             {error ? (
               <p className="mb-2 text-xs text-magenta">{error}</p>
             ) : null}
-            <form
-              className="flex flex-col gap-2 sm:flex-row"
-              onSubmit={(event) => {
-                event.preventDefault();
-                void handleSend();
-              }}
-            >
-              <textarea
-                value={input}
-                onChange={(event) => setInput(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter" && !event.shiftKey) {
-                    event.preventDefault();
-                    void handleSend();
-                  }
+            {!showWorkoutChangeActions ? (
+              <form
+                className="flex flex-col gap-2 sm:flex-row"
+                onSubmit={(event) => {
+                  event.preventDefault();
+                  void handleSend();
                 }}
-                rows={2}
-                placeholder="Ask about training, nutrition, form, prep..."
-                disabled={loading}
-                className="cyber-input min-h-[3.25rem] flex-1 resize-none py-2 text-sm"
-                aria-label="Message to coach"
-              />
-              <CyberButton
-                type="submit"
-                variant="green"
-                disabled={loading || !input.trim()}
-                className="min-h-[3.25rem] px-4 disabled:opacity-50"
               >
-                Send
-              </CyberButton>
-            </form>
+                <textarea
+                  value={input}
+                  onChange={(event) => setInput(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter" && !event.shiftKey) {
+                      event.preventDefault();
+                      void handleSend();
+                    }
+                  }}
+                  rows={2}
+                  placeholder="Ask about training, nutrition, form, prep..."
+                  disabled={loading}
+                  className="cyber-input min-h-[3.25rem] flex-1 resize-none py-2 text-sm"
+                  aria-label="Message to coach"
+                />
+                <CyberButton
+                  type="submit"
+                  variant="green"
+                  disabled={loading || !input.trim()}
+                  className="min-h-[3.25rem] px-4 disabled:opacity-50"
+                >
+                  Send
+                </CyberButton>
+              </form>
+            ) : null}
           </div>
         </div>
       )}

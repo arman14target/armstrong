@@ -9,8 +9,8 @@ export function AppShell({ children }: AppShellProps) {
   return (
     <div className="crt-shell relative min-h-dvh">
       <BackgroundEffect />
-      <div className="relative z-[2]">{children}</div>
       <BookmarkHintBanner />
+      <div className="relative z-[2]">{children}</div>
     </div>
   );
 }
