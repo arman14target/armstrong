@@ -196,10 +196,10 @@ export function CoachChatSection() {
           >
             {messages.length === 0 ? (
               <div className="rounded-cyber border border-dashed border-line bg-bg/40 p-[var(--space-panel)] text-center">
-                <p className="text-sm text-heading">Ask the senior coach anything</p>
+                <p className="text-sm text-heading">Ask your coach anything</p>
                 <p className="mt-2 text-xs leading-relaxed text-dim">
-                  Splits, macros, form cues, weak points, contest prep, recovery —
-                  straight answers from a veteran bodybuilder.
+                  Splits, macros, form, prep, recovery — short, straight answers
+                  from a young bodybuilding coach.
                 </p>
               </div>
             ) : (

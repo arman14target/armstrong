@@ -192,7 +192,7 @@ export function HomeScreen() {
 
       {activeTab === "coach" ? (
         <RevealOnScroll>
-          <SectionHead index="04." title="Senior coach" />
+          <SectionHead index="04." title="Coach" />
           <CoachChatSection />
         </RevealOnScroll>
       ) : null}

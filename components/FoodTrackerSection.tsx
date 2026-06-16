@@ -711,7 +711,7 @@ export function FoodTrackerSection({
 
   if (!profile || recalibrating) {
     return (
-      <TerminalWindow title="armstrong://nutrition">
+      <TerminalWindow title="nutrition">
         <NutritionSetup
           initialProfile={recalibrating ? profile : undefined}
           requiredFirst={!profile}
@@ -726,7 +726,7 @@ export function FoodTrackerSection({
 
   return (
     <>
-      <TerminalWindow title="armstrong://nutrition">
+      <TerminalWindow title="nutrition">
         <NutritionDashboard
           profile={profile}
           dateKey={selectedDateKey}
