@@ -25,6 +25,7 @@ import {
   CoachStatusMessage,
   getCoachThinkingPhase,
 } from "@/components/landing/CoachStatusMessage";
+import { withBasePath } from "@/lib/basePath";
 import {
   clearOnboardingMessages,
   loadOnboardingMessages,
@@ -254,7 +255,7 @@ export function OnboardingCoachModal({
 
     try {
       await importOnboardingFromChat(visibleMessages);
-      window.location.assign("/");
+      window.location.assign(withBasePath("/"));
     } catch (importError) {
       setError(formatCoachError(importError));
       setImporting(false);
