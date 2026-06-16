@@ -136,7 +136,12 @@ export function OnboardingCoachModal({
   const [showContinueActions, setShowContinueActions] = useState(false);
   const [importing, setImporting] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
   const configured = isGeminiConfigured();
+
+  const scrollToLatest = () => {
+    messagesEndRef.current?.scrollIntoView({ block: "end" });
+  };
 
   useEffect(() => {
     setMounted(true);
@@ -164,14 +169,15 @@ export function OnboardingCoachModal({
     saveOnboardingMessages(messages);
   }, [open, messages]);
 
-  useEffect(() => {
-    const node = scrollRef.current;
-    if (!node) {
+  useLayoutEffect(() => {
+    if (!open) {
       return;
     }
 
-    node.scrollTop = node.scrollHeight;
-  }, [messages, loading, showContinueActions]);
+    scrollToLatest();
+    const frame = requestAnimationFrame(scrollToLatest);
+    return () => cancelAnimationFrame(frame);
+  }, [open, messages, loading, importing, showContinueActions]);
 
   useEffect(() => {
     if (!open) {
@@ -231,6 +237,11 @@ export function OnboardingCoachModal({
     setImporting(false);
     setError(null);
     setInput("");
+  };
+
+  const handleKeepChatting = () => {
+    setShowContinueActions(false);
+    setError(null);
   };
 
   const handleContinueWithApp = async () => {
@@ -348,39 +359,37 @@ export function OnboardingCoachModal({
                   intervalMs={3400}
                 />
               ) : null}
-            </div>
 
-            {showContinueActions ? (
-              <div className="shrink-0 border-t border-line bg-bg/40 p-[var(--space-panel)] sm:p-6">
-                <p className="mb-1 text-center text-base font-medium text-heading">
-                  Does this plan work for you?
-                </p>
-                <p className="mb-4 text-center text-sm text-dim">
-                  We&apos;ll load your split days and food tracker from this chat.
-                </p>
-                {error ? (
-                  <p className="mb-3 text-center text-sm text-magenta">{error}</p>
-                ) : null}
-                <div className="flex flex-col gap-3 sm:flex-row">
+              {showContinueActions ? (
+                <div className="flex flex-col gap-3 pt-2 sm:flex-row">
+                  {error ? (
+                    <p className="mb-0 w-full text-center text-sm text-magenta sm:mb-0 sm:basis-full">
+                      {error}
+                    </p>
+                  ) : null}
                   <CyberButton
                     variant="green"
                     className="min-h-[3rem] flex-1 px-5 text-base disabled:opacity-50"
                     disabled={importing}
                     onClick={() => void handleContinueWithApp()}
                   >
-                    {importing ? "Setting up..." : "Continue with PWA app"}
+                    {importing ? "Setting up..." : "Continue in app"}
                   </CyberButton>
                   <CyberButton
                     variant="cyan"
                     className="min-h-[3rem] flex-1 px-5 text-base"
-                    onClick={onClose}
+                    onClick={handleKeepChatting}
                     disabled={importing}
                   >
-                    Not now
+                    Keep chatting
                   </CyberButton>
                 </div>
-              </div>
-            ) : (
+              ) : null}
+
+              <div ref={messagesEndRef} aria-hidden="true" />
+            </div>
+
+            {!showContinueActions ? (
               <div className="shrink-0 border-t border-line p-[var(--space-panel)] sm:p-6">
                 {error ? (
                   <p className="mb-2 text-xs text-magenta">{error}</p>
@@ -417,7 +426,7 @@ export function OnboardingCoachModal({
                   </CyberButton>
                 </form>
               </div>
-            )}
+            ) : null}
           </>
         )}
       </div>
