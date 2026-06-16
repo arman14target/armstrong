@@ -37,10 +37,6 @@ const COACH_CHAT_THINKING = [
 ] as const;
 
 function pickRandomMessage(current: string | null): string {
-  if (COACH_CHAT_THINKING.length === 1) {
-    return COACH_CHAT_THINKING[0];
-  }
-
   let next = COACH_CHAT_THINKING[Math.floor(Math.random() * COACH_CHAT_THINKING.length)];
   while (next === current) {
     next = COACH_CHAT_THINKING[Math.floor(Math.random() * COACH_CHAT_THINKING.length)];

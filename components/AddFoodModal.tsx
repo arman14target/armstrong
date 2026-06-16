@@ -199,7 +199,6 @@ export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
                   name ? "text-heading" : "text-dim",
                   errors.name && "border-magenta/60",
                 )}
-                aria-invalid={errors.name}
               >
                 {name.trim() || "e.g. Chicken rice bowl"}
               </button>
