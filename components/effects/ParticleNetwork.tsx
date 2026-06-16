@@ -30,10 +30,21 @@ const THEME_PARTICLES: Record<
   },
 };
 
+const CELL_SIZE = 130;
+const LINK_DIST_SQ = 13000;
+const MOUSE_DIST_SQ = 22500;
+const MOUSE_MIN_DIST_SQ = 100;
+const MOUSE_LINE_DIST_SQ = 24000;
+const MAX_PARTICLES = 55;
+
 export function ParticleNetwork() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
   useEffect(() => {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      return;
+    }
+
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -45,10 +56,16 @@ export function ParticleNetwork() {
     let particles: Particle[] = [];
     let frameId = 0;
     let theme = loadTheme();
-    const mouse = { x: -9999, y: -9999 };
+    let visible = !document.hidden;
+    let mouseX = -9999;
+    let mouseY = -9999;
+    let mouseDirty = false;
 
     const particleCount = () =>
-      Math.min(90, Math.floor((window.innerWidth * window.innerHeight) / 18000));
+      Math.min(
+        MAX_PARTICLES,
+        Math.floor((window.innerWidth * window.innerHeight) / 24000),
+      );
 
     const getThemeConfig = () => THEME_PARTICLES[theme];
 
@@ -77,16 +94,65 @@ export function ParticleNetwork() {
     };
 
     const onMouseMove = (event: MouseEvent) => {
-      mouse.x = event.clientX;
-      mouse.y = event.clientY;
+      mouseX = event.clientX;
+      mouseY = event.clientY;
+      mouseDirty = true;
     };
 
     const onMouseOut = () => {
-      mouse.x = -9999;
-      mouse.y = -9999;
+      mouseX = -9999;
+      mouseY = -9999;
+      mouseDirty = true;
+    };
+
+    const onVisibilityChange = () => {
+      visible = !document.hidden;
+      if (visible) {
+        frameId = requestAnimationFrame(draw);
+      }
+    };
+
+    const buildGrid = () => {
+      const grid = new Map<string, number[]>();
+
+      for (let i = 0; i < particles.length; i++) {
+        const particle = particles[i];
+        const key = `${Math.floor(particle.x / CELL_SIZE)},${Math.floor(particle.y / CELL_SIZE)}`;
+        const bucket = grid.get(key);
+        if (bucket) {
+          bucket.push(i);
+        } else {
+          grid.set(key, [i]);
+        }
+      }
+
+      return grid;
+    };
+
+    const forEachNeighbor = (
+      grid: Map<string, number[]>,
+      particle: Particle,
+      callback: (index: number) => void,
+    ) => {
+      const cx = Math.floor(particle.x / CELL_SIZE);
+      const cy = Math.floor(particle.y / CELL_SIZE);
+
+      for (let ox = -1; ox <= 1; ox++) {
+        for (let oy = -1; oy <= 1; oy++) {
+          const bucket = grid.get(`${cx + ox},${cy + oy}`);
+          if (!bucket) continue;
+          for (const index of bucket) {
+            callback(index);
+          }
+        }
+      }
     };
 
     const draw = () => {
+      if (!visible) {
+        return;
+      }
+
       const config = getThemeConfig();
       ctx.clearRect(0, 0, width, height);
 
@@ -96,12 +162,14 @@ export function ParticleNetwork() {
         if (particle.x < 0 || particle.x > width) particle.vx *= -1;
         if (particle.y < 0 || particle.y > height) particle.vy *= -1;
 
-        const dx = mouse.x - particle.x;
-        const dy = mouse.y - particle.y;
-        const distSq = dx * dx + dy * dy;
-        if (distSq < 22500 && distSq > 100) {
-          particle.x += dx * 0.004;
-          particle.y += dy * 0.004;
+        if (mouseDirty) {
+          const dx = mouseX - particle.x;
+          const dy = mouseY - particle.y;
+          const distSq = dx * dx + dy * dy;
+          if (distSq < MOUSE_DIST_SQ && distSq > MOUSE_MIN_DIST_SQ) {
+            particle.x += dx * 0.004;
+            particle.y += dy * 0.004;
+          }
         }
 
         ctx.beginPath();
@@ -110,32 +178,38 @@ export function ParticleNetwork() {
         ctx.fill();
       }
 
+      mouseDirty = false;
+
+      const grid = buildGrid();
+
       for (let i = 0; i < particles.length; i++) {
-        for (let j = i + 1; j < particles.length; j++) {
-          const a = particles[i];
+        const a = particles[i];
+
+        forEachNeighbor(grid, a, (j) => {
+          if (j <= i) return;
+
           const b = particles[j];
           const dx = a.x - b.x;
           const dy = a.y - b.y;
           const distSq = dx * dx + dy * dy;
-          if (distSq < 13000) {
-            ctx.beginPath();
-            ctx.moveTo(a.x, a.y);
-            ctx.lineTo(b.x, b.y);
-            ctx.strokeStyle = `hsla(${config.primaryHue}, 100%, 60%, ${config.lineOpacity * (1 - distSq / 13000)})`;
-            ctx.lineWidth = 0.7;
-            ctx.stroke();
-          }
-        }
+          if (distSq >= LINK_DIST_SQ) return;
 
-        const a = particles[i];
-        const dx = a.x - mouse.x;
-        const dy = a.y - mouse.y;
-        const distSq = dx * dx + dy * dy;
-        if (distSq < 24000) {
           ctx.beginPath();
           ctx.moveTo(a.x, a.y);
-          ctx.lineTo(mouse.x, mouse.y);
-          ctx.strokeStyle = `hsla(${config.secondaryHue}, 100%, 60%, ${config.lineOpacity * 1.8 * (1 - distSq / 24000)})`;
+          ctx.lineTo(b.x, b.y);
+          ctx.strokeStyle = `hsla(${config.primaryHue}, 100%, 60%, ${config.lineOpacity * (1 - distSq / LINK_DIST_SQ)})`;
+          ctx.lineWidth = 0.7;
+          ctx.stroke();
+        });
+
+        const dx = a.x - mouseX;
+        const dy = a.y - mouseY;
+        const distSq = dx * dx + dy * dy;
+        if (distSq < MOUSE_LINE_DIST_SQ) {
+          ctx.beginPath();
+          ctx.moveTo(a.x, a.y);
+          ctx.lineTo(mouseX, mouseY);
+          ctx.strokeStyle = `hsla(${config.secondaryHue}, 100%, 60%, ${config.lineOpacity * 1.8 * (1 - distSq / MOUSE_LINE_DIST_SQ)})`;
           ctx.lineWidth = 0.8;
           ctx.stroke();
         }
@@ -145,12 +219,13 @@ export function ParticleNetwork() {
     };
 
     resize();
-    draw();
+    frameId = requestAnimationFrame(draw);
 
     window.addEventListener("resize", resize);
-    window.addEventListener("mousemove", onMouseMove);
+    window.addEventListener("mousemove", onMouseMove, { passive: true });
     window.addEventListener("mouseout", onMouseOut);
     window.addEventListener("armstrong-theme-change", onThemeChange);
+    document.addEventListener("visibilitychange", onVisibilityChange);
 
     return () => {
       cancelAnimationFrame(frameId);
@@ -158,6 +233,7 @@ export function ParticleNetwork() {
       window.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("mouseout", onMouseOut);
       window.removeEventListener("armstrong-theme-change", onThemeChange);
+      document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, []);
 

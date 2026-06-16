@@ -8,8 +8,10 @@ import { RevealOnScroll } from "@/components/effects/RevealOnScroll";
 import { DayButton } from "@/components/DayButton";
 import { WorkoutEntryChoiceModal } from "@/components/WorkoutEntryChoiceModal";
 import { WorkoutMonthCalendar } from "@/components/WorkoutMonthCalendar";
+import { CoachChatSection } from "@/components/CoachChatSection";
 import {
   CalendarIcon,
+  CoachIcon,
   DumbbellIcon,
   FoodIcon,
 } from "@/components/icons/ActionIcons";
@@ -29,7 +31,7 @@ import {
 } from "@/lib/workouts";
 import { setWorkoutSetupIntent } from "@/lib/workoutSetupIntent";
 
-type HomeTab = "punishment" | "calendar" | "food-tracker";
+type HomeTab = "punishment" | "calendar" | "food-tracker" | "coach";
 
 const homeTabs: Array<{
   id: HomeTab;
@@ -39,6 +41,7 @@ const homeTabs: Array<{
   { id: "punishment", label: "Punishment", icon: DumbbellIcon },
   { id: "calendar", label: "Calendar", icon: CalendarIcon },
   { id: "food-tracker", label: "Food tracker", icon: FoodIcon },
+  { id: "coach", label: "Coach", icon: CoachIcon },
 ];
 
 export function HomeScreen() {
@@ -135,7 +138,7 @@ export function HomeScreen() {
           <ThemeToggle className="shrink-0" />
         </div>
 
-        <div className="mt-2 grid w-full grid-cols-3 gap-2 sm:gap-3">
+        <div className="mt-2 grid w-full grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
           {homeTabs.map(({ id, label, icon: Icon }) => {
             const isActive = activeTab === id;
 
@@ -215,6 +218,13 @@ export function HomeScreen() {
             profile={data.nutritionProfile}
             onSave={saveNutritionProfile}
           />
+        </RevealOnScroll>
+      ) : null}
+
+      {activeTab === "coach" ? (
+        <RevealOnScroll>
+          <SectionHead index="04." title="Senior coach" />
+          <CoachChatSection />
         </RevealOnScroll>
       ) : null}
 

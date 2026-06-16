@@ -767,6 +767,7 @@
       calc(var(--space-page-x) + var(--safe-right));
     padding-top: calc(var(--space-page-top) + var(--safe-top));
     padding-bottom: calc(var(--space-page-bottom) + var(--safe-bottom));
+    contain: layout style;
   }
 
   .landing-nav {
@@ -813,6 +814,8 @@
 
   .landing-section {
     padding-block: var(--space-section-lg);
+    content-visibility: auto;
+    contain-intrinsic-size: auto 28rem;
   }
 
   @media (min-width: 640px) {
@@ -854,7 +857,6 @@
     border: 1px solid var(--color-line);
     background: var(--color-panel);
     padding: var(--space-panel-lg);
-    backdrop-filter: blur(10px);
     box-shadow: var(--shadow-panel);
     transition: border-color 250ms ease;
   }
@@ -1007,6 +1009,31 @@
     text-transform: uppercase;
     color: var(--color-dim);
   }
+
+  .static-mesh-bg {
+    background:
+      radial-gradient(
+        ellipse 80% 55% at 15% 20%,
+        color-mix(in srgb, var(--color-cyan) 14%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 70% 50% at 85% 75%,
+        color-mix(in srgb, var(--color-magenta) 10%, transparent),
+        transparent 70%
+      ),
+      radial-gradient(
+        ellipse 60% 45% at 50% 100%,
+        color-mix(in srgb, var(--color-green) 6%, transparent),
+        transparent 65%
+      ),
+      var(--color-bg);
+  }
+}
+
+html[data-page="landing"] .crt-shell::before,
+html[data-page="landing"] .crt-shell::after {
+  content: none;
 }
 
 @keyframes glitch-a {

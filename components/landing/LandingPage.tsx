@@ -1,9 +1,5 @@
-"use client";
-
 import Link from "next/link";
 import { DownloadButtons } from "@/components/landing/DownloadButtons";
-import { RevealOnScroll } from "@/components/effects/RevealOnScroll";
-import { GlitchText } from "@/components/ui/GlitchText";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -74,10 +70,12 @@ export function LandingPage() {
 
       <section className="landing-hero" aria-labelledby="landing-headline">
         <p className="landing-kicker">AI-Powered Fitness</p>
-        <GlitchText
-          text="Stop Logging. Start Growing."
-          className="max-w-3xl text-[clamp(2rem,8vw,4.5rem)] tracking-[2px] sm:tracking-[4px]"
-        />
+        <h1
+          id="landing-headline"
+          className="max-w-3xl font-display text-[clamp(2rem,8vw,4.5rem)] font-black tracking-[2px] text-heading sm:tracking-[4px]"
+        >
+          Stop Logging. Start Growing.
+        </h1>
         <p className="landing-subhead max-w-2xl">
           Armstrong is your AI personal coach that auto-saves every rep and
           tracks your progress — so you focus on lifting, not logging.
@@ -85,8 +83,7 @@ export function LandingPage() {
         <DownloadButtons className="mt-2" />
       </section>
 
-      <RevealOnScroll>
-        <section className="landing-section" aria-labelledby="problem-heading">
+      <section className="landing-section" aria-labelledby="problem-heading">
           <SectionHead index="01" title="The Problem" />
           <div className="landing-split">
             <TerminalWindow title="manual_log.txt" dotVariant="green">
@@ -132,10 +129,8 @@ export function LandingPage() {
             </div>
           </div>
         </section>
-      </RevealOnScroll>
 
-      <RevealOnScroll>
-        <section className="landing-section" aria-labelledby="solution-heading">
+      <section className="landing-section" aria-labelledby="solution-heading">
           <SectionHead index="02" title="The Big 3" />
           <h3 id="solution-heading" className="sr-only">
             Core benefits
@@ -161,10 +156,8 @@ export function LandingPage() {
             ))}
           </div>
         </section>
-      </RevealOnScroll>
 
-      <RevealOnScroll>
-        <section className="landing-section" aria-labelledby="how-heading">
+      <section className="landing-section" aria-labelledby="how-heading">
           <SectionHead index="03" title="How It Works" />
           <h3 id="how-heading" className="sr-only">
             Three-step walkthrough
@@ -185,10 +178,8 @@ export function LandingPage() {
             ))}
           </ol>
         </section>
-      </RevealOnScroll>
 
-      <RevealOnScroll>
-        <section className="landing-footer-cta" aria-labelledby="footer-cta">
+      <section className="landing-footer-cta" aria-labelledby="footer-cta">
           <div className="landing-footer-cta__inner">
             <h2
               id="footer-cta"
@@ -202,7 +193,6 @@ export function LandingPage() {
             <DownloadButtons layout="grid" />
           </div>
         </section>
-      </RevealOnScroll>
 
       <footer className="landing-footer">
         <p className="text-xs text-dim">
