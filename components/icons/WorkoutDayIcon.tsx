@@ -1,31 +1,21 @@
-import { cn } from "@/lib/cn";
+import { DaySticker } from "@/components/icons/DaySticker";
 import { WorkoutType } from "@/lib/types";
+import {
+  BUILTIN_DAY_STICKER,
+  BUILTIN_DAY_THEME,
+} from "@/lib/workoutDayTheme";
 
 interface WorkoutDayIconProps {
   type: WorkoutType;
   className?: string;
 }
 
-const workoutStickers: Record<WorkoutType, { emoji: string; color: string }> = {
-  push: { emoji: "💪", color: "text-cyan" },
-  leg: { emoji: "🦵", color: "text-green" },
-  abs: { emoji: "🔥", color: "text-magenta" },
-  pull: { emoji: "🦍", color: "text-amber" },
-};
-
 export function WorkoutDayIcon({ type, className }: WorkoutDayIconProps) {
-  const { emoji, color } = workoutStickers[type];
-
   return (
-    <span
-      aria-hidden
-      className={cn(
-        "inline-flex size-12 items-center justify-center rounded-lg bg-icon-overlay text-2xl shadow-[2px_3px_0_var(--color-icon-shadow)]",
-        color,
-        className,
-      )}
-    >
-      {emoji}
-    </span>
+    <DaySticker
+      theme={BUILTIN_DAY_THEME[type]}
+      emoji={BUILTIN_DAY_STICKER[type]}
+      className={className}
+    />
   );
 }

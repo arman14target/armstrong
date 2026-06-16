@@ -1,32 +1,38 @@
 import { ApiError, GoogleGenAI } from "@google/genai";
 
-/** Free-tier Flash models — try latest first, then lighter backups. */
+/** Flash models — latest first. Deprecated IDs are skipped automatically on 404. */
 export const FREE_TIER_MODELS = [
   "gemini-3.5-flash",
-  "gemini-2.0-flash-lite",
   "gemini-2.5-flash",
-  "gemini-1.5-flash",
+  "gemini-2.5-flash-lite",
+  "gemini-3.1-flash-lite",
 ] as const;
 
 export type FreeTierModel = (typeof FREE_TIER_MODELS)[number];
 
+/** Shut down or removed from the v1beta generateContent API. */
+const DEPRECATED_MODELS = new Set([
+  "gemini-1.5-flash",
+  "gemini-1.5-flash-8b",
+  "gemini-1.5-pro",
+  "gemini-2.0-flash",
+  "gemini-2.0-flash-lite",
+  "gemini-2.0-flash-001",
+]);
+
 const RETRY_ATTEMPTS = 3;
 const RETRY_BASE_MS = 1200;
 
-function getConfiguredModel(): FreeTierModel | undefined {
+function getConfiguredModel(): string | undefined {
   const configured = process.env.NEXT_PUBLIC_GEMINI_MODEL?.trim();
-  if (!configured) {
+  if (!configured || DEPRECATED_MODELS.has(configured)) {
     return undefined;
   }
 
-  if ((FREE_TIER_MODELS as readonly string[]).includes(configured)) {
-    return configured as FreeTierModel;
-  }
-
-  return undefined;
+  return configured;
 }
 
-export function getCoachModels(): FreeTierModel[] {
+export function getCoachModels(): string[] {
   const preferred = getConfiguredModel();
   if (!preferred) {
     return [...FREE_TIER_MODELS];
@@ -117,8 +123,24 @@ function isOverloadedError(error: unknown): boolean {
   );
 }
 
+function isModelNotFoundError(error: unknown): boolean {
+  if (error instanceof ApiError && error.status === 404) {
+    return true;
+  }
+
+  const message = getErrorMessage(error).toLowerCase();
+  return (
+    message.includes("not found") ||
+    message.includes("is not supported for generatecontent")
+  );
+}
+
 function isRetriableError(error: unknown): boolean {
   return isQuotaError(error) || isOverloadedError(error);
+}
+
+function isSkippableModelError(error: unknown): boolean {
+  return isModelNotFoundError(error);
 }
 
 function sleep(ms: number): Promise<void> {
@@ -150,14 +172,19 @@ export function formatCoachError(error: unknown): string {
     return "Invalid API key. Check NEXT_PUBLIC_GEMINI_API_KEY in .env.local.";
   }
 
+  if (isModelNotFoundError(error)) {
+    return "That Gemini model is no longer available. Remove NEXT_PUBLIC_GEMINI_MODEL from .env.local or set it to gemini-3.5-flash, then restart the dev server.";
+  }
+
   return raw;
 }
 
 async function sendWithModel(
   apiKey: string,
-  modelName: FreeTierModel,
+  modelName: string,
   history: CoachChatMessage[],
   userMessage: string,
+  systemPrompt: string = COACH_SYSTEM_PROMPT,
 ): Promise<string> {
   const ai = createClient(apiKey);
 
@@ -165,7 +192,7 @@ async function sendWithModel(
     model: modelName,
     contents: toGeminiContents(history, userMessage),
     config: {
-      systemInstruction: COACH_SYSTEM_PROMPT,
+      systemInstruction: systemPrompt,
     },
   });
 
@@ -180,15 +207,22 @@ async function sendWithModel(
 
 async function sendWithModelRetries(
   apiKey: string,
-  modelName: FreeTierModel,
+  modelName: string,
   history: CoachChatMessage[],
   userMessage: string,
+  systemPrompt: string = COACH_SYSTEM_PROMPT,
 ): Promise<string> {
   let lastError: unknown;
 
   for (let attempt = 0; attempt < RETRY_ATTEMPTS; attempt += 1) {
     try {
-      return await sendWithModel(apiKey, modelName, history, userMessage);
+      return await sendWithModel(
+        apiKey,
+        modelName,
+        history,
+        userMessage,
+        systemPrompt,
+      );
     } catch (error) {
       lastError = error;
 
@@ -206,6 +240,7 @@ async function sendWithModelRetries(
 export async function sendCoachMessage(
   history: CoachChatMessage[],
   userMessage: string,
+  systemPrompt: string = COACH_SYSTEM_PROMPT,
 ): Promise<string> {
   const apiKey = getApiKey();
   if (!apiKey) {
@@ -217,9 +252,19 @@ export async function sendCoachMessage(
 
   for (const modelName of models) {
     try {
-      return await sendWithModelRetries(apiKey, modelName, history, userMessage);
+      return await sendWithModelRetries(
+        apiKey,
+        modelName,
+        history,
+        userMessage,
+        systemPrompt,
+      );
     } catch (error) {
       lastError = error;
+
+      if (isSkippableModelError(error)) {
+        continue;
+      }
 
       if (!isRetriableError(error)) {
         throw error;
@@ -227,5 +272,10 @@ export async function sendCoachMessage(
     }
   }
 
-  throw lastError ?? new Error("All free-tier models are unavailable right now.");
+  throw (
+    lastError ??
+    new Error(
+      "All Gemini models failed. Set NEXT_PUBLIC_GEMINI_MODEL=gemini-3.5-flash in .env.local and restart.",
+    )
+  );
 }

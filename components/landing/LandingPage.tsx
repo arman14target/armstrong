@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { DownloadButtons } from "@/components/landing/DownloadButtons";
+import { LandingHeroCTA } from "@/components/landing/LandingHeroCTA";
+import { LandingHeroVisual } from "@/components/landing/LandingHeroVisual";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { ThemeToggle } from "@/components/ThemeToggle";
@@ -69,18 +71,27 @@ export function LandingPage() {
       </header>
 
       <section className="landing-hero" aria-labelledby="landing-headline">
-        <p className="landing-kicker">AI-Powered Fitness</p>
-        <h1
-          id="landing-headline"
-          className="max-w-3xl font-display text-[clamp(2rem,8vw,4.5rem)] font-black tracking-[2px] text-heading sm:tracking-[4px]"
-        >
-          Stop Logging. Start Growing.
-        </h1>
-        <p className="landing-subhead max-w-2xl">
-          Armstrong is your AI personal coach that auto-saves every rep and
-          tracks your progress — so you focus on lifting, not logging.
-        </p>
-        <DownloadButtons className="mt-2" />
+        <div className="landing-hero__grid">
+          <div className="landing-hero__copy">
+            <p className="landing-kicker">
+              <span className="landing-kicker__badge">Free</span>
+              AI-Powered Fitness
+            </p>
+            <h1
+              id="landing-headline"
+              className="max-w-3xl font-display text-[clamp(2rem,8vw,4.5rem)] font-black tracking-[2px] text-heading sm:tracking-[4px]"
+            >
+              Start Growing.
+            </h1>
+            <p className="landing-subhead max-w-2xl">
+              Describe your goal in one sentence and get a free full workout
+              plan with a calendar to track every session — plus your last PRs,
+              streaks, and AI coaching built in.
+            </p>
+            <LandingHeroCTA className="mt-2" />
+          </div>
+          <LandingHeroVisual className="landing-hero__visual" />
+        </div>
       </section>
 
       <section className="landing-section" aria-labelledby="problem-heading">

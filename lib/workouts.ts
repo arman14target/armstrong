@@ -8,6 +8,7 @@ import {
   WorkoutType,
   isWorkoutType,
 } from "@/lib/types";
+import type { WorkoutDayTheme } from "@/lib/workoutDayTheme";
 import { toLocalDateKey } from "@/lib/workoutCalendar";
 
 export function isBuiltinWorkoutType(id: string): id is WorkoutType {
@@ -114,11 +115,16 @@ export function updateWorkoutMoves(
   });
 }
 
-export function createCustomWorkoutDay(name: string): CustomWorkoutDay {
+export function createCustomWorkoutDay(
+  name: string,
+  options?: { theme?: WorkoutDayTheme; sticker?: string },
+): CustomWorkoutDay {
   return {
     id: crypto.randomUUID(),
     name: name.trim(),
     moves: [],
+    theme: options?.theme,
+    sticker: options?.sticker,
   };
 }
 

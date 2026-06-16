@@ -24,6 +24,7 @@ export function loadAppData(): AppData {
       },
       customWorkouts: parsed.customWorkouts ?? [],
       nutritionProfile: parsed.nutritionProfile,
+      coachPlanActive: parsed.coachPlanActive,
       workoutCompletionDates:
         parsed.workoutCompletionDates ?? collectLegacyCompletionDates(parsed),
     };

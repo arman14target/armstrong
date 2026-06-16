@@ -170,29 +170,33 @@ export function HomeScreen() {
           <SectionHead index="01." title="Pick Your Punishment" />
           <TerminalWindow title="Choose your workout">
             <div className="grid grid-cols-1 gap-[var(--space-gap-md)] sm:grid-cols-2">
-              {WORKOUT_TYPES.map((type) => (
-                <DayButton
-                  key={type}
-                  workoutId={type}
-                  label={WORKOUT_LABELS[type]}
-                  lastCompletedAt={data.workouts[type].lastCompletedAt}
-                  lastSessionDurationSeconds={
-                    data.workouts[type].lastSessionDurationSeconds
-                  }
-                  setupRequired={needsSetup(type)}
-                  onSetupClick={() => setEntryChoiceId(type)}
-                />
-              ))}
+              {!data.coachPlanActive
+                ? WORKOUT_TYPES.map((type) => (
+                    <DayButton
+                      key={type}
+                      workoutId={type}
+                      label={WORKOUT_LABELS[type]}
+                      lastCompletedAt={data.workouts[type].lastCompletedAt}
+                      lastSessionDurationSeconds={
+                        data.workouts[type].lastSessionDurationSeconds
+                      }
+                      setupRequired={needsSetup(type)}
+                      onSetupClick={() => setEntryChoiceId(type)}
+                    />
+                  ))
+                : null}
 
               {data.customWorkouts.map((workout) => (
                 <DayButton
                   key={workout.id}
                   workoutId={workout.id}
                   label={workout.name}
+                  theme={workout.theme}
+                  sticker={workout.sticker}
                   lastCompletedAt={workout.lastCompletedAt}
                   lastSessionDurationSeconds={workout.lastSessionDurationSeconds}
                   setupRequired={needsSetup(workout.id)}
-                  removable
+                  removable={!data.coachPlanActive}
                   onSetupClick={() => setEntryChoiceId(workout.id)}
                   onRemove={() => setRemoveDayId(workout.id)}
                 />

@@ -9,6 +9,9 @@ export const WORKOUT_LABELS: Record<WorkoutType, string> = {
   pull: "Pull Day",
 };
 
+import type { NutritionProfile } from "./nutrition";
+import type { WorkoutDayTheme } from "./workoutDayTheme";
+
 export interface SetConfig {
   id: string;
   restSeconds: number;
@@ -31,6 +34,8 @@ export interface WorkoutTemplate {
 export interface CustomWorkoutDay extends WorkoutTemplate {
   id: string;
   name: string;
+  theme?: WorkoutDayTheme;
+  sticker?: string;
 }
 
 export interface ActiveSession {
@@ -45,8 +50,6 @@ export interface ActiveSession {
   baselineWorkout: WorkoutTemplate;
 }
 
-import type { NutritionProfile } from "./nutrition";
-
 export interface AppData {
   workouts: Record<WorkoutType, WorkoutTemplate>;
   customWorkouts: CustomWorkoutDay[];
@@ -55,6 +58,8 @@ export interface AppData {
   /** Local YYYY-MM-DD dates when any workout was finished. */
   workoutCompletionDates?: string[];
   nutritionProfile?: NutritionProfile;
+  /** When true, hide default split days — show coach-imported custom days only. */
+  coachPlanActive?: boolean;
 }
 
 export function isWorkoutType(value: string): value is WorkoutType {

@@ -2,12 +2,17 @@
 
 import Link from "next/link";
 import { CloseIcon } from "@/components/icons/ActionIcons";
-import { CustomDayIcon } from "@/components/icons/CustomDayIcon";
+import { DaySticker } from "@/components/icons/DaySticker";
 import { WorkoutDayIcon } from "@/components/icons/WorkoutDayIcon";
 import { IconButton } from "@/components/ui/IconButton";
 import { useTimeAgo } from "@/hooks/useTimeAgo";
 import { cn } from "@/lib/cn";
 import { formatDuration } from "@/lib/formatRelativeTime";
+import {
+  BUILTIN_DAY_THEME,
+  DAY_THEME_STYLES,
+  type WorkoutDayTheme,
+} from "@/lib/workoutDayTheme";
 import { isWorkoutType, WorkoutType } from "@/lib/types";
 
 interface DayButtonProps {
@@ -17,41 +22,11 @@ interface DayButtonProps {
   lastSessionDurationSeconds?: number;
   setupRequired?: boolean;
   removable?: boolean;
+  theme?: WorkoutDayTheme;
+  sticker?: string;
   onSetupClick?: () => void;
   onRemove?: () => void;
 }
-
-const accentStyles: Record<
-  WorkoutType,
-  { border: string; hover: string; labelColor: string }
-> = {
-  push: {
-    border: "border-cyan/30",
-    hover: "hover:border-cyan hover:-translate-y-1",
-    labelColor: "text-cyan",
-  },
-  leg: {
-    border: "border-green/30",
-    hover: "hover:border-green hover:-translate-y-1",
-    labelColor: "text-green",
-  },
-  abs: {
-    border: "border-magenta/30",
-    hover: "hover:border-magenta hover:-translate-y-1",
-    labelColor: "text-magenta",
-  },
-  pull: {
-    border: "border-amber/30",
-    hover: "hover:border-amber hover:-translate-y-1",
-    labelColor: "text-amber",
-  },
-};
-
-const customAccent = {
-  border: "border-dim/30",
-  hover: "hover:border-dim hover:-translate-y-1",
-  labelColor: "text-dim",
-};
 
 export function DayButton({
   workoutId,
@@ -60,15 +35,19 @@ export function DayButton({
   lastSessionDurationSeconds,
   setupRequired = false,
   removable = false,
+  theme,
+  sticker,
   onSetupClick,
   onRemove,
 }: DayButtonProps) {
   const isBuiltin = isWorkoutType(workoutId);
-  const accent = isBuiltin ? accentStyles[workoutId] : customAccent;
+  const accentTheme =
+    theme ?? (isBuiltin ? BUILTIN_DAY_THEME[workoutId as WorkoutType] : undefined);
+  const accent = accentTheme ? DAY_THEME_STYLES[accentTheme] : DAY_THEME_STYLES.cyan;
   const lastWorkoutAgo = useTimeAgo(lastCompletedAt);
 
   const className = cn(
-    "group relative block w-full overflow-hidden rounded-panel border bg-panel/80 p-[var(--space-card)] text-left transition-all duration-250",
+    "group relative block w-full overflow-hidden rounded-panel border bg-panel/90 p-[var(--space-card)] text-left shadow-[var(--shadow-panel)] transition-all duration-250",
     accent.border,
     accent.hover,
   );
@@ -94,14 +73,16 @@ export function DayButton({
         <div className="shrink-0 transition-transform duration-250 group-hover:scale-110">
           {isBuiltin ? (
             <WorkoutDayIcon type={workoutId} />
+          ) : accentTheme && sticker ? (
+            <DaySticker theme={accentTheme} emoji={sticker} />
           ) : (
-            <CustomDayIcon />
+            <DaySticker theme="cyan" emoji="🏋️" />
           )}
         </div>
         <div className="min-w-0 flex-1 pr-6">
           <p
             className={cn(
-              "mb-1 text-base font-semibold tracking-wide text-heading",
+              "mb-1 text-base font-semibold tracking-wide",
               accent.labelColor,
             )}
           >
