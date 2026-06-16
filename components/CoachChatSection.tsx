@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { CoachChatThinkingMessage } from "@/components/CoachChatThinkingMessage";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import {
@@ -127,7 +128,19 @@ export function CoachChatSection({
     () => new Set(),
   );
   const scrollRef = useRef<HTMLDivElement>(null);
+  const messageRefs = useRef(new Map<string, HTMLDivElement>());
+  const lastScrolledCoachIdRef = useRef<string | null>(null);
+  const skipInitialScrollRef = useRef(true);
   const configured = isGeminiConfigured();
+
+  const setMessageRef = (id: string) => (node: HTMLDivElement | null) => {
+    if (node) {
+      messageRefs.current.set(id, node);
+      return;
+    }
+
+    messageRefs.current.delete(id);
+  };
 
   useEffect(() => {
     setMessages(loadCoachChatMessages());
@@ -142,14 +155,43 @@ export function CoachChatSection({
     saveCoachChatMessages(messages);
   }, [hydrated, messages]);
 
-  useEffect(() => {
-    const node = scrollRef.current;
-    if (!node) {
+  useLayoutEffect(() => {
+    const container = scrollRef.current;
+    if (!container || !hydrated) {
       return;
     }
 
-    node.scrollTop = node.scrollHeight;
-  }, [messages, loading]);
+    const lastMessage = messages.at(-1);
+
+    if (skipInitialScrollRef.current) {
+      skipInitialScrollRef.current = false;
+      if (lastMessage?.role === "coach") {
+        lastScrolledCoachIdRef.current = lastMessage.id;
+      }
+      container.scrollTop = container.scrollHeight;
+      return;
+    }
+
+    if (
+      lastMessage?.role === "coach" &&
+      lastMessage.id !== lastScrolledCoachIdRef.current
+    ) {
+      lastScrolledCoachIdRef.current = lastMessage.id;
+      const messageNode = messageRefs.current.get(lastMessage.id);
+
+      const scrollToCoachMessage = () => {
+        messageNode?.scrollIntoView({ behavior: "smooth", block: "start" });
+      };
+
+      scrollToCoachMessage();
+      const frame = requestAnimationFrame(scrollToCoachMessage);
+      return () => cancelAnimationFrame(frame);
+    }
+
+    if (lastMessage?.role === "user" || loading) {
+      container.scrollTo({ top: container.scrollHeight, behavior: "smooth" });
+    }
+  }, [messages, loading, hydrated]);
 
   const lastMessage = messages[messages.length - 1];
   const pendingChange =
@@ -264,22 +306,17 @@ export function CoachChatSection({
               </div>
             ) : (
               messages.map((message) => (
-                <MessageBubble key={message.id} message={message} />
+                <div
+                  key={message.id}
+                  ref={setMessageRef(message.id)}
+                  className="scroll-mt-3"
+                >
+                  <MessageBubble message={message} />
+                </div>
               ))
             )}
 
-            {loading ? (
-              <div className="flex justify-start">
-                <div className="rounded-cyber border border-green/30 bg-green/5 px-3 py-2">
-                  <p className="animate-blink text-xs tracking-wide text-green uppercase">
-                    Coach is thinking...
-                  </p>
-                  <p className="mt-1 text-[10px] text-dim">
-                    Retrying if Gemini is busy
-                  </p>
-                </div>
-              </div>
-            ) : null}
+            <CoachChatThinkingMessage active={loading} />
 
             {showWorkoutChangeActions && pendingChange ? (
               <div className="flex flex-col gap-2 pt-1 sm:flex-row">

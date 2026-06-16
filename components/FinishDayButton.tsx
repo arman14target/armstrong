@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { CyberButton } from "@/components/ui/CyberButton";
 
 interface FinishDayButtonProps {
   onFinish: () => void;
@@ -27,12 +28,12 @@ export function FinishDayButton({
   };
 
   return (
-    <button
-      type="button"
-      className="cyber-btn cyber-btn--green w-full min-h-12 rounded-cyber text-sm tracking-wide"
+    <CyberButton
+      variant="green"
+      className="w-full min-h-12 border-green bg-green/15"
       onClick={handleClick}
     >
       Finish workout
-    </button>
+    </CyberButton>
   );
 }

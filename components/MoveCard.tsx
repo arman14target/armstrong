@@ -2,12 +2,7 @@
 
 import { Fragment, useEffect, useRef, useState } from "react";
 import { Move, SetConfig } from "@/lib/types";
-import { cn } from "@/lib/cn";
-import {
-  ChevronDownIcon,
-  CloseIcon,
-  PlusIcon,
-} from "@/components/icons/ActionIcons";
+import { CloseIcon, PlusIcon } from "@/components/icons/ActionIcons";
 import { SetRestDivider } from "@/components/SetRestDivider";
 import { SetRow } from "@/components/SetRow";
 import { SwipeToDeleteRow } from "@/components/SwipeToDeleteRow";
@@ -58,18 +53,9 @@ export function MoveCard({
   const allSetsComplete =
     move.sets.length > 0 &&
     move.sets.every((set) => completedSetIds.includes(set.id));
-  const [collapsed, setCollapsed] = useState(allSetsComplete);
   const wasAllSetsCompleteRef = useRef(allSetsComplete);
   const defaultRestForNewSet =
     move.sets[move.sets.length - 1]?.restSeconds ?? 90;
-
-  useEffect(() => {
-    if (allSetsComplete) {
-      setCollapsed(true);
-    } else {
-      setCollapsed(false);
-    }
-  }, [allSetsComplete]);
 
   useEffect(() => {
     if (allSetsComplete && !wasAllSetsCompleteRef.current) {
@@ -83,7 +69,6 @@ export function MoveCard({
     <TerminalWindow
       title={title}
       bodyClassName="stack-md"
-      collapsed={collapsed}
       dotVariant={allSetsComplete ? "green" : "default"}
       editableTitle={{
         value: move.name,
@@ -93,33 +78,14 @@ export function MoveCard({
         onEndEdit: () => setEditingName(false),
       }}
       headerAction={
-        <div className="inline-flex items-center gap-1">
-          {allSetsComplete ? (
-            <IconButton
-              label={collapsed ? `Expand ${title}` : `Collapse ${title}`}
-              variant="ghost"
-              className="size-8"
-              onClick={() => setCollapsed((current) => !current)}
-            >
-              <span
-                className={cn(
-                  "inline-flex transition-transform duration-300 ease-[cubic-bezier(0.2,0.8,0.2,1)]",
-                  collapsed ? "rotate-0" : "rotate-180",
-                )}
-              >
-                <ChevronDownIcon />
-              </span>
-            </IconButton>
-          ) : null}
-          <IconButton
-            label={`Remove ${title}`}
-            variant="danger"
-            className="size-8"
-            onClick={onDelete}
-          >
-            <CloseIcon />
-          </IconButton>
-        </div>
+        <IconButton
+          label={`Remove ${title}`}
+          variant="danger"
+          className="size-8"
+          onClick={onDelete}
+        >
+          <CloseIcon />
+        </IconButton>
       }
     >
       <div className="set-table">

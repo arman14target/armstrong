@@ -29,7 +29,7 @@ export function RestTimer({
   return (
     <div
       className={cn(
-        "relative h-9 overflow-hidden rounded-cyber border bg-bg/80 shadow-[var(--shadow-inset)] sm:h-10",
+        "relative h-7 overflow-hidden rounded-cyber border bg-bg/80 shadow-[var(--shadow-inset)] sm:h-8",
         isUrgent ? "border-magenta/50" : "border-amber/35",
         className,
       )}
@@ -57,7 +57,7 @@ export function RestTimer({
       <div className="relative z-10 flex h-full items-center justify-center gap-[var(--space-gap)] px-[var(--space-inline)]">
         <span
           className={cn(
-            "text-[10px] font-bold uppercase tracking-[0.22em]",
+            "text-[9px] font-bold uppercase tracking-[0.2em]",
             isUrgent ? "text-magenta" : "text-amber/80",
           )}
         >
@@ -65,7 +65,7 @@ export function RestTimer({
         </span>
         <span
           className={cn(
-            "font-display text-base font-bold tabular-nums tracking-wider",
+            "font-display text-sm font-bold tabular-nums tracking-wider",
             isUrgent ? "text-magenta animate-pulse" : "text-amber",
           )}
         >

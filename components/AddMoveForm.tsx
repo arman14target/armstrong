@@ -36,13 +36,8 @@ export function AddMoveForm({ onAdd }: AddMoveFormProps) {
           aria-label="Exercise name"
           className="cyber-input min-h-12 min-w-0 flex-1"
         />
-        <IconButton
-          type="submit"
-          label="Add exercise"
-          variant="ghost"
-          className="cyber-btn--green rounded-cyber border px-[var(--space-btn-x)] py-[var(--space-btn-y)]"
-        >
-          <PlusIcon />
+        <IconButton type="submit" label="Add exercise" variant="green">
+          <PlusIcon className="size-5" />
         </IconButton>
       </form>
     </TerminalWindow>
