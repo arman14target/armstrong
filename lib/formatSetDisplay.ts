@@ -1,15 +1,20 @@
 import { formatTime } from "@/hooks/useCountdown";
+import { formatDurationSeconds } from "@/lib/timeBasedExercises";
 
 export function formatPreviousSet(
   weight?: number,
   reps?: number,
+  isTimeBased = false,
 ): string | null {
   if (weight === undefined && reps === undefined) {
     return null;
   }
 
-  const weightPart =
-    weight !== undefined ? `${weight} kg` : null;
+  if (isTimeBased) {
+    return reps !== undefined ? formatDurationSeconds(reps) : null;
+  }
+
+  const weightPart = weight !== undefined ? `${weight} kg` : null;
   const repsPart = reps !== undefined ? `${reps}` : null;
 
   if (weightPart && repsPart) {

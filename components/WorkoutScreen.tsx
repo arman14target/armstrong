@@ -3,9 +3,9 @@
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AddMoveForm } from "@/components/AddMoveForm";
+import { ExerciseReorderList } from "@/components/ExerciseReorderList";
 import { FinishDayButton } from "@/components/FinishDayButton";
 import { LeaveWorkoutModal } from "@/components/LeaveWorkoutModal";
-import { MoveCard } from "@/components/MoveCard";
 import { RestNotificationBanner } from "@/components/RestNotificationBanner";
 import { SessionTimer } from "@/components/SessionTimer";
 import { WorkoutEntryChoiceModal } from "@/components/WorkoutEntryChoiceModal";
@@ -44,6 +44,8 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
     deleteSet,
     updateSet,
     completeSet,
+    uncompleteSet,
+    reorderMoves,
     clearRestTimer,
     cancelSession,
     finishDay,
@@ -344,7 +346,10 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
         </div>
       </div>
 
-      <RestNotificationBanner />
+      <RestNotificationBanner
+        key={workoutId}
+        active={Boolean(session) && !showSetupModal && !showEntryChoice}
+      />
 
       <section className="stack-lg">
         {workout.moves.length === 0 ? (
@@ -354,42 +359,38 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
             </p>
           </TerminalWindow>
         ) : (
-          workout.moves.map((move, moveIndex) => (
-            <div
-              key={move.id}
-              ref={(element) => {
-                if (element) {
-                  moveRefs.current.set(move.id, element);
-                } else {
-                  moveRefs.current.delete(move.id);
-                }
-              }}
-              className="scroll-mt-20"
-            >
-              <MoveCard
-                move={move}
-                sessionWeights={sessionWeights}
-                sessionReps={sessionReps}
-                completedSetIds={completedSetIds}
-                activeRestSetId={session?.activeRestSetId}
-                restEndsAt={session?.restEndsAt}
-                onUpdateName={(name) =>
-                  updateMoveName(workoutId, move.id, name)
-                }
-                onDelete={() => deleteMove(workoutId, move.id)}
-                onAddSet={() => addSet(workoutId, move.id)}
-                onUpdateSet={(setId, updates) =>
-                  updateSet(workoutId, move.id, setId, updates)
-                }
-                onDeleteSet={(setId) => deleteSet(workoutId, move.id, setId)}
-                onCompleteSet={(setId, weight, reps, restSeconds) =>
-                  handleCompleteSet(move.id, setId, weight, reps, restSeconds)
-                }
-                onRestComplete={handleRestComplete}
-                onAllSetsComplete={() => handleMoveAllSetsComplete(moveIndex)}
-              />
-            </div>
-          ))
+          <ExerciseReorderList
+            moves={workout.moves}
+            sessionWeights={sessionWeights}
+            sessionReps={sessionReps}
+            completedSetIds={completedSetIds}
+            activeRestSetId={session?.activeRestSetId}
+            restEndsAt={session?.restEndsAt}
+            moveRefs={moveRefs}
+            onUpdateName={(moveId, name) =>
+              updateMoveName(workoutId, moveId, name)
+            }
+            onDelete={(moveId) => deleteMove(workoutId, moveId)}
+            onAddSet={(moveId) => addSet(workoutId, moveId)}
+            onUpdateSet={(moveId, setId, updates) =>
+              updateSet(workoutId, moveId, setId, updates)
+            }
+            onCompleteSet={(moveId, setId, weight, reps, restSeconds) =>
+              handleCompleteSet(moveId, setId, weight, reps, restSeconds)
+            }
+            onUncompleteSet={(moveId, setId) => {
+              cancelRestNotification();
+              uncompleteSet(workoutId, moveId, setId);
+            }}
+            onDeleteSet={(moveId, setId) =>
+              deleteSet(workoutId, moveId, setId)
+            }
+            onRestComplete={handleRestComplete}
+            onAllSetsComplete={handleMoveAllSetsComplete}
+            onReorder={(fromIndex, toIndex) =>
+              reorderMoves(workoutId, fromIndex, toIndex)
+            }
+          />
         )}
         <AddMoveForm onAdd={(name) => addMove(workoutId, name)} />
         <FinishDayButton

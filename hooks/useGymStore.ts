@@ -351,6 +351,63 @@ export function useGymStore() {
     [persist],
   );
 
+  const uncompleteSet = useCallback(
+    (workoutId: string, moveId: string, setId: string) => {
+      persist((prev) => {
+        const session = prev.activeSession;
+        if (!session || session.workoutType !== workoutId) {
+          return prev;
+        }
+
+        if (!session.completedSetIds.includes(setId)) {
+          return prev;
+        }
+
+        const clearingRest = session.activeRestSetId === setId;
+
+        return {
+          ...prev,
+          activeSession: {
+            ...session,
+            completedSetIds: session.completedSetIds.filter((id) => id !== setId),
+            activeRestSetId: clearingRest
+              ? undefined
+              : session.activeRestSetId,
+            restEndsAt: clearingRest ? undefined : session.restEndsAt,
+          },
+        };
+      });
+    },
+    [persist],
+  );
+
+  const reorderMoves = useCallback(
+    (workoutId: string, fromIndex: number, toIndex: number) => {
+      if (fromIndex === toIndex) {
+        return;
+      }
+
+      persist((prev) =>
+        updateWorkoutMoves(prev, workoutId, (moves) => {
+          if (
+            fromIndex < 0 ||
+            toIndex < 0 ||
+            fromIndex >= moves.length ||
+            toIndex >= moves.length
+          ) {
+            return moves;
+          }
+
+          const next = [...moves];
+          const [moved] = next.splice(fromIndex, 1);
+          next.splice(toIndex, 0, moved);
+          return next;
+        }),
+      );
+    },
+    [persist],
+  );
+
   const clearSession = useCallback(() => {
     persist((prev) => {
       if (!prev.activeSession) {
@@ -588,6 +645,8 @@ export function useGymStore() {
     deleteSet,
     updateSet,
     completeSet,
+    uncompleteSet,
+    reorderMoves,
     clearRestTimer,
     clearSession,
     cancelSession,

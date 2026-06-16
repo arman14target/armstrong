@@ -10,6 +10,7 @@ import { SwipeToDeleteRow } from "@/components/SwipeToDeleteRow";
 import { IconButton } from "@/components/ui/IconButton";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { formatRestLabel } from "@/lib/formatSetDisplay";
+import { isTimeBasedExercise } from "@/lib/timeBasedExercises";
 
 interface MoveCardProps {
   move: Move;
@@ -18,6 +19,8 @@ interface MoveCardProps {
   completedSetIds: string[];
   activeRestSetId?: string;
   restEndsAt?: string;
+  collapsed?: boolean;
+  dragHandle?: React.ReactNode;
   onUpdateName: (name: string) => void;
   onDelete: () => void;
   onAddSet: () => void;
@@ -28,6 +31,7 @@ interface MoveCardProps {
     reps: number,
     restSeconds: number,
   ) => void;
+  onUncompleteSet?: (setId: string) => void;
   onDeleteSet: (setId: string) => void;
   onRestComplete: (setId: string) => void;
   onAllSetsComplete?: () => void;
@@ -40,17 +44,21 @@ export function MoveCard({
   completedSetIds,
   activeRestSetId,
   restEndsAt,
+  collapsed = false,
+  dragHandle,
   onUpdateName,
   onDelete,
   onAddSet,
   onUpdateSet,
   onCompleteSet,
+  onUncompleteSet,
   onDeleteSet,
   onRestComplete,
   onAllSetsComplete,
 }: MoveCardProps) {
   const [nameSearchOpen, setNameSearchOpen] = useState(false);
   const title = move.name.trim() || "Exercise";
+  const timeBased = isTimeBasedExercise(move.name);
   const allSetsComplete =
     move.sets.length > 0 &&
     move.sets.every((set) => completedSetIds.includes(set.id));
@@ -71,10 +79,12 @@ export function MoveCard({
       <TerminalWindow
         title={title}
         bodyClassName="stack-md"
+        collapsed={collapsed}
         dotVariant={allSetsComplete ? "green" : "default"}
         editableTitle={{
           onStartEdit: () => setNameSearchOpen(true),
         }}
+        headerPrefix={dragHandle}
         headerAction={
           <IconButton
             label={`Remove ${title}`}
@@ -90,8 +100,8 @@ export function MoveCard({
           <div className="set-table-header" aria-hidden>
             <span>Set</span>
             <span>Previous</span>
-            <span>kg</span>
-            <span>Reps</span>
+            <span>{timeBased ? "—" : "kg"}</span>
+            <span>{timeBased ? "sec" : "Reps"}</span>
             <span />
           </div>
 
@@ -112,6 +122,7 @@ export function MoveCard({
                 <SwipeToDeleteRow onDelete={() => onDeleteSet(set.id)}>
                   <SetRow
                     index={index}
+                    isTimeBased={timeBased}
                     lastWeight={set.lastWeight}
                     lastReps={set.lastReps}
                     sessionWeight={sessionWeights[set.id]}
@@ -121,6 +132,11 @@ export function MoveCard({
                     isCompleted={completedSetIds.includes(set.id)}
                     onComplete={(weight, reps) =>
                       onCompleteSet(set.id, weight, reps, set.restSeconds)
+                    }
+                    onUncomplete={
+                      onUncompleteSet
+                        ? () => onUncompleteSet(set.id)
+                        : undefined
                     }
                   />
                 </SwipeToDeleteRow>

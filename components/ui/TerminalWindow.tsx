@@ -11,6 +11,7 @@ interface TerminalWindowProps {
   className?: string;
   bodyClassName?: string;
   headerAction?: React.ReactNode;
+  headerPrefix?: React.ReactNode;
   editableTitle?: TerminalWindowEditableTitle;
   collapsed?: boolean;
   dotVariant?: "default" | "green";
@@ -22,6 +23,7 @@ export function TerminalWindow({
   className,
   bodyClassName,
   headerAction,
+  headerPrefix,
   editableTitle,
   collapsed = false,
   dotVariant = "default",
@@ -42,7 +44,8 @@ export function TerminalWindow({
           collapsed ? "border-b-transparent" : undefined,
         )}
       >
-        <div className="inline-flex min-w-0 flex-1 items-center">
+        <div className="inline-flex min-w-0 flex-1 items-center gap-[var(--space-gap)]">
+          {headerPrefix ? <div className="shrink-0">{headerPrefix}</div> : null}
           <PanelDot variant={dotVariant} />
           {editableTitle ? (
             <button

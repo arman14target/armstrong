@@ -6,35 +6,33 @@ import {
   requestNotificationPermission,
 } from "@/lib/restNotifications";
 
-const DISMISS_KEY = "armstrong-rest-notifications-dismissed";
-
-function isMobileDevice(): boolean {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  return window.matchMedia("(pointer: coarse)").matches;
+interface RestNotificationBannerProps {
+  /** Show prompt when opening a workout day (until permission is granted). */
+  active?: boolean;
 }
 
-export function RestNotificationBanner() {
+export function RestNotificationBanner({ active = true }: RestNotificationBannerProps) {
   const [visible, setVisible] = useState(false);
   const [requesting, setRequesting] = useState(false);
+  const [dismissedForSession, setDismissedForSession] = useState(false);
 
   useEffect(() => {
-    if (!isNotificationSupported() || !isMobileDevice()) {
+    if (!active || dismissedForSession) {
+      setVisible(false);
+      return;
+    }
+
+    if (!isNotificationSupported()) {
       return;
     }
 
     if (Notification.permission !== "default") {
-      return;
-    }
-
-    if (localStorage.getItem(DISMISS_KEY) === "1") {
+      setVisible(false);
       return;
     }
 
     setVisible(true);
-  }, []);
+  }, [active, dismissedForSession]);
 
   const handleEnable = async () => {
     setRequesting(true);
@@ -47,7 +45,7 @@ export function RestNotificationBanner() {
   };
 
   const handleDismiss = () => {
-    localStorage.setItem(DISMISS_KEY, "1");
+    setDismissedForSession(true);
     setVisible(false);
   };
 
@@ -59,8 +57,8 @@ export function RestNotificationBanner() {
     <div className="mb-[var(--space-gap-md)] rounded-cyber border border-cyan/30 bg-cyan/5 p-[var(--space-panel)]">
       <p className="text-sm text-heading">Get notified when rest is over</p>
       <p className="mt-1 text-xs text-dim">
-        Enable notifications so Armstrong can alert you on your phone even when
-        the app is in the background.
+        Enable notifications so Armstrong can alert you when your rest timer
+        finishes — even if the app is in the background.
       </p>
       <div className="mt-[var(--space-gap)] inline-gap">
         <button

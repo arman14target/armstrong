@@ -173,6 +173,24 @@ export function CoachIcon({ className }: IconProps) {
   );
 }
 
+export function GripIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="currentColor"
+      className={cn("size-4", className)}
+      aria-hidden
+    >
+      <circle cx="9" cy="7" r="1.25" />
+      <circle cx="15" cy="7" r="1.25" />
+      <circle cx="9" cy="12" r="1.25" />
+      <circle cx="15" cy="12" r="1.25" />
+      <circle cx="9" cy="17" r="1.25" />
+      <circle cx="15" cy="17" r="1.25" />
+    </svg>
+  );
+}
+
 export function FoodIcon({ className }: IconProps) {
   return (
     <svg

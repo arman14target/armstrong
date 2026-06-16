@@ -1,4 +1,5 @@
 import { Move, WorkoutType } from "@/lib/types";
+import { isTimeBasedExercise } from "@/lib/timeBasedExercises";
 
 export interface BatchExercisePreset {
   name: string;
@@ -6,6 +7,7 @@ export interface BatchExercisePreset {
   reps: number;
   weightKg: number;
   restSeconds: number;
+  isTimeBased?: boolean;
 }
 
 export interface WorkoutBatch {
@@ -39,13 +41,16 @@ export function formatExercisePresetLine(preset: BatchExercisePreset): string {
 }
 
 export function createMoveFromPreset(preset: BatchExercisePreset): Move {
+  const timeBased = preset.isTimeBased ?? isTimeBasedExercise(preset.name);
+
   return {
     id: crypto.randomUUID(),
     name: preset.name,
     sets: Array.from({ length: preset.setCount }, () => ({
       id: crypto.randomUUID(),
       restSeconds: preset.restSeconds,
-      lastWeight: preset.weightKg > 0 ? preset.weightKg : undefined,
+      lastWeight:
+        !timeBased && preset.weightKg > 0 ? preset.weightKg : undefined,
       lastReps: preset.reps > 0 ? preset.reps : undefined,
     })),
   };

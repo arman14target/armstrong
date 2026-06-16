@@ -10,9 +10,7 @@ import {
   BatchExercisePreset,
   WorkoutBatch,
   createEmptyWorkoutBatch,
-  getDefaultWorkoutBatch,
 } from "@/lib/workoutBatches";
-import { isBuiltinWorkoutType } from "@/lib/workouts";
 
 interface WorkoutSetupModalProps {
   open: boolean;
@@ -22,22 +20,18 @@ interface WorkoutSetupModalProps {
   onCancel: () => void;
 }
 
-function getSetupBatch(workoutId: string, label: string): WorkoutBatch {
-  if (isBuiltinWorkoutType(workoutId)) {
-    return getDefaultWorkoutBatch(workoutId);
-  }
-
+function getSetupBatch(label: string): WorkoutBatch {
   return createEmptyWorkoutBatch(label);
 }
 
 export function WorkoutSetupModal({
   open,
-  workoutId,
+  workoutId: _workoutId,
   label,
   onImport,
   onCancel,
 }: WorkoutSetupModalProps) {
-  const batch = getSetupBatch(workoutId, label);
+  const batch = getSetupBatch(label);
 
   useEffect(() => {
     if (!open) {
@@ -105,9 +99,8 @@ export function WorkoutSetupModal({
             Set up {label}
           </h2>
           <p className="mt-[var(--space-gap)] text-sm leading-relaxed text-dim">
-            {isBuiltinWorkoutType(workoutId)
-              ? "Edit the default plan below, then import all when you're ready."
-              : "Add your exercises below, then import all when you're ready."}
+            Describe your whole program in plain text. Armstrong uses AI to
+            build your exercise list for this day.
           </p>
 
           <div className="mt-[var(--space-gap-md)] rounded-cyber border border-line bg-bg/50 p-[var(--space-panel)]">
