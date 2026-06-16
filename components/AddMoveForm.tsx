@@ -1,9 +1,9 @@
 "use client";
 
-import { FormEvent, useState } from "react";
-import { PlusIcon } from "@/components/icons/ActionIcons";
-import { IconButton } from "@/components/ui/IconButton";
+import { useState } from "react";
+import { ExerciseSearchModal } from "@/components/ExerciseSearchModal";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
+import { cn } from "@/lib/cn";
 
 interface AddMoveFormProps {
   onAdd: (name: string) => void;
@@ -11,35 +11,44 @@ interface AddMoveFormProps {
 
 export function AddMoveForm({ onAdd }: AddMoveFormProps) {
   const [name, setName] = useState("");
+  const [searchOpen, setSearchOpen] = useState(false);
 
-  const handleSubmit = (event: FormEvent) => {
-    event.preventDefault();
-    const trimmed = name.trim();
+  const addExercise = (nextName: string) => {
+    const trimmed = nextName.trim();
     if (!trimmed) {
       return;
     }
+
     onAdd(trimmed);
     setName("");
   };
 
   return (
-    <TerminalWindow title="Add exercise">
-      <form
-        className="flex flex-row items-center gap-[var(--space-gap)]"
-        onSubmit={handleSubmit}
-      >
-        <input
-          type="text"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          placeholder="e.g. Bench Press"
-          aria-label="Exercise name"
-          className="cyber-input min-h-12 min-w-0 flex-1"
-        />
-        <IconButton type="submit" label="Add exercise" variant="green">
-          <PlusIcon className="size-5" />
-        </IconButton>
-      </form>
-    </TerminalWindow>
+    <>
+      <TerminalWindow title="Add exercise">
+        <button
+          type="button"
+          onClick={() => setSearchOpen(true)}
+          className={cn(
+            "cyber-input flex min-h-12 w-full items-center text-left",
+            name ? "text-heading" : "text-dim",
+          )}
+        >
+          {name.trim() || "e.g. Bench Press"}
+        </button>
+      </TerminalWindow>
+
+      <ExerciseSearchModal
+        open={searchOpen}
+        initialValue={name}
+        title="Add exercise"
+        confirmLabel="Add exercise"
+        onConfirm={(nextName) => {
+          addExercise(nextName);
+          setSearchOpen(false);
+        }}
+        onClose={() => setSearchOpen(false)}
+      />
+    </>
   );
 }

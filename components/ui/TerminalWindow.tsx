@@ -2,11 +2,7 @@ import { cn } from "@/lib/cn";
 import { PanelDot } from "@/components/ui/PanelDot";
 
 interface TerminalWindowEditableTitle {
-  value: string;
-  editing: boolean;
-  onChange: (value: string) => void;
   onStartEdit: () => void;
-  onEndEdit: () => void;
 }
 
 interface TerminalWindowProps {
@@ -48,21 +44,7 @@ export function TerminalWindow({
       >
         <div className="inline-flex min-w-0 flex-1 items-center">
           <PanelDot variant={dotVariant} />
-          {editableTitle?.editing ? (
-            <input
-              autoFocus
-              className="cyber-input ml-[var(--space-inline)] min-h-8 min-w-0 flex-1 py-1 text-xs tracking-wide sm:text-sm"
-              value={editableTitle.value}
-              onChange={(event) => editableTitle.onChange(event.target.value)}
-              onBlur={editableTitle.onEndEdit}
-              onKeyDown={(event) => {
-                if (event.key === "Enter") {
-                  event.currentTarget.blur();
-                }
-              }}
-              aria-label="Exercise name"
-            />
-          ) : editableTitle ? (
+          {editableTitle ? (
             <button
               type="button"
               onClick={editableTitle.onStartEdit}

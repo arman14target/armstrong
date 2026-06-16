@@ -98,7 +98,10 @@ function normalizeFood(food: UsdaFood): FoodSearchResult | null {
   };
 }
 
-export async function searchFoods(query: string): Promise<FoodSearchResult[]> {
+export async function searchFoods(
+  query: string,
+  pageSize = 8,
+): Promise<FoodSearchResult[]> {
   const trimmed = query.trim();
   if (trimmed.length < 2) {
     return [];
@@ -107,7 +110,7 @@ export async function searchFoods(query: string): Promise<FoodSearchResult[]> {
   const url = new URL("https://api.nal.usda.gov/fdc/v1/foods/search");
   url.searchParams.set("api_key", getApiKey());
   url.searchParams.set("query", trimmed);
-  url.searchParams.set("pageSize", "8");
+  url.searchParams.set("pageSize", String(pageSize));
   url.searchParams.set(
     "dataType",
     "Branded,Survey (FNDDS),Foundation",

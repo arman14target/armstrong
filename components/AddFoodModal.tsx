@@ -1,16 +1,17 @@
 "use client";
 
-import { useEffect, useRef, useState, type KeyboardEvent as ReactKeyboardEvent } from "react";
+import { useEffect, useState } from "react";
 import { CloseIcon } from "@/components/icons/ActionIcons";
+import {
+  FoodSearchModal,
+  type FoodSearchSelection,
+} from "@/components/FoodSearchModal";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { IconButton } from "@/components/ui/IconButton";
 import { PanelDot } from "@/components/ui/PanelDot";
 import { cn } from "@/lib/cn";
-import { searchFoods, type FoodSearchResult } from "@/lib/foodSearch";
+import type { FoodSearchResult } from "@/lib/foodSearch";
 import type { FoodEntry } from "@/lib/nutrition";
-
-/** Wait for typing to pause before querying USDA. */
-const SEARCH_DEBOUNCE_MS = 400;
 
 export type FoodEntryInput = Pick<
   FoodEntry,
@@ -56,6 +57,12 @@ function FieldLabel({
   );
 }
 
+function isFoodSearchResult(
+  selection: FoodSearchSelection,
+): selection is FoodSearchResult {
+  return "calories" in selection;
+}
+
 export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
   const [name, setName] = useState("");
   const [calories, setCalories] = useState("");
@@ -63,13 +70,7 @@ export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
   const [carbsG, setCarbsG] = useState("");
   const [fatG, setFatG] = useState("");
   const [errors, setErrors] = useState<Record<string, boolean>>({});
-  const [suggestions, setSuggestions] = useState<FoodSearchResult[]>([]);
-  const [searching, setSearching] = useState(false);
-  const [searchError, setSearchError] = useState<string | null>(null);
-  const [showSuggestions, setShowSuggestions] = useState(false);
-  const [highlightedIndex, setHighlightedIndex] = useState(-1);
-  const searchRequestId = useRef(0);
-  const blurTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [foodSearchOpen, setFoodSearchOpen] = useState(false);
 
   useEffect(() => {
     if (!open) {
@@ -79,16 +80,12 @@ export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
       setCarbsG("");
       setFatG("");
       setErrors({});
-      setSuggestions([]);
-      setSearching(false);
-      setSearchError(null);
-      setShowSuggestions(false);
-      setHighlightedIndex(-1);
+      setFoodSearchOpen(false);
       return;
     }
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") {
+      if (event.key === "Escape" && !foodSearchOpen) {
         onClose();
       }
     };
@@ -100,84 +97,25 @@ export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = "";
     };
-  }, [open, onClose]);
-
-  useEffect(() => {
-    if (!open) {
-      return;
-    }
-
-    const trimmed = name.trim();
-    if (trimmed.length < 2) {
-      setSuggestions([]);
-      setSearching(false);
-      setSearchError(null);
-      return;
-    }
-
-    const requestId = searchRequestId.current + 1;
-    searchRequestId.current = requestId;
-    setSearching(false);
-    setSearchError(null);
-
-    const timeoutId = window.setTimeout(() => {
-      setSearching(true);
-
-      void searchFoods(trimmed)
-        .then((results) => {
-          if (searchRequestId.current !== requestId) {
-            return;
-          }
-
-          setSuggestions(results);
-          setShowSuggestions(results.length > 0);
-          setHighlightedIndex(-1);
-        })
-        .catch((error: unknown) => {
-          if (searchRequestId.current !== requestId) {
-            return;
-          }
-
-          setSuggestions([]);
-          setSearchError(
-            error instanceof Error
-              ? error.message
-              : "Food search failed. Try again.",
-          );
-        })
-        .finally(() => {
-          if (searchRequestId.current === requestId) {
-            setSearching(false);
-          }
-        });
-    }, SEARCH_DEBOUNCE_MS);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [name, open]);
-
-  useEffect(() => {
-    return () => {
-      if (blurTimeoutRef.current) {
-        clearTimeout(blurTimeoutRef.current);
-      }
-    };
-  }, []);
+  }, [foodSearchOpen, onClose, open]);
 
   if (!open) {
     return null;
   }
 
-  const applySuggestion = (result: FoodSearchResult) => {
-    setName(result.name);
-    setCalories(formatMacro(result.calories));
-    setProteinG(formatMacro(result.proteinG));
-    setCarbsG(formatMacro(result.carbsG));
-    setFatG(formatMacro(result.fatG));
-    setShowSuggestions(false);
-    setHighlightedIndex(-1);
+  const applyFoodSelection = (selection: FoodSearchSelection) => {
+    if (isFoodSearchResult(selection)) {
+      setName(selection.name);
+      setCalories(formatMacro(selection.calories));
+      setProteinG(formatMacro(selection.proteinG));
+      setCarbsG(formatMacro(selection.carbsG));
+      setFatG(formatMacro(selection.fatG));
+    } else {
+      setName(selection.name.trim());
+    }
+
     setErrors({});
+    setFoodSearchOpen(false);
   };
 
   const handleSubmit = () => {
@@ -207,253 +145,156 @@ export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
     onClose();
   };
 
-  const handleNameKeyDown = (event: ReactKeyboardEvent<HTMLInputElement>) => {
-    if (!showSuggestions || suggestions.length === 0) {
-      return;
-    }
-
-    if (event.key === "ArrowDown") {
-      event.preventDefault();
-      setHighlightedIndex((prev) =>
-        prev < suggestions.length - 1 ? prev + 1 : 0,
-      );
-      return;
-    }
-
-    if (event.key === "ArrowUp") {
-      event.preventDefault();
-      setHighlightedIndex((prev) =>
-        prev > 0 ? prev - 1 : suggestions.length - 1,
-      );
-      return;
-    }
-
-    if (event.key === "Enter" && highlightedIndex >= 0) {
-      event.preventDefault();
-      applySuggestion(suggestions[highlightedIndex]);
-      return;
-    }
-
-    if (event.key === "Escape") {
-      setShowSuggestions(false);
-      setHighlightedIndex(-1);
-    }
-  };
-
   return (
-    <div
-      className="modal-overlay"
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="add-food-title"
-    >
+    <>
       <div
-        className="absolute inset-0 bg-bg/85 backdrop-blur-[3px]"
-        aria-hidden="true"
-        onClick={onClose}
-      />
+        className="modal-overlay"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="add-food-title"
+      >
+        <div
+          className="absolute inset-0 bg-bg/85 backdrop-blur-[3px]"
+          aria-hidden="true"
+          onClick={onClose}
+        />
 
-      <div className="relative w-full max-w-md overflow-hidden rounded-panel border border-cyan/35 bg-panel shadow-[var(--shadow-modal)]">
-        <div className="panel-header justify-between">
-          <div className="inline-flex min-w-0 items-center">
-            <PanelDot />
-            <span className="ml-[var(--space-inline)] tracking-wide text-cyan">
-              Log food
-            </span>
+        <div className="relative w-full max-w-md overflow-hidden rounded-panel border border-cyan/35 bg-panel shadow-[var(--shadow-modal)]">
+          <div className="panel-header justify-between">
+            <div className="inline-flex min-w-0 items-center">
+              <PanelDot />
+              <span className="ml-[var(--space-inline)] tracking-wide text-cyan">
+                Log food
+              </span>
+            </div>
+            <IconButton
+              label="Close add food"
+              variant="ghost"
+              className="size-8"
+              onClick={onClose}
+            >
+              <CloseIcon />
+            </IconButton>
           </div>
-          <IconButton
-            label="Close add food"
-            variant="ghost"
-            className="size-8"
-            onClick={onClose}
-          >
-            <CloseIcon />
-          </IconButton>
-        </div>
 
-        <div className="modal-body">
-          <h2
-            id="add-food-title"
-            className="font-display text-lg tracking-wide text-heading"
-          >
-            What did you eat?
-          </h2>
-          <p className="mt-[var(--space-gap)] text-sm leading-relaxed text-dim">
-            Search for a meal to auto-fill nutrition, or type any food name and
-            enter protein yourself.
-          </p>
+          <div className="modal-body">
+            <h2
+              id="add-food-title"
+              className="font-display text-lg tracking-wide text-heading"
+            >
+              What did you eat?
+            </h2>
+            <p className="mt-[var(--space-gap)] text-sm leading-relaxed text-dim">
+              Search for a meal to auto-fill nutrition, or type any food name and
+              enter protein yourself.
+            </p>
 
-          <label className="mt-[var(--space-gap-md)] block">
-            <FieldLabel required>Food name</FieldLabel>
-            <div className="relative">
-              <input
-                type="text"
-                value={name}
-                required
-                onChange={(event) => {
-                  setName(event.target.value);
-                  setShowSuggestions(true);
-                  if (errors.name) {
-                    setErrors((prev) => ({ ...prev, name: false }));
-                  }
-                }}
-                onFocus={() => {
-                  if (blurTimeoutRef.current) {
-                    clearTimeout(blurTimeoutRef.current);
-                  }
-                  if (suggestions.length > 0) {
-                    setShowSuggestions(true);
-                  }
-                }}
-                onBlur={() => {
-                  blurTimeoutRef.current = setTimeout(() => {
-                    setShowSuggestions(false);
-                    setHighlightedIndex(-1);
-                  }, 150);
-                }}
-                onKeyDown={handleNameKeyDown}
-                placeholder="e.g. Chicken rice bowl"
-                autoFocus
-                autoComplete="off"
-                role="combobox"
-                aria-expanded={showSuggestions}
-                aria-autocomplete="list"
-                aria-controls="food-suggestions-list"
+            <div className="mt-[var(--space-gap-md)] block">
+              <FieldLabel required>Food name</FieldLabel>
+              <button
+                type="button"
+                onClick={() => setFoodSearchOpen(true)}
                 className={cn(
-                  "cyber-input",
+                  "cyber-input flex min-h-12 w-full items-center text-left",
+                  name ? "text-heading" : "text-dim",
                   errors.name && "border-magenta/60",
                 )}
                 aria-invalid={errors.name}
-              />
-
-              {showSuggestions && (searching || suggestions.length > 0) ? (
-                <ul
-                  id="food-suggestions-list"
-                  role="listbox"
-                  className="absolute z-10 mt-1 max-h-52 w-full overflow-y-auto rounded-cyber border border-line bg-panel shadow-[var(--shadow-panel)]"
-                >
-                  {searching ? (
-                    <li className="px-3 py-2 text-xs text-dim">Searching...</li>
-                  ) : (
-                    suggestions.map((result, index) => (
-                      <li
-                        key={result.id}
-                        role="option"
-                        aria-selected={index === highlightedIndex}
-                      >
-                        <button
-                          type="button"
-                          className={cn(
-                            "w-full px-3 py-2 text-left transition-colors hover:bg-cyan/10",
-                            index === highlightedIndex && "bg-cyan/10",
-                          )}
-                          onMouseDown={(event) => {
-                            event.preventDefault();
-                            applySuggestion(result);
-                          }}
-                        >
-                          <span className="block text-sm text-heading">
-                            {result.name}
-                          </span>
-                          <span className="mt-0.5 block text-[11px] text-dim">
-                            {result.calories} kcal · P {result.proteinG}g · C{" "}
-                            {result.carbsG}g · F {result.fatG}g ·{" "}
-                            {result.servingNote}
-                          </span>
-                        </button>
-                      </li>
-                    ))
-                  )}
-                </ul>
-              ) : null}
-            </div>
-            {errors.name ? (
-              <p className="mt-1 text-xs text-magenta" role="alert">
-                Enter a name with at least 2 characters.
-              </p>
-            ) : null}
-            {searchError ? (
-              <p className="mt-1 text-xs text-dim">{searchError}</p>
-            ) : null}
-          </label>
-
-          <label className="mt-[var(--space-gap)] block">
-            <FieldLabel>Calories (kcal)</FieldLabel>
-            <input
-              type="number"
-              inputMode="decimal"
-              min={0}
-              value={calories}
-              onChange={(event) => setCalories(event.target.value)}
-              placeholder="450"
-              className="cyber-input"
-            />
-          </label>
-
-          <div className="mt-[var(--space-gap)] grid grid-cols-3 gap-[var(--space-gap)]">
-            <label className="block">
-              <FieldLabel required>Protein (g)</FieldLabel>
-              <input
-                type="number"
-                inputMode="decimal"
-                min={0}
-                required
-                value={proteinG}
-                onChange={(event) => {
-                  setProteinG(event.target.value);
-                  if (errors.proteinG) {
-                    setErrors((prev) => ({ ...prev, proteinG: false }));
-                  }
-                }}
-                placeholder="30"
-                className={cn(
-                  "cyber-input",
-                  errors.proteinG && "border-magenta/60",
-                )}
-                aria-invalid={errors.proteinG}
-              />
-              {errors.proteinG ? (
+              >
+                {name.trim() || "e.g. Chicken rice bowl"}
+              </button>
+              {errors.name ? (
                 <p className="mt-1 text-xs text-magenta" role="alert">
-                  Protein is required.
+                  Enter a name with at least 2 characters.
                 </p>
               ) : null}
-            </label>
-            <label className="block">
-              <FieldLabel>Carbs (g)</FieldLabel>
-              <input
-                type="number"
-                inputMode="decimal"
-                min={0}
-                value={carbsG}
-                onChange={(event) => setCarbsG(event.target.value)}
-                placeholder="0"
-                className="cyber-input"
-              />
-            </label>
-            <label className="block">
-              <FieldLabel>Fat (g)</FieldLabel>
-              <input
-                type="number"
-                inputMode="decimal"
-                min={0}
-                value={fatG}
-                onChange={(event) => setFatG(event.target.value)}
-                placeholder="0"
-                className="cyber-input"
-              />
-            </label>
-          </div>
+            </div>
 
-          <div className="mt-[var(--space-section)] stack-sm">
-            <CyberButton variant="green" className="w-full" onClick={handleSubmit}>
-              Add to log
-            </CyberButton>
-            <CyberButton variant="cyan" className="w-full" onClick={onClose}>
-              Cancel
-            </CyberButton>
+            <label className="mt-[var(--space-gap)] block">
+              <FieldLabel>Calories (kcal)</FieldLabel>
+              <input
+                type="number"
+                inputMode="decimal"
+                min={0}
+                value={calories}
+                onChange={(event) => setCalories(event.target.value)}
+                placeholder="450"
+                className="cyber-input"
+              />
+            </label>
+
+            <div className="mt-[var(--space-gap)] grid grid-cols-3 gap-[var(--space-gap)]">
+              <label className="block">
+                <FieldLabel required>Protein (g)</FieldLabel>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  required
+                  value={proteinG}
+                  onChange={(event) => {
+                    setProteinG(event.target.value);
+                    if (errors.proteinG) {
+                      setErrors((prev) => ({ ...prev, proteinG: false }));
+                    }
+                  }}
+                  placeholder="30"
+                  className={cn(
+                    "cyber-input",
+                    errors.proteinG && "border-magenta/60",
+                  )}
+                  aria-invalid={errors.proteinG}
+                />
+                {errors.proteinG ? (
+                  <p className="mt-1 text-xs text-magenta" role="alert">
+                    Protein is required.
+                  </p>
+                ) : null}
+              </label>
+              <label className="block">
+                <FieldLabel>Carbs (g)</FieldLabel>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  value={carbsG}
+                  onChange={(event) => setCarbsG(event.target.value)}
+                  placeholder="0"
+                  className="cyber-input"
+                />
+              </label>
+              <label className="block">
+                <FieldLabel>Fat (g)</FieldLabel>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  min={0}
+                  value={fatG}
+                  onChange={(event) => setFatG(event.target.value)}
+                  placeholder="0"
+                  className="cyber-input"
+                />
+              </label>
+            </div>
+
+            <div className="mt-[var(--space-section)] stack-sm">
+              <CyberButton variant="green" className="w-full" onClick={handleSubmit}>
+                Add to log
+              </CyberButton>
+              <CyberButton variant="cyan" className="w-full" onClick={onClose}>
+                Cancel
+              </CyberButton>
+            </div>
           </div>
         </div>
       </div>
-    </div>
+
+      <FoodSearchModal
+        open={foodSearchOpen}
+        initialValue={name}
+        onConfirm={applyFoodSelection}
+        onClose={() => setFoodSearchOpen(false)}
+      />
+    </>
   );
 }
