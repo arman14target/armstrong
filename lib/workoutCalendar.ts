@@ -41,3 +41,17 @@ export function buildMonthCalendar(
 }
 
 export const WEEKDAY_LABELS = ["S", "M", "T", "W", "T", "F", "S"] as const;
+
+export function formatDateLabel(dateKey: string): string {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+export function getMonthPrefix(year: number, month: number): string {
+  return `${year}-${String(month + 1).padStart(2, "0")}`;
+}

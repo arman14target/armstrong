@@ -1,6 +1,5 @@
 import { AppData, createDefaultAppData } from "./types";
-import { THEME_STORAGE_KEY } from "./theme";
-import { collectLegacyCompletionDates } from "./workouts";
+import { collectLegacyCompletionDates, migrateWorkoutDayLog } from "./workouts";
 
 export const STORAGE_KEY = "armstrong-gym-v1";
 
@@ -15,7 +14,7 @@ export function loadAppData(): AppData {
       return createDefaultAppData();
     }
     const parsed = JSON.parse(raw) as AppData;
-    return {
+    const merged: AppData = {
       ...createDefaultAppData(),
       ...parsed,
       workouts: {
@@ -24,9 +23,14 @@ export function loadAppData(): AppData {
       },
       customWorkouts: parsed.customWorkouts ?? [],
       nutritionProfile: parsed.nutritionProfile,
+      foodLog: parsed.foodLog ?? {},
       coachPlanActive: parsed.coachPlanActive,
       workoutCompletionDates:
         parsed.workoutCompletionDates ?? collectLegacyCompletionDates(parsed),
+    };
+    return {
+      ...merged,
+      workoutDayLog: migrateWorkoutDayLog(merged),
     };
   } catch {
     return createDefaultAppData();
@@ -60,15 +64,9 @@ export async function clearAllAppData(): Promise<void> {
     return;
   }
 
-  const savedTheme = localStorage.getItem(THEME_STORAGE_KEY);
-
   localStorage.removeItem(STORAGE_KEY);
   sessionStorage.clear();
   clearCookies();
-
-  if (savedTheme) {
-    localStorage.setItem(THEME_STORAGE_KEY, savedTheme);
-  }
 
   if ("caches" in window) {
     const keys = await caches.keys();

@@ -9,6 +9,7 @@ import { DayButton } from "@/components/DayButton";
 import { WorkoutEntryChoiceModal } from "@/components/WorkoutEntryChoiceModal";
 import { WorkoutMonthCalendar } from "@/components/WorkoutMonthCalendar";
 import { CoachChatSection } from "@/components/CoachChatSection";
+import { HomeBottomNav, type HomeTab } from "@/components/HomeBottomNav";
 import {
   CalendarIcon,
   CoachIcon,
@@ -19,10 +20,8 @@ import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { FoodTrackerSection } from "@/components/FoodTrackerSection";
 import { GlitchText } from "@/components/ui/GlitchText";
 import { SectionHead } from "@/components/ui/SectionHead";
-import { ThemeToggle } from "@/components/ThemeToggle";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { useGymStore } from "@/hooks/useGymStore";
-import { cn } from "@/lib/cn";
 import { WORKOUT_LABELS, WORKOUT_TYPES } from "@/lib/types";
 import {
   countLoggedWorkouts,
@@ -31,14 +30,12 @@ import {
 } from "@/lib/workouts";
 import { setWorkoutSetupIntent } from "@/lib/workoutSetupIntent";
 
-type HomeTab = "punishment" | "calendar" | "food-tracker" | "coach";
-
 const homeTabs: Array<{
   id: HomeTab;
   label: string;
   icon: typeof DumbbellIcon;
 }> = [
-  { id: "punishment", label: "Punishment", icon: DumbbellIcon },
+  { id: "workout", label: "Workout", icon: DumbbellIcon },
   { id: "calendar", label: "Calendar", icon: CalendarIcon },
   { id: "food-tracker", label: "Food tracker", icon: FoodIcon },
   { id: "coach", label: "Coach", icon: CoachIcon },
@@ -46,12 +43,12 @@ const homeTabs: Array<{
 
 export function HomeScreen() {
   const router = useRouter();
-  const { data, hydrated, resetAll, addCustomDay, removeCustomDay, saveNutritionProfile } =
+  const { data, hydrated, resetAll, addCustomDay, removeCustomDay, saveNutritionProfile, addFoodEntry, removeFoodEntry } =
     useGymStore();
   const [showResetModal, setShowResetModal] = useState(false);
   const [showAddDayModal, setShowAddDayModal] = useState(false);
   const [resetting, setResetting] = useState(false);
-  const [activeTab, setActiveTab] = useState<HomeTab>("punishment");
+  const [activeTab, setActiveTab] = useState<HomeTab>("workout");
   const [entryChoiceId, setEntryChoiceId] = useState<string | null>(null);
   const [removeDayId, setRemoveDayId] = useState<string | null>(null);
 
@@ -123,51 +120,11 @@ export function HomeScreen() {
   }
 
   return (
-    <main className="page-shell page-shell--home">
-      <section className="hero-section mb-[var(--space-section)]">
-        <div className="flex w-full items-start justify-between gap-2">
-          <div className="min-w-0 flex-1">
-            <GlitchText
-              text="ARMSTRONG"
-              className="text-2xl tracking-[2px] sm:text-4xl lg:text-5xl"
-            />
-            <p className="mt-1 text-xs text-dim sm:text-sm">
-              Train hard. Track everything.
-            </p>
-          </div>
-          <ThemeToggle className="shrink-0" />
-        </div>
-
-        <div className="mt-2 grid w-full grid-cols-2 gap-2 sm:grid-cols-4 sm:gap-3">
-          {homeTabs.map(({ id, label, icon: Icon }) => {
-            const isActive = activeTab === id;
-
-            return (
-              <button
-                key={id}
-                type="button"
-                aria-pressed={isActive}
-                onClick={() => setActiveTab(id)}
-                className={cn(
-                  "rounded-cyber border px-2 py-2 text-center transition-colors sm:px-3",
-                  isActive
-                    ? "border-cyan/50 bg-cyan/10"
-                    : "border-line bg-bg/40 hover:border-cyan/30",
-                )}
-              >
-                <Icon className="mx-auto size-5 text-heading sm:size-6" />
-                <p className="mt-1 text-[10px] tracking-wide text-dim uppercase sm:text-[11px]">
-                  {label}
-                </p>
-              </button>
-            );
-          })}
-        </div>
-      </section>
-
-      {activeTab === "punishment" ? (
+    <main className="page-shell page-shell--home page-shell--footer">
+      <div className="home-screen__content">
+      {activeTab === "workout" ? (
         <RevealOnScroll>
-          <SectionHead index="01." title="Pick Your Punishment" />
+          <SectionHead index="01." title="Pick Your Workout" />
           <TerminalWindow title="Choose your workout">
             <div className="grid grid-cols-1 gap-[var(--space-gap-md)] sm:grid-cols-2">
               {!data.coachPlanActive
@@ -210,8 +167,13 @@ export function HomeScreen() {
 
       {activeTab === "calendar" ? (
         <RevealOnScroll>
-          <SectionHead index="02." title="Punished days" />
-          <WorkoutMonthCalendar completionDates={data.workoutCompletionDates} />
+          <SectionHead index="02." title="Activity calendar" />
+          <WorkoutMonthCalendar
+            data={data}
+            nutritionProfile={data.nutritionProfile}
+            foodLog={data.foodLog}
+            workoutDayLog={data.workoutDayLog}
+          />
         </RevealOnScroll>
       ) : null}
 
@@ -220,7 +182,10 @@ export function HomeScreen() {
           <SectionHead index="03." title="Food tracker" />
           <FoodTrackerSection
             profile={data.nutritionProfile}
+            foodLog={data.foodLog ?? {}}
             onSave={saveNutritionProfile}
+            onAddFood={addFoodEntry}
+            onRemoveFood={removeFoodEntry}
           />
         </RevealOnScroll>
       ) : null}
@@ -231,8 +196,21 @@ export function HomeScreen() {
           <CoachChatSection />
         </RevealOnScroll>
       ) : null}
+      </div>
 
-      <footer className="mt-[var(--space-section-lg)] stack-md text-center">
+      <section className="hero-section home-screen__brand">
+        <div className="w-full">
+          <GlitchText
+            text="ARMSTRONG"
+            className="text-2xl tracking-[2px] sm:text-4xl lg:text-5xl"
+          />
+          <p className="mt-1 text-xs text-dim sm:text-sm">
+            Train hard. Track everything.
+          </p>
+        </div>
+      </section>
+
+      <footer className="home-screen__footer stack-md text-center">
         <p className="text-xs tracking-wide text-dim">
           {completedCount}
           <span className="text-cyan">+</span> logged
@@ -300,6 +278,12 @@ export function HomeScreen() {
         confirming={resetting}
         onConfirm={handleResetConfirm}
         onCancel={() => setShowResetModal(false)}
+      />
+
+      <HomeBottomNav
+        tabs={homeTabs}
+        activeTab={activeTab}
+        onTabChange={setActiveTab}
       />
     </main>
   );

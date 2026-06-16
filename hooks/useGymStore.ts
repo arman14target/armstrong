@@ -13,6 +13,7 @@ import {
   createCustomWorkoutDay,
   getWorkoutTemplate,
   isBuiltinWorkoutType,
+  logWorkoutDayEntry,
   updateWorkoutMoves,
 } from "@/lib/workouts";
 import {
@@ -22,7 +23,7 @@ import {
   createDefaultMove,
   createDefaultSet,
 } from "@/lib/types";
-import { NutritionProfile } from "@/lib/nutrition";
+import { createFoodEntry, FoodEntry, NutritionProfile } from "@/lib/nutrition";
 
 export function useGymStore() {
   const [data, setData] = useState<AppData>(createDefaultAppData);
@@ -444,6 +445,11 @@ export function useGymStore() {
             prev.workoutCompletionDates,
             completedAt,
           ),
+          workoutDayLog: logWorkoutDayEntry(prev.workoutDayLog, {
+            workoutId,
+            completedAt,
+            durationSeconds: lastSessionDurationSeconds,
+          }),
           activeSession: null,
         };
       });
@@ -510,6 +516,53 @@ export function useGymStore() {
     [persist],
   );
 
+  const addFoodEntry = useCallback(
+    (
+      dateKey: string,
+      entry: Pick<FoodEntry, "name" | "calories" | "proteinG" | "carbsG" | "fatG">,
+    ) => {
+      persist((prev) => {
+        const nextEntry = createFoodEntry(entry);
+        const dayEntries = prev.foodLog?.[dateKey] ?? [];
+
+        return {
+          ...prev,
+          foodLog: {
+            ...prev.foodLog,
+            [dateKey]: [...dayEntries, nextEntry],
+          },
+        };
+      });
+    },
+    [persist],
+  );
+
+  const removeFoodEntry = useCallback(
+    (dateKey: string, entryId: string) => {
+      persist((prev) => {
+        const dayEntries = prev.foodLog?.[dateKey];
+        if (!dayEntries?.length) {
+          return prev;
+        }
+
+        const nextDayEntries = dayEntries.filter((entry) => entry.id !== entryId);
+        const nextFoodLog = { ...prev.foodLog };
+
+        if (nextDayEntries.length === 0) {
+          delete nextFoodLog[dateKey];
+        } else {
+          nextFoodLog[dateKey] = nextDayEntries;
+        }
+
+        return {
+          ...prev,
+          foodLog: nextFoodLog,
+        };
+      });
+    },
+    [persist],
+  );
+
   return {
     data,
     hydrated,
@@ -534,5 +587,7 @@ export function useGymStore() {
     getSession,
     resetAll,
     saveNutritionProfile,
+    addFoodEntry,
+    removeFoodEntry,
   };
 }

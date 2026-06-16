@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { AddFoodModal } from "@/components/AddFoodModal";
+import { TrashIcon } from "@/components/icons/ActionIcons";
 import { CyberButton } from "@/components/ui/CyberButton";
+import { IconButton } from "@/components/ui/IconButton";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { cn } from "@/lib/cn";
 import {
+  FoodEntry,
   NutritionGoal,
   NutritionInputs,
   NutritionProfile,
@@ -12,13 +16,21 @@ import {
   calculateNutritionTargets,
   createNutritionProfile,
   formatGoalLabel,
+  sumDailyNutrition,
 } from "@/lib/nutrition";
+import { toLocalDateKey } from "@/lib/workoutCalendar";
 
 type SetupStep = "body" | "goal" | "review";
 
 interface FoodTrackerSectionProps {
   profile: NutritionProfile | undefined;
+  foodLog: Record<string, FoodEntry[]>;
   onSave: (profile: NutritionProfile) => void;
+  onAddFood: (
+    dateKey: string,
+    entry: Pick<FoodEntry, "name" | "calories" | "proteinG" | "carbsG" | "fatG">,
+  ) => void;
+  onRemoveFood: (dateKey: string, entryId: string) => void;
 }
 
 function parseNumber(value: string): number | null {
@@ -34,11 +46,15 @@ function MacroStat({
   value,
   unit,
   accent,
+  consumed,
+  target,
 }: {
   label: string;
   value: number;
   unit: string;
   accent: "cyan" | "green" | "magenta" | "amber";
+  consumed?: number;
+  target?: number;
 }) {
   const accentClass = {
     cyan: "text-cyan",
@@ -47,13 +63,46 @@ function MacroStat({
     amber: "text-amber",
   }[accent];
 
+  const progressBarClass = {
+    cyan: "from-cyan/25 via-cyan/45 to-cyan/70",
+    green: "from-green/25 via-green/45 to-green/70",
+    magenta: "from-magenta/25 via-magenta/45 to-magenta/70",
+    amber: "from-amber/25 via-amber/45 to-amber/70",
+  }[accent];
+
+  const progress =
+    consumed !== undefined && target && target > 0
+      ? Math.min(consumed / target, 1)
+      : null;
+
   return (
     <div className="rounded-cyber border border-line bg-bg/50 p-[var(--space-panel)] text-center">
       <p className="text-[10px] tracking-wide text-dim uppercase">{label}</p>
-      <p className={cn("mt-1 font-display text-xl tracking-wide", accentClass)}>
-        {value}
-        <span className="ml-0.5 text-xs text-dim">{unit}</span>
-      </p>
+      {consumed !== undefined && target !== undefined ? (
+        <>
+          <p className={cn("mt-1 font-display text-xl tracking-wide", accentClass)}>
+            {consumed}
+            <span className="text-sm text-dim"> / {target}</span>
+            <span className="ml-0.5 text-xs text-dim">{unit}</span>
+          </p>
+          {progress !== null ? (
+            <div className="relative mt-2 h-1.5 overflow-hidden rounded-full bg-bg/80">
+              <div
+                className={cn(
+                  "absolute inset-y-0 left-0 bg-gradient-to-r transition-[width] duration-300",
+                  progressBarClass,
+                )}
+                style={{ width: `${progress * 100}%` }}
+              />
+            </div>
+          ) : null}
+        </>
+      ) : (
+        <p className={cn("mt-1 font-display text-xl tracking-wide", accentClass)}>
+          {value}
+          <span className="ml-0.5 text-xs text-dim">{unit}</span>
+        </p>
+      )}
     </div>
   );
 }
@@ -141,10 +190,12 @@ function NutritionSetup({
   initialProfile,
   onSave,
   onCancel,
+  requiredFirst,
 }: {
   initialProfile?: NutritionProfile;
   onSave: (profile: NutritionProfile) => void;
   onCancel?: () => void;
+  requiredFirst?: boolean;
 }) {
   const [step, setStep] = useState<SetupStep>("body");
   const [weight, setWeight] = useState(
@@ -220,6 +271,13 @@ function NutritionSetup({
   if (step === "body") {
     return (
       <div className="stack-md">
+        {requiredFirst ? (
+          <p className="rounded-cyber border border-cyan/25 bg-cyan/5 px-3 py-2 text-xs leading-relaxed text-dim">
+            Set your daily nutrition targets first. Once saved, you can start
+            logging meals and tracking intake against your goal.
+          </p>
+        ) : null}
+
         <div>
           <h3 className="font-display text-sm tracking-wide text-heading">
             Your stats
@@ -414,7 +472,24 @@ function NutritionSetup({
   );
 }
 
-function NutritionDashboard({
+function formatDateLabel(dateKey: string): string {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  return date.toLocaleDateString(undefined, {
+    weekday: "short",
+    month: "short",
+    day: "numeric",
+  });
+}
+
+function shiftDateKey(dateKey: string, deltaDays: number): string {
+  const [year, month, day] = dateKey.split("-").map(Number);
+  const date = new Date(year, month - 1, day);
+  date.setDate(date.getDate() + deltaDays);
+  return toLocalDateKey(date);
+}
+
+function DailyTargetReminder({
   profile,
   onRecalibrate,
 }: {
@@ -422,87 +497,252 @@ function NutritionDashboard({
   onRecalibrate: () => void;
 }) {
   return (
+    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-cyber border border-line/60 bg-bg/30 px-3 py-2">
+      <div className="min-w-0">
+        <p className="text-[10px] tracking-wide text-dim uppercase">
+          Daily goal · {formatGoalLabel(profile.goal)}
+        </p>
+        <p className="mt-0.5 text-[11px] leading-snug text-dim">
+          <span className="text-amber">{profile.dailyCalories} kcal</span>
+          <span className="mx-1 text-line">·</span>
+          <span className="text-cyan">{profile.proteinG}g protein</span>
+          <span className="mx-1 text-line">·</span>
+          <span className="text-green">{profile.carbsG}g carbs</span>
+          <span className="mx-1 text-line">·</span>
+          <span className="text-magenta">{profile.fatG}g fat</span>
+        </p>
+      </div>
+      <button
+        type="button"
+        onClick={onRecalibrate}
+        className="shrink-0 text-[10px] tracking-wide text-cyan uppercase transition-colors hover:text-heading"
+      >
+        Edit
+      </button>
+    </div>
+  );
+}
+
+function FoodLogList({
+  entries,
+  onRemove,
+}: {
+  entries: FoodEntry[];
+  onRemove: (entryId: string) => void;
+}) {
+  if (entries.length === 0) {
+    return (
+      <p className="rounded-cyber border border-dashed border-line bg-bg/30 px-[var(--space-panel)] py-6 text-center text-xs leading-relaxed text-dim">
+        Nothing logged yet. Tap &ldquo;Add food&rdquo; to track your first meal.
+      </p>
+    );
+  }
+
+  return (
+    <ul className="stack-sm">
+      {entries.map((entry) => (
+        <li
+          key={entry.id}
+          className="flex items-start gap-2 rounded-cyber border border-line bg-bg/40 p-[var(--space-panel)]"
+        >
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm font-medium text-heading">{entry.name}</p>
+            <p className="mt-0.5 text-xs text-dim">
+              {entry.calories} kcal · P {entry.proteinG}g · C {entry.carbsG}g · F{" "}
+              {entry.fatG}g
+            </p>
+          </div>
+          <IconButton
+            label={`Remove ${entry.name}`}
+            variant="ghost"
+            className="size-8 shrink-0 text-dim hover:text-magenta"
+            onClick={() => onRemove(entry.id)}
+          >
+            <TrashIcon />
+          </IconButton>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+function NutritionDashboard({
+  profile,
+  dateKey,
+  entries,
+  onRecalibrate,
+  onDateChange,
+  onAddFood,
+  onRemoveFood,
+}: {
+  profile: NutritionProfile;
+  dateKey: string;
+  entries: FoodEntry[];
+  onRecalibrate: () => void;
+  onDateChange: (dateKey: string) => void;
+  onAddFood: () => void;
+  onRemoveFood: (entryId: string) => void;
+}) {
+  const totals = useMemo(() => sumDailyNutrition(entries), [entries]);
+  const todayKey = toLocalDateKey(new Date());
+  const isToday = dateKey === todayKey;
+
+  return (
     <div className="stack-md">
-      <div className="flex flex-wrap items-start justify-between gap-2">
-        <div>
+      <DailyTargetReminder profile={profile} onRecalibrate={onRecalibrate} />
+
+      <div className="flex items-center justify-between gap-2 rounded-cyber border border-line bg-bg/30 px-3 py-2">
+        <button
+          type="button"
+          onClick={() => onDateChange(shiftDateKey(dateKey, -1))}
+          className="rounded-cyber px-2 py-1 text-sm text-dim transition-colors hover:border-cyan/30 hover:text-heading"
+          aria-label="Previous day"
+        >
+          ‹
+        </button>
+        <div className="text-center">
           <p className="text-xs tracking-wide text-dim uppercase">
-            {formatGoalLabel(profile.goal)} plan
+            {isToday ? "Today" : "Daily log"}
           </p>
-          <p className="mt-0.5 text-xs text-dim">
-            {profile.weightKg} kg · {profile.heightCm} cm · age {profile.age}
+          <p className="text-sm font-medium text-heading">
+            {formatDateLabel(dateKey)}
           </p>
         </div>
-        <CyberButton
-          variant="cyan"
-          className="shrink-0 px-3 py-1.5 text-xs"
-          onClick={onRecalibrate}
+        <button
+          type="button"
+          onClick={() => onDateChange(shiftDateKey(dateKey, 1))}
+          disabled={isToday}
+          className={cn(
+            "rounded-cyber px-2 py-1 text-sm transition-colors",
+            isToday
+              ? "cursor-not-allowed text-dim/40"
+              : "text-dim hover:border-cyan/30 hover:text-heading",
+          )}
+          aria-label="Next day"
         >
-          Recalibrate
-        </CyberButton>
+          ›
+        </button>
       </div>
 
-      <div className="grid grid-cols-2 gap-[var(--space-gap)] sm:grid-cols-4">
-        <MacroStat
-          label="Calories"
-          value={profile.dailyCalories}
-          unit="kcal"
-          accent="amber"
-        />
-        <MacroStat
-          label="Protein"
-          value={profile.proteinG}
-          unit="g"
-          accent="cyan"
-        />
-        <MacroStat
-          label="Carbs"
-          value={profile.carbsG}
-          unit="g"
-          accent="green"
-        />
-        <MacroStat
-          label="Fat"
-          value={profile.fatG}
-          unit="g"
-          accent="magenta"
-        />
+      <div>
+        <p className="mb-[var(--space-gap)] text-[10px] tracking-wide text-dim uppercase">
+          Today&apos;s intake
+        </p>
+        <div className="grid grid-cols-2 gap-[var(--space-gap)] sm:grid-cols-4">
+          <MacroStat
+            label="Calories"
+            value={profile.dailyCalories}
+            unit="kcal"
+            accent="amber"
+            consumed={totals.calories}
+            target={profile.dailyCalories}
+          />
+          <MacroStat
+            label="Protein"
+            value={profile.proteinG}
+            unit="g"
+            accent="cyan"
+            consumed={totals.proteinG}
+            target={profile.proteinG}
+          />
+          <MacroStat
+            label="Carbs"
+            value={profile.carbsG}
+            unit="g"
+            accent="green"
+            consumed={totals.carbsG}
+            target={profile.carbsG}
+          />
+          <MacroStat
+            label="Fat"
+            value={profile.fatG}
+            unit="g"
+            accent="magenta"
+            consumed={totals.fatG}
+            target={profile.fatG}
+          />
+        </div>
       </div>
 
-      <p className="text-center text-xs leading-relaxed text-dim">
-        Hit these daily to stay on track for your{" "}
-        {formatGoalLabel(profile.goal).toLowerCase()}.
-      </p>
+      <div className="stack-sm">
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="font-display text-sm tracking-wide text-heading">
+            Food log
+          </h3>
+          <CyberButton
+            variant="green"
+            className="px-3 py-1.5 text-xs"
+            onClick={onAddFood}
+          >
+            Add food
+          </CyberButton>
+        </div>
+        <FoodLogList entries={entries} onRemove={onRemoveFood} />
+      </div>
     </div>
   );
 }
 
 export function FoodTrackerSection({
   profile,
+  foodLog,
   onSave,
+  onAddFood,
+  onRemoveFood,
 }: FoodTrackerSectionProps) {
   const [recalibrating, setRecalibrating] = useState(false);
+  const [showAddFoodModal, setShowAddFoodModal] = useState(false);
+  const [selectedDateKey, setSelectedDateKey] = useState(() =>
+    toLocalDateKey(new Date()),
+  );
+
+  const dayEntries = foodLog[selectedDateKey] ?? [];
 
   const handleSave = (nextProfile: NutritionProfile) => {
     onSave(nextProfile);
     setRecalibrating(false);
   };
 
-  return (
-    <TerminalWindow title="armstrong://nutrition">
-      {!profile || recalibrating ? (
+  const handleAddFood = (
+    entry: Pick<FoodEntry, "name" | "calories" | "proteinG" | "carbsG" | "fatG">,
+  ) => {
+    onAddFood(selectedDateKey, entry);
+  };
+
+  if (!profile || recalibrating) {
+    return (
+      <TerminalWindow title="armstrong://nutrition">
         <NutritionSetup
           initialProfile={recalibrating ? profile : undefined}
+          requiredFirst={!profile}
           onSave={handleSave}
           onCancel={
             profile && recalibrating ? () => setRecalibrating(false) : undefined
           }
         />
-      ) : (
+      </TerminalWindow>
+    );
+  }
+
+  return (
+    <>
+      <TerminalWindow title="armstrong://nutrition">
         <NutritionDashboard
           profile={profile}
+          dateKey={selectedDateKey}
+          entries={dayEntries}
           onRecalibrate={() => setRecalibrating(true)}
+          onDateChange={setSelectedDateKey}
+          onAddFood={() => setShowAddFoodModal(true)}
+          onRemoveFood={(entryId) => onRemoveFood(selectedDateKey, entryId)}
         />
-      )}
-    </TerminalWindow>
+      </TerminalWindow>
+
+      <AddFoodModal
+        open={showAddFoodModal}
+        onAdd={handleAddFood}
+        onClose={() => setShowAddFoodModal(false)}
+      />
+    </>
   );
 }

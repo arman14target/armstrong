@@ -4,6 +4,7 @@ import {
   Move,
   WORKOUT_LABELS,
   WORKOUT_TYPES,
+  WorkoutDayEntry,
   WorkoutTemplate,
   WorkoutType,
   isWorkoutType,
@@ -170,4 +171,81 @@ export function getCompletionDatesForMonth(
   return new Set(
     (dates ?? []).filter((dateKey) => dateKey.startsWith(monthPrefix)),
   );
+}
+
+export function getWorkoutDatesForMonth(
+  log: Record<string, WorkoutDayEntry[]> | undefined,
+  year: number,
+  month: number,
+): Set<string> {
+  const monthPrefix = `${year}-${String(month + 1).padStart(2, "0")}`;
+  return new Set(
+    Object.keys(log ?? {}).filter(
+      (dateKey) =>
+        dateKey.startsWith(monthPrefix) && (log?.[dateKey]?.length ?? 0) > 0,
+    ),
+  );
+}
+
+export function getWorkoutEntriesForDate(
+  log: Record<string, WorkoutDayEntry[]> | undefined,
+  dateKey: string,
+): WorkoutDayEntry[] {
+  return log?.[dateKey] ?? [];
+}
+
+export function logWorkoutDayEntry(
+  log: Record<string, WorkoutDayEntry[]> | undefined,
+  entry: WorkoutDayEntry,
+): Record<string, WorkoutDayEntry[]> {
+  const dateKey = toLocalDateKey(new Date(entry.completedAt));
+  const dayEntries = log?.[dateKey] ?? [];
+
+  return {
+    ...log,
+    [dateKey]: [...dayEntries, entry],
+  };
+}
+
+export function migrateWorkoutDayLog(data: AppData): Record<string, WorkoutDayEntry[]> {
+  if (data.workoutDayLog && Object.keys(data.workoutDayLog).length > 0) {
+    return data.workoutDayLog;
+  }
+
+  const log: Record<string, WorkoutDayEntry[]> = {};
+
+  for (const type of WORKOUT_TYPES) {
+    const completedAt = data.workouts[type].lastCompletedAt;
+    if (!completedAt) {
+      continue;
+    }
+
+    const dateKey = toLocalDateKey(new Date(completedAt));
+    log[dateKey] = [
+      ...(log[dateKey] ?? []),
+      {
+        workoutId: type,
+        completedAt,
+        durationSeconds: data.workouts[type].lastSessionDurationSeconds,
+      },
+    ];
+  }
+
+  for (const workout of data.customWorkouts ?? []) {
+    if (!workout.lastCompletedAt) {
+      continue;
+    }
+
+    const dateKey = toLocalDateKey(new Date(workout.lastCompletedAt));
+    log[dateKey] = [
+      ...(log[dateKey] ?? []),
+      {
+        workoutId: workout.id,
+        completedAt: workout.lastCompletedAt,
+        durationSeconds: workout.lastSessionDurationSeconds,
+      },
+    ];
+  }
+
+  return log;
 }

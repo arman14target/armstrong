@@ -2,8 +2,6 @@ import type { Metadata, Viewport } from "next";
 import { JetBrains_Mono, Orbitron } from "next/font/google";
 import { AppShell } from "@/components/AppShell";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
-import { ThemeProvider } from "@/components/ThemeProvider";
-import { ThemeScript } from "@/components/ThemeScript";
 import "./globals.css";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
@@ -62,12 +60,9 @@ export default function RootLayout({
     >
       <head>
         {basePath ? <base href={`${basePath}/`} /> : null}
-        <ThemeScript />
       </head>
       <body>
-        <ThemeProvider>
-          <AppShell>{children}</AppShell>
-        </ThemeProvider>
+        <AppShell>{children}</AppShell>
         <ServiceWorkerRegister />
       </body>
     </html>

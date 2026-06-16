@@ -89,3 +89,56 @@ export function createNutritionProfile(inputs: NutritionInputs): NutritionProfil
 export function formatGoalLabel(goal: NutritionGoal): string {
   return goal === "bulk" ? "Bulk" : "Cut";
 }
+
+export interface FoodEntry {
+  id: string;
+  name: string;
+  calories: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  loggedAt: string;
+}
+
+export interface DailyNutritionTotals {
+  calories: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+}
+
+export function sumDailyNutrition(entries: FoodEntry[]): DailyNutritionTotals {
+  return entries.reduce(
+    (totals, entry) => ({
+      calories: totals.calories + entry.calories,
+      proteinG: totals.proteinG + entry.proteinG,
+      carbsG: totals.carbsG + entry.carbsG,
+      fatG: totals.fatG + entry.fatG,
+    }),
+    { calories: 0, proteinG: 0, carbsG: 0, fatG: 0 },
+  );
+}
+
+export function createFoodEntry(
+  data: Pick<FoodEntry, "name" | "calories" | "proteinG" | "carbsG" | "fatG">,
+): FoodEntry {
+  return {
+    ...data,
+    id: crypto.randomUUID(),
+    loggedAt: new Date().toISOString(),
+  };
+}
+
+export function getFoodDatesForMonth(
+  foodLog: Record<string, FoodEntry[]> | undefined,
+  year: number,
+  month: number,
+): Set<string> {
+  const monthPrefix = `${year}-${String(month + 1).padStart(2, "0")}`;
+  return new Set(
+    Object.keys(foodLog ?? {}).filter(
+      (dateKey) =>
+        dateKey.startsWith(monthPrefix) && (foodLog?.[dateKey]?.length ?? 0) > 0,
+    ),
+  );
+}

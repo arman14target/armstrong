@@ -57,7 +57,7 @@
   --space-page-x: 1rem;
   --space-page-top: 1.5rem;
   --space-page-bottom: 3rem;
-  --space-page-bottom-footer: 5.5rem;
+  --space-page-bottom-footer: 6.5rem;
   --space-section: 1.5rem;
   --space-section-lg: 2rem;
   --space-panel: 1rem;
@@ -84,7 +84,7 @@
     --space-page-x: 1.5rem;
     --space-page-top: 2.5rem;
     --space-page-bottom: 4rem;
-    --space-page-bottom-footer: 7rem;
+    --space-page-bottom-footer: 7.5rem;
     --space-section: 2rem;
     --space-section-lg: 2.5rem;
     --space-panel: 1.25rem;
@@ -107,32 +107,6 @@
   :root {
     --space-page-top: 3rem;
   }
-}
-
-[data-theme="light"] {
-  --color-bg: #f0f4fa;
-  --color-bg-2: #e4eaf3;
-  --color-panel: rgba(255, 255, 255, 0.92);
-  --color-line: rgba(0, 130, 150, 0.22);
-  --color-cyan: #008fa8;
-  --color-magenta: #c4009a;
-  --color-green: #00945e;
-  --color-amber: #b87400;
-  --color-text: #1e293b;
-  --color-dim: #64748b;
-  --color-heading: #0f172a;
-  --color-on-accent: #f0fdfa;
-  --color-on-magenta: #fdf2f8;
-  --color-surface-header: rgba(15, 23, 42, 0.04);
-  --color-icon-overlay: rgba(15, 23, 42, 0.06);
-  --shadow-panel: 0 18px 60px rgba(15, 23, 42, 0.08), 0 0 0 1px rgba(0, 130, 150, 0.1) inset;
-  --shadow-modal: 0 18px 60px rgba(15, 23, 42, 0.12);
-  --shadow-modal-danger: 0 18px 60px rgba(15, 23, 42, 0.12);
-  --shadow-inset: inset 0 0 12px rgba(15, 23, 42, 0.06);
-  --color-icon-shadow: rgba(15, 23, 42, 0.12);
-  --color-selection-fg: #f0f4fa;
-  --crt-scanline: rgba(15, 23, 42, 0.03);
-  --crt-vignette: rgba(255, 255, 255, 0.45);
 }
 
 @layer base {
@@ -254,6 +228,9 @@
   }
 
   .page-shell--home {
+    display: flex;
+    flex-direction: column;
+    min-height: 100dvh;
     padding-top: calc(1.25rem + var(--safe-top));
   }
 
@@ -261,6 +238,20 @@
     .page-shell--home {
       padding-top: calc(1.75rem + var(--safe-top));
     }
+  }
+
+  .home-screen__content {
+    flex: 1 1 auto;
+  }
+
+  .home-screen__brand {
+    margin-top: auto;
+    padding-top: var(--space-section-lg);
+    text-align: left;
+  }
+
+  .home-screen__footer {
+    margin-top: var(--space-section);
   }
 
   .workout-sticky-bar {
@@ -317,6 +308,131 @@
       color-mix(in srgb, var(--color-bg) 95%, transparent),
       transparent
     );
+  }
+
+  .home-bottom-nav {
+    position: fixed;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 40;
+    display: flex;
+    justify-content: center;
+    padding-inline: calc(var(--space-page-x) + var(--safe-left))
+      calc(var(--space-page-x) + var(--safe-right));
+    padding-top: 1.75rem;
+    padding-bottom: max(0.75rem, var(--safe-bottom));
+    pointer-events: none;
+    background: linear-gradient(
+      to top,
+      color-mix(in srgb, var(--color-bg) 96%, transparent),
+      color-mix(in srgb, var(--color-bg) 72%, transparent) 55%,
+      transparent
+    );
+  }
+
+  .home-bottom-nav__track {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: min(100%, 24rem);
+    min-height: 3.25rem;
+    padding: 0.25rem;
+    border-radius: 9999px;
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    background: rgba(4, 8, 16, 0.94);
+    box-shadow:
+      0 10px 40px rgba(0, 0, 0, 0.45),
+      inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    pointer-events: auto;
+    overflow: visible;
+  }
+
+  .home-bottom-nav__glass {
+    position: absolute;
+    top: -0.375rem;
+    bottom: -0.375rem;
+    z-index: 0;
+    border-radius: 1rem;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    background:
+      linear-gradient(
+        180deg,
+        rgba(255, 255, 255, 0.16) 0%,
+        rgba(255, 255, 255, 0.06) 42%,
+        rgba(255, 255, 255, 0.03) 100%
+      ),
+      rgba(255, 255, 255, 0.04);
+    box-shadow:
+      0 10px 28px rgba(0, 0, 0, 0.35),
+      inset 0 1px 0 rgba(255, 255, 255, 0.28),
+      inset 0 -1px 0 rgba(255, 255, 255, 0.08);
+    backdrop-filter: blur(18px) saturate(1.35);
+    -webkit-backdrop-filter: blur(18px) saturate(1.35);
+    transition:
+      left 0.38s cubic-bezier(0.34, 1.25, 0.64, 1),
+      width 0.38s cubic-bezier(0.34, 1.25, 0.64, 1);
+  }
+
+  .home-bottom-nav__tab {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex: 1 1 0;
+    min-width: 0;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.125rem;
+    min-height: 2.75rem;
+    padding: 0.375rem 0.25rem;
+    border-radius: 1rem;
+    color: color-mix(in srgb, var(--color-text) 82%, var(--color-dim));
+    transition: color 0.2s ease;
+  }
+
+  .home-bottom-nav__tab--active {
+    color: var(--color-heading);
+  }
+
+  .home-bottom-nav__tab:focus-visible {
+    color: var(--color-heading);
+  }
+
+  .home-bottom-nav__tab:not(.home-bottom-nav__tab--active):hover {
+    color: color-mix(in srgb, var(--color-text) 95%, var(--color-heading));
+  }
+
+  .home-bottom-nav__icon {
+    flex-shrink: 0;
+    opacity: 0.88;
+    stroke-width: 2;
+    transition:
+      color 0.2s ease,
+      opacity 0.2s ease,
+      transform 0.2s ease;
+  }
+
+  .home-bottom-nav__icon--active {
+    color: var(--color-heading);
+    opacity: 1;
+    transform: translateY(-1px);
+  }
+
+  .home-bottom-nav__tab:focus-visible .home-bottom-nav__icon {
+    color: var(--color-heading);
+    opacity: 1;
+  }
+
+  .home-bottom-nav__label {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-size: 0.625rem;
+    line-height: 1;
+    letter-spacing: 0.02em;
+    text-transform: capitalize;
   }
 
   .panel-header {
@@ -714,16 +830,31 @@
 
   .workout-calendar__cell {
     display: flex;
+    flex-direction: column;
     aspect-ratio: 1;
     min-height: 2rem;
     align-items: center;
     justify-content: center;
+    gap: 0.125rem;
     border-radius: var(--radius-cyber);
     border: 1px solid transparent;
     transition:
       border-color 150ms ease,
       background 150ms ease,
       color 150ms ease;
+  }
+
+  .workout-calendar__cell--clickable {
+    cursor: pointer;
+  }
+
+  .workout-calendar__cell--clickable:hover {
+    border-color: color-mix(in srgb, var(--color-cyan) 35%, transparent);
+  }
+
+  .workout-calendar__cell--clickable:focus-visible {
+    outline: 2px solid color-mix(in srgb, var(--color-cyan) 55%, transparent);
+    outline-offset: 1px;
   }
 
   .workout-calendar__cell--empty {
@@ -736,11 +867,30 @@
     color: var(--color-dim);
   }
 
-  .workout-calendar__cell--punished {
+  .workout-calendar__cell--workout {
     border-color: color-mix(in srgb, var(--color-green) 45%, transparent);
     background: color-mix(in srgb, var(--color-green) 12%, transparent);
     color: var(--color-green);
     box-shadow: inset 0 0 10px color-mix(in srgb, var(--color-green) 8%, transparent);
+  }
+
+  .workout-calendar__cell--food {
+    border-color: color-mix(in srgb, var(--color-amber) 45%, transparent);
+    background: color-mix(in srgb, var(--color-amber) 12%, transparent);
+    color: var(--color-amber);
+    box-shadow: inset 0 0 10px color-mix(in srgb, var(--color-amber) 8%, transparent);
+  }
+
+  .workout-calendar__cell--both {
+    border-color: color-mix(in srgb, var(--color-green) 35%, transparent);
+    background:
+      linear-gradient(
+        135deg,
+        color-mix(in srgb, var(--color-green) 14%, transparent) 0%,
+        color-mix(in srgb, var(--color-amber) 14%, transparent) 100%
+      );
+    color: var(--color-heading);
+    box-shadow: inset 0 0 10px color-mix(in srgb, var(--color-green) 6%, transparent);
   }
 
   .workout-calendar__cell--today {
@@ -752,12 +902,53 @@
     font-size: 0.8125rem;
     font-weight: 600;
     font-variant-numeric: tabular-nums;
+    line-height: 1;
+  }
+
+  .workout-calendar__indicators {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.1875rem;
+    min-height: 0.3125rem;
+  }
+
+  .workout-calendar__indicator {
+    display: block;
+    width: 0.3125rem;
+    height: 0.3125rem;
+    border-radius: 9999px;
+  }
+
+  .workout-calendar__indicator--workout {
+    background: var(--color-green);
+    box-shadow: 0 0 4px color-mix(in srgb, var(--color-green) 45%, transparent);
+  }
+
+  .workout-calendar__indicator--food {
+    background: var(--color-amber);
+    box-shadow: 0 0 4px color-mix(in srgb, var(--color-amber) 45%, transparent);
   }
 
   .workout-calendar__summary {
     margin-top: var(--space-gap-md);
     text-align: center;
     font-size: 0.75rem;
+  }
+
+  .workout-calendar__legend {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+    margin-top: 0.5rem;
+    font-size: 0.6875rem;
+    color: var(--color-dim);
+  }
+
+  .workout-calendar__legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.375rem;
   }
 
   .landing-shell {

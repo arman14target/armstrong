@@ -4,7 +4,6 @@ import { LandingHeroCTA } from "@/components/landing/LandingHeroCTA";
 import { LandingHeroVisual } from "@/components/landing/LandingHeroVisual";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
-import { ThemeToggle } from "@/components/ThemeToggle";
 
 const benefits = [
   {
@@ -67,7 +66,6 @@ export function LandingPage() {
         >
           Armstrong
         </Link>
-        <ThemeToggle />
       </header>
 
       <section className="landing-hero" aria-labelledby="landing-headline">
