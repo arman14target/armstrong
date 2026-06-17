@@ -1,3 +1,4 @@
+import Script from "next/script";
 import { LandingPageRoot } from "@/components/landing/LandingPageRoot";
 
 export default function LandingLayout({
@@ -5,5 +6,15 @@ export default function LandingLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  return <LandingPageRoot>{children}</LandingPageRoot>;
+  return (
+    <>
+      <Script id="reveal-js" strategy="beforeInteractive">
+        {`document.documentElement.classList.add("reveal-js");`}
+      </Script>
+      <noscript>
+        <style>{`.reveal-hidden{opacity:1!important;transform:none!important;}`}</style>
+      </noscript>
+      <LandingPageRoot>{children}</LandingPageRoot>
+    </>
+  );
 }

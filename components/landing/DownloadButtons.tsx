@@ -27,7 +27,7 @@ const options: DownloadOption[] = [
   },
   {
     platform: "pwa",
-    label: "Launch Web Version (PWA)",
+    label: "Launch Web Version",
     icon: <WebIcon />,
   },
 ];

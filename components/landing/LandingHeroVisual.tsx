@@ -1,11 +1,27 @@
 import { LandingCalloutCalendar } from "@/components/landing/LandingCalloutCalendar";
 import { LandingCalloutPlan } from "@/components/landing/LandingCalloutPlan";
-import { LandingWorkoutPreview } from "@/components/landing/LandingWorkoutPreview";
+import { withBasePath } from "@/lib/basePath";
 import { cn } from "@/lib/cn";
+import { revealDelayStyle } from "@/lib/revealAnimation";
 
-export function LandingHeroVisual({ className }: { className?: string }) {
+interface LandingHeroVisualProps extends React.HTMLAttributes<HTMLDivElement> {
+  className?: string;
+  revealDelay?: number;
+}
+
+export function LandingHeroVisual({
+  className,
+  revealDelay = 0,
+  style,
+  ...props
+}: LandingHeroVisualProps) {
   return (
-    <div className={cn("landing-hero-visual", className)} aria-hidden>
+    <div
+      className={cn("landing-hero-visual", className)}
+      style={{ ...revealDelayStyle(revealDelay), ...style }}
+      aria-hidden
+      {...props}
+    >
       <div className="landing-hero-visual__glow" />
 
       <div className="landing-callout-anchor landing-callout-anchor--calendar">
@@ -14,14 +30,18 @@ export function LandingHeroVisual({ className }: { className?: string }) {
         </article>
       </div>
 
-      <div className="landing-phone">
-        <div className="landing-phone__bezel">
-          <div className="landing-phone__notch" />
-          <div className="landing-phone__screen">
-            <LandingWorkoutPreview />
-          </div>
-          <div className="landing-phone__home-indicator" />
-        </div>
+      <div className="landing-hero-figure">
+        <div className="landing-hero-figure__warm-glow" />
+        <div className="landing-hero-figure__ground-glow" aria-hidden />
+        <img
+          src={withBasePath("/images/landing/theposingguy.png")}
+          alt=""
+          className="landing-hero-figure__image"
+          width={1408}
+          height={768}
+          loading="eager"
+          decoding="async"
+        />
       </div>
 
       <div className="landing-callout-anchor landing-callout-anchor--plan">

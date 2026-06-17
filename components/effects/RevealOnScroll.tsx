@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { REVEAL_THRESHOLD } from "@/lib/revealAnimation";
 import { cn } from "@/lib/cn";
 
 interface RevealOnScrollProps {
@@ -15,14 +16,23 @@ export function RevealOnScroll({ children, className }: RevealOnScrollProps) {
     const element = ref.current;
     if (!element) return;
 
+    document.documentElement.classList.add("reveal-js");
+
+    const reveal = () => element.classList.add("reveal-visible");
+
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      reveal();
+      return;
+    }
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
-          element.classList.add("in");
+          reveal();
           observer.unobserve(element);
         }
       },
-      { threshold: 0.15 },
+      { threshold: REVEAL_THRESHOLD },
     );
 
     observer.observe(element);
@@ -30,7 +40,7 @@ export function RevealOnScroll({ children, className }: RevealOnScrollProps) {
   }, []);
 
   return (
-    <div ref={ref} className={cn("reveal", className)}>
+    <div ref={ref} className={cn("reveal-hidden", className)}>
       {children}
     </div>
   );

@@ -1,18 +1,29 @@
 import type { Metadata } from "next";
+import { LandingFAQSchema } from "@/components/landing/LandingFAQSchema";
 import { LandingPage } from "@/components/landing/LandingPage";
+import { landingSeo } from "@/lib/landingContent";
 
 export const metadata: Metadata = {
-  title: "Armstrong — AI Fitness Coach",
-  description:
-    "Stop logging. Start growing. Armstrong auto-saves your workouts and delivers AI-driven training optimization.",
+  title: landingSeo.title,
+  description: landingSeo.description,
+  keywords: [...landingSeo.keywords],
   openGraph: {
-    title: "Armstrong — AI Fitness Coach",
-    description:
-      "Your AI personal coach that auto-saves every rep and tracks your progress — zero notebooks, zero friction.",
+    title: landingSeo.title,
+    description: landingSeo.description,
     type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: landingSeo.title,
+    description: landingSeo.description,
   },
 };
 
 export default function Landing() {
-  return <LandingPage />;
+  return (
+    <>
+      <LandingFAQSchema />
+      <LandingPage />
+    </>
+  );
 }
