@@ -34,10 +34,12 @@ import {
   type CoachDietPlan,
 } from "@/lib/coachDiet";
 import {
+  applyGymPlan,
   applyWorkoutChange,
+  type CoachGymPlan,
   type CoachWorkoutChange,
 } from "@/lib/coachWorkout";
-import { createFoodEntry, FoodEntry, NutritionProfile } from "@/lib/nutrition";
+import { createFoodEntry, createPlannedFoodEntry, FoodEntry, NutritionProfile, PlannedMealInput } from "@/lib/nutrition";
 
 export function useGymStore() {
   const { user } = useAuth();
@@ -640,9 +642,60 @@ export function useGymStore() {
     [persist],
   );
 
+  const addPlannedFoodEntry = useCallback(
+    (dateKey: string, entry: PlannedMealInput) => {
+      persist((prev) => {
+        const nextEntry = createPlannedFoodEntry(entry);
+        const dayEntries = prev.foodLog?.[dateKey] ?? [];
+
+        return {
+          ...prev,
+          foodLog: {
+            ...prev.foodLog,
+            [dateKey]: [...dayEntries, nextEntry],
+          },
+        };
+      });
+    },
+    [persist],
+  );
+
+  const updatePlannedFoodEntry = useCallback(
+    (dateKey: string, entryId: string, updates: PlannedMealInput) => {
+      persist((prev) => {
+        const dayEntries = prev.foodLog?.[dateKey];
+        if (!dayEntries?.length) {
+          return prev;
+        }
+
+        const nextDayEntries = dayEntries.map((entry) =>
+          entry.id === entryId && entry.fromPlan
+            ? { ...entry, ...updates }
+            : entry,
+        );
+
+        return {
+          ...prev,
+          foodLog: {
+            ...prev.foodLog,
+            [dateKey]: nextDayEntries,
+          },
+        };
+      });
+    },
+    [persist],
+  );
+
   const applyCoachWorkoutChange = useCallback(
     (change: CoachWorkoutChange) => {
       persist((prev) => applyWorkoutChange(prev, change));
+    },
+    [persist],
+  );
+
+  const applyCoachGymPlan = useCallback(
+    (plan: CoachGymPlan) => {
+      persist((prev) => applyGymPlan(prev, plan));
     },
     [persist],
   );
@@ -734,8 +787,11 @@ export function useGymStore() {
     syncAfterAuth,
     saveNutritionProfile,
     addFoodEntry,
+    addPlannedFoodEntry,
+    updatePlannedFoodEntry,
     removeFoodEntry,
     applyCoachWorkoutChange,
+    applyCoachGymPlan,
     applyCoachDietPlan,
     togglePlannedMealComplete,
   };

@@ -24,17 +24,16 @@ const MEAL_SLOTS: MealSlot[] = ["breakfast", "lunch", "dinner", "snack"];
 const DIET_PLANNING_PROMPT = `
 
 Diet plan generation:
-- When the user asks for a meal plan, diet plan, or what to eat, generate a simple daily plan with breakfast, lunch, dinner, and 1–2 snacks
-- Keep meals practical and easy to prep — common whole foods, not fancy recipes
+- When the user asks for a meal plan, diet plan, or what to eat — give them a full daily plan in your first reply
+- Breakfast, lunch, dinner, and 1–2 snacks; practical whole foods, easy to prep
 - Target their daily protein goal from the nutrition context below; spread protein across meals
-- Show each meal with estimated calories, protein (g), carbs (g), and fat (g)
-- After presenting meals, ask if the plan looks okay and whether they have any allergies or food restrictions
-- Only offer to add the plan to their food tracker after they confirm (or after you adjust for allergies)
-- When they confirm and you are ready for them to tap "Add to food tracker", end your message with exactly one line:
+- List each meal with calories, protein (g), carbs (g), and fat (g)
+- Tell them they can tap Add to food tracker below, or keep chatting for swaps, allergies, or restrictions
+- Always end the same message with exactly one line:
   [[DIET_PLAN:{"meals":[{"name":"...","mealSlot":"breakfast","calories":400,"proteinG":35,"carbsG":40,"fatG":10},...],"dietaryRestrictions":"optional notes"}]]
 - mealSlot must be one of: breakfast, lunch, dinner, snack
 - Include 4–6 meals total; protein across meals should reach their daily protein target
-- Never include the marker without asking permission in the same message
+- If they mention allergies or foods to avoid, regenerate the plan and include a fresh marker
 - Do not mention markers to the user — they are internal signals only`;
 
 function formatNutritionContext(profile: NutritionProfile): string {
@@ -72,10 +71,10 @@ export function appendDietCoachPrompt(basePrompt: string, data: AppData): string
   const todayEntries = data.foodLog?.[todayKey] ?? [];
 
   if (!data.nutritionProfile) {
-    return `${basePrompt}
+    return `${basePrompt}${DIET_PLANNING_PROMPT}
 
 Nutrition context:
-User has not set up nutrition targets yet. If they ask for a meal plan, tell them to open the Food tracker tab first to set their stats and daily targets — you need those to hit their protein goal accurately.`;
+User has not set up nutrition targets yet. If they ask for a meal plan, still give them a solid default day (~2200–2600 kcal, ~180g protein, balanced macros) and include the save marker. One line: they can set targets in Food tracker for a more tailored plan later.`;
   }
 
   return `${basePrompt}${DIET_PLANNING_PROMPT}
@@ -206,8 +205,8 @@ export function stripDietPlanMarker(content: string): string {
   return before || after;
 }
 
-export function canApplyDietPlan(data: AppData): boolean {
-  return Boolean(data.nutritionProfile);
+export function canApplyDietPlan(plan: CoachDietPlan): boolean {
+  return plan.meals.length > 0;
 }
 
 export function applyDietPlan(

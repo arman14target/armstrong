@@ -2,23 +2,18 @@ import { LandingCalloutCalendar } from "@/components/landing/LandingCalloutCalen
 import { LandingCalloutPlan } from "@/components/landing/LandingCalloutPlan";
 import { withBasePath } from "@/lib/basePath";
 import { cn } from "@/lib/cn";
-import { revealDelayStyle } from "@/lib/revealAnimation";
 
 interface LandingHeroVisualProps extends React.HTMLAttributes<HTMLDivElement> {
   className?: string;
-  revealDelay?: number;
 }
 
 export function LandingHeroVisual({
   className,
-  revealDelay = 0,
-  style,
   ...props
 }: LandingHeroVisualProps) {
   return (
     <div
       className={cn("landing-hero-visual", className)}
-      style={{ ...revealDelayStyle(revealDelay), ...style }}
       aria-hidden
       {...props}
     >

@@ -43,14 +43,9 @@ export function LandingPage() {
         </Link>
       </header>
 
-      {/* Hero — instant reveal on load */}
       <section className="landing-hero" aria-labelledby="landing-headline">
         <div className="landing-hero__grid">
-          <div
-            className="landing-hero__copy reveal-hidden"
-            data-reveal="hero"
-            style={revealDelayStyle(0)}
-          >
+          <div className="landing-hero__copy">
             <p className="landing-kicker">
               <span className="landing-kicker__badge">{landingHero.badge}</span>
               {landingHero.kicker}
@@ -64,11 +59,7 @@ export function LandingPage() {
             <p className="landing-subhead max-w-2xl">{landingHero.subhead}</p>
             <LandingHeroCTA className="mt-2" />
           </div>
-          <LandingHeroVisual
-            className="landing-hero__visual reveal-hidden"
-            data-reveal="hero"
-            revealDelay={120}
-          />
+          <LandingHeroVisual className="landing-hero__visual" />
         </div>
       </section>
 

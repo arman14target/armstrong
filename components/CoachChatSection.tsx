@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
+import { CoachChatMicButton } from "@/components/CoachChatMicButton";
 import { CoachChatThinkingMessage } from "@/components/CoachChatThinkingMessage";
 import { CoachIcon } from "@/components/icons/ActionIcons";
 import { CyberButton } from "@/components/ui/CyberButton";
@@ -12,11 +13,18 @@ import {
 } from "@/lib/coachChatStorage";
 import {
   buildCoachSystemPrompt,
+  canApplyGymPlan,
   canApplyWorkoutChange,
+  describeGymPlan,
   describeWorkoutChange,
+  formatGymPlanPreview,
+  getGymPlanApplyLabel,
   getWorkoutChangeApplyLabel,
+  parseGymPlan,
   parseWorkoutChange,
+  stripGymPlanMarker,
   stripWorkoutChangeMarker,
+  type CoachGymPlan,
   type CoachWorkoutChange,
 } from "@/lib/coachWorkout";
 import {
@@ -47,7 +55,84 @@ function createMessage(role: CoachChatMessage["role"], content: string): CoachCh
 }
 
 function stripCoachMarkers(content: string): string {
-  return stripDietPlanMarker(stripWorkoutChangeMarker(content));
+  return stripGymPlanMarker(
+    stripDietPlanMarker(stripWorkoutChangeMarker(content)),
+  );
+}
+
+type CoachActionKind = "diet" | "gym" | "workout";
+
+function actionKey(messageId: string, kind: CoachActionKind): string {
+  return `${messageId}:${kind}`;
+}
+
+interface ParsedCoachActions {
+  dietPlan: CoachDietPlan | null;
+  gymPlan: CoachGymPlan | null;
+  workoutChange: CoachWorkoutChange | null;
+}
+
+function parseCoachActions(content: string): ParsedCoachActions {
+  return {
+    dietPlan: parseDietPlan(content),
+    gymPlan: parseGymPlan(content),
+    workoutChange: parseWorkoutChange(content),
+  };
+}
+
+function getPendingActionKinds(
+  messageId: string,
+  content: string,
+  resolvedActions: Set<string>,
+): CoachActionKind[] {
+  const actions = parseCoachActions(content);
+  const kinds: CoachActionKind[] = [];
+
+  if (actions.dietPlan && !resolvedActions.has(actionKey(messageId, "diet"))) {
+    kinds.push("diet");
+  }
+  if (actions.gymPlan && !resolvedActions.has(actionKey(messageId, "gym"))) {
+    kinds.push("gym");
+  }
+  if (
+    actions.workoutChange &&
+    !resolvedActions.has(actionKey(messageId, "workout"))
+  ) {
+    kinds.push("workout");
+  }
+
+  return kinds;
+}
+
+function getCombinedApplyLabel(kinds: CoachActionKind[]): string {
+  const hasDiet = kinds.includes("diet");
+  const hasGym = kinds.includes("gym");
+  const hasWorkout = kinds.includes("workout");
+
+  if (hasDiet && hasGym) {
+    return "Add to food tracker & workout days";
+  }
+  if (hasDiet && hasWorkout) {
+    return "Add to food tracker & update workout";
+  }
+  if (hasGym && hasWorkout) {
+    return "Add to workout days & update exercise";
+  }
+
+  return "Save plan";
+}
+
+function markActionsResolved(
+  messageId: string,
+  kinds: CoachActionKind[],
+): (prev: Set<string>) => Set<string> {
+  return (prev) => {
+    const next = new Set(prev);
+    for (const kind of kinds) {
+      next.add(actionKey(messageId, kind));
+    }
+    return next;
+  };
 }
 
 function formatTime(iso: string): string {
@@ -126,23 +211,149 @@ function MessageBubble({ message }: { message: CoachChatMessage }) {
   );
 }
 
+interface CoachMessageActionsProps {
+  message: CoachChatMessage;
+  pendingKinds: CoachActionKind[];
+  appData: AppData;
+  onApplyDietPlan: (plan: CoachDietPlan) => void;
+  onApplyGymPlan: (plan: CoachGymPlan) => void;
+  onApplyWorkoutChange: (change: CoachWorkoutChange) => void;
+  onResolve: (messageId: string, kinds: CoachActionKind[]) => void;
+  onConfirm: (text: string) => void;
+  onError: (message: string) => void;
+}
+
+function CoachMessageActions({
+  message,
+  pendingKinds,
+  appData,
+  onApplyDietPlan,
+  onApplyGymPlan,
+  onApplyWorkoutChange,
+  onResolve,
+  onConfirm,
+  onError,
+}: CoachMessageActionsProps) {
+  const actions = parseCoachActions(message.content);
+  const useCombinedButton = pendingKinds.length > 1;
+
+  const handleApply = () => {
+    const confirmations: string[] = [];
+
+    if (pendingKinds.includes("diet") && actions.dietPlan) {
+      if (!canApplyDietPlan(actions.dietPlan)) {
+        onError("That meal plan could not be saved. Ask the coach to try again.");
+        return;
+      }
+      onApplyDietPlan(actions.dietPlan);
+      confirmations.push(describeDietPlan(actions.dietPlan));
+    }
+
+    if (pendingKinds.includes("gym") && actions.gymPlan) {
+      if (!canApplyGymPlan(actions.gymPlan)) {
+        onError("That workout plan could not be applied. Ask the coach to try again.");
+        return;
+      }
+      onApplyGymPlan(actions.gymPlan);
+      confirmations.push(describeGymPlan(actions.gymPlan));
+    }
+
+    if (pendingKinds.includes("workout") && actions.workoutChange) {
+      if (!canApplyWorkoutChange(appData, actions.workoutChange)) {
+        const errorMessage =
+          actions.workoutChange.action === "add"
+            ? "Could not find that workout day. Ask the coach to try again."
+            : "Could not find that exercise in your plan. Ask the coach to try again.";
+        onError(errorMessage);
+        return;
+      }
+      onApplyWorkoutChange(actions.workoutChange);
+      confirmations.push(
+        describeWorkoutChange(appData, actions.workoutChange),
+      );
+    }
+
+    onResolve(message.id, pendingKinds);
+    onConfirm(confirmations.join("\n\n"));
+  };
+
+  const handleDismiss = () => {
+    onResolve(message.id, pendingKinds);
+  };
+
+  const applyLabel = useCombinedButton
+    ? getCombinedApplyLabel(pendingKinds)
+    : pendingKinds[0] === "diet"
+      ? getDietPlanApplyLabel()
+      : pendingKinds[0] === "gym"
+        ? getGymPlanApplyLabel()
+        : actions.workoutChange
+          ? getWorkoutChangeApplyLabel(actions.workoutChange)
+          : "Apply";
+
+  return (
+    <div className="coach-message-actions stack-sm">
+      {pendingKinds.includes("diet") && actions.dietPlan ? (
+        <p className="rounded-cyber border border-cyan/20 bg-cyan/5 px-3 py-2 text-xs leading-relaxed whitespace-pre-line text-dim">
+          {formatDietPlanPreview(actions.dietPlan)}
+        </p>
+      ) : null}
+
+      {pendingKinds.includes("gym") && actions.gymPlan ? (
+        <p className="rounded-cyber border border-cyan/20 bg-cyan/5 px-3 py-2 text-xs leading-relaxed whitespace-pre-line text-dim">
+          {formatGymPlanPreview(actions.gymPlan)}
+        </p>
+      ) : null}
+
+      <p className="text-xs text-dim">
+        {useCombinedButton
+          ? "Want changes? Keep chatting — say what to adjust."
+          : pendingKinds.includes("diet")
+            ? "Allergies or want different foods? Keep chatting — say what to change."
+            : "Want different exercises or days? Keep chatting."}
+      </p>
+
+      <div className="flex flex-wrap gap-2">
+        <CyberButton
+          variant="magenta"
+          className="min-h-[2.75rem] flex-1 px-4 disabled:opacity-50"
+          onClick={handleApply}
+        >
+          {applyLabel}
+        </CyberButton>
+        <CyberButton
+          variant="cyan"
+          className="min-h-[2.75rem] flex-1 px-4"
+          onClick={handleDismiss}
+        >
+          Keep chatting
+        </CyberButton>
+      </div>
+    </div>
+  );
+}
+
 interface CoachChatSectionProps {
   appData: AppData;
+  layout?: "home" | "default";
   onApplyWorkoutChange: (change: CoachWorkoutChange) => void;
   onApplyDietPlan: (plan: CoachDietPlan) => void;
+  onApplyGymPlan: (plan: CoachGymPlan) => void;
 }
 
 export function CoachChatSection({
   appData,
+  layout = "default",
   onApplyWorkoutChange,
   onApplyDietPlan,
+  onApplyGymPlan,
 }: CoachChatSectionProps) {
   const [messages, setMessages] = useState<CoachChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [hydrated, setHydrated] = useState(false);
-  const [dismissedChangeIds, setDismissedChangeIds] = useState<Set<string>>(
+  const [resolvedActions, setResolvedActions] = useState<Set<string>>(
     () => new Set(),
   );
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -150,6 +361,16 @@ export function CoachChatSection({
   const lastScrolledCoachIdRef = useRef<string | null>(null);
   const skipInitialScrollRef = useRef(true);
   const configured = isGeminiConfigured();
+
+  const appendTranscript = useCallback((text: string) => {
+    setInput((prev) => (prev ? `${prev.trimEnd()} ${text}` : text).trimStart());
+  }, []);
+
+  const handleSpeechError = useCallback((message: string | null) => {
+    if (message) {
+      setError(message);
+    }
+  }, []);
 
   const setMessageRef = (id: string) => (node: HTMLDivElement | null) => {
     if (node) {
@@ -212,16 +433,17 @@ export function CoachChatSection({
     }
   }, [messages, loading, hydrated]);
 
-  const lastMessage = messages[messages.length - 1];
-  const pendingChange =
-    lastMessage?.role === "coach" ? parseWorkoutChange(lastMessage.content) : null;
-  const pendingDietPlan =
-    lastMessage?.role === "coach" ? parseDietPlan(lastMessage.content) : null;
-  const showWorkoutChangeActions =
-    pendingChange !== null && !dismissedChangeIds.has(lastMessage.id);
-  const showDietPlanActions =
-    pendingDietPlan !== null && !dismissedChangeIds.has(lastMessage.id);
-  const showActionButtons = showWorkoutChangeActions || showDietPlanActions;
+  const handleResolveActions = useCallback(
+    (messageId: string, kinds: CoachActionKind[]) => {
+      setResolvedActions(markActionsResolved(messageId, kinds));
+      setError(null);
+    },
+    [],
+  );
+
+  const handleConfirmApply = useCallback((text: string) => {
+    setMessages((prev) => [...prev, createMessage("coach", text)]);
+  }, []);
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -250,65 +472,21 @@ export function CoachChatSection({
     }
   };
 
-  const handleKeepChatting = () => {
-    if (!lastMessage) {
-      return;
-    }
-
-    setDismissedChangeIds((prev) => new Set(prev).add(lastMessage.id));
-    setError(null);
-  };
-
-  const handleApplyDietPlan = () => {
-    if (!pendingDietPlan || !lastMessage) {
-      return;
-    }
-
-    if (!canApplyDietPlan(appData)) {
-      setError(
-        "Set up your nutrition targets in the Food tracker tab first, then ask for a meal plan again.",
-      );
-      return;
-    }
-
-    onApplyDietPlan(pendingDietPlan);
-    setDismissedChangeIds((prev) => new Set(prev).add(lastMessage.id));
-    setError(null);
-    setMessages((prev) => [
-      ...prev,
-      createMessage("coach", describeDietPlan(pendingDietPlan)),
-    ]);
-  };
-
-  const handleApplyChange = () => {
-    if (!pendingChange || !lastMessage) {
-      return;
-    }
-
-    if (!canApplyWorkoutChange(appData, pendingChange)) {
-      setError("Could not find that exercise in your plan. Ask the coach to try again.");
-      return;
-    }
-
-    onApplyWorkoutChange(pendingChange);
-    setDismissedChangeIds((prev) => new Set(prev).add(lastMessage.id));
-    setError(null);
-    setMessages((prev) => [
-      ...prev,
-      createMessage("coach", describeWorkoutChange(appData, pendingChange)),
-    ]);
-  };
-
   const handleClear = () => {
     setMessages([]);
     clearCoachChatMessages();
-    setDismissedChangeIds(new Set());
+    setResolvedActions(new Set());
     setError(null);
   };
 
   if (!hydrated) {
     return (
-      <div className="coach-chat-panel">
+      <div
+        className={cn(
+          "coach-chat-panel",
+          layout === "home" && "coach-chat-panel--home",
+        )}
+      >
         <header className="onboarding-coach-modal__header">
           <div className="onboarding-coach-modal__identity">
             <div className="onboarding-coach-modal__avatar" aria-hidden>
@@ -325,7 +503,12 @@ export function CoachChatSection({
   }
 
   return (
-    <div className="coach-chat-panel">
+    <div
+      className={cn(
+        "coach-chat-panel",
+        layout === "home" && "coach-chat-panel--home",
+      )}
+    >
       <header className="onboarding-coach-modal__header">
         <div className="onboarding-coach-modal__identity">
           <div className="onboarding-coach-modal__avatar" aria-hidden>
@@ -334,7 +517,7 @@ export function CoachChatSection({
           <div>
             <h2 className="onboarding-coach-modal__title">Armstrong Coach</h2>
             <p className="onboarding-coach-modal__subtitle">
-              Ask about training, nutrition, or your plan
+              Training, diet plans, and bodybuilding advice
             </p>
           </div>
         </div>
@@ -361,68 +544,51 @@ export function CoachChatSection({
             <div className="onboarding-coach-modal__thread">
               {messages.length === 0 ? (
                 <div className="coach-chat-empty">
-                  <p className="coach-chat-empty__title">Ask your coach anything</p>
+                  <p className="coach-chat-empty__title">Ask your coach</p>
                   <p className="coach-chat-empty__copy">
-                    Splits, macros, form, prep, recovery — swap exercises in your
-                    plan or ask for a daily meal plan.
+                    Get a meal plan or gym split, tweak exercises, or ask
+                    bodybuilding questions. Tap Add to food tracker or Add to
+                    workout days when you&apos;re ready — or keep chatting to
+                    adjust.
                   </p>
                 </div>
               ) : (
-                messages.map((message) => (
-                  <div
-                    key={message.id}
-                    ref={setMessageRef(message.id)}
-                    className="scroll-mt-3"
-                  >
-                    <MessageBubble message={message} />
-                  </div>
-                ))
+                messages.map((message) => {
+                  const pendingKinds =
+                    message.role === "coach"
+                      ? getPendingActionKinds(
+                          message.id,
+                          message.content,
+                          resolvedActions,
+                        )
+                      : [];
+
+                  return (
+                    <div
+                      key={message.id}
+                      ref={setMessageRef(message.id)}
+                      className="scroll-mt-3 stack-sm"
+                    >
+                      <MessageBubble message={message} />
+                      {pendingKinds.length > 0 ? (
+                        <CoachMessageActions
+                          message={message}
+                          pendingKinds={pendingKinds}
+                          appData={appData}
+                          onApplyDietPlan={onApplyDietPlan}
+                          onApplyGymPlan={onApplyGymPlan}
+                          onApplyWorkoutChange={onApplyWorkoutChange}
+                          onResolve={handleResolveActions}
+                          onConfirm={handleConfirmApply}
+                          onError={setError}
+                        />
+                      ) : null}
+                    </div>
+                  );
+                })
               )}
 
               <CoachChatThinkingMessage active={loading} />
-
-              {showDietPlanActions && pendingDietPlan ? (
-                <div className="onboarding-coach-modal__continue stack-sm">
-                  <p className="w-full rounded-cyber border border-cyan/20 bg-cyan/5 px-3 py-2 text-xs leading-relaxed whitespace-pre-line text-dim">
-                    {formatDietPlanPreview(pendingDietPlan)}
-                  </p>
-                  <div className="flex w-full flex-wrap gap-2">
-                    <CyberButton
-                      variant="magenta"
-                      className="min-h-[2.75rem] flex-1 px-4 disabled:opacity-50"
-                      onClick={handleApplyDietPlan}
-                    >
-                      {getDietPlanApplyLabel()}
-                    </CyberButton>
-                    <CyberButton
-                      variant="cyan"
-                      className="min-h-[2.75rem] flex-1 px-4"
-                      onClick={handleKeepChatting}
-                    >
-                      Keep chatting
-                    </CyberButton>
-                  </div>
-                </div>
-              ) : null}
-
-              {showWorkoutChangeActions && pendingChange ? (
-                <div className="onboarding-coach-modal__continue">
-                  <CyberButton
-                    variant="magenta"
-                    className="min-h-[2.75rem] flex-1 px-4 disabled:opacity-50"
-                    onClick={handleApplyChange}
-                  >
-                    {getWorkoutChangeApplyLabel(pendingChange)}
-                  </CyberButton>
-                  <CyberButton
-                    variant="cyan"
-                    className="min-h-[2.75rem] flex-1 px-4"
-                    onClick={handleKeepChatting}
-                  >
-                    Keep chatting
-                  </CyberButton>
-                </div>
-              ) : null}
             </div>
           </div>
 
@@ -430,39 +596,43 @@ export function CoachChatSection({
             {error ? (
               <p className="mb-2 text-sm text-magenta">{error}</p>
             ) : null}
-            {!showActionButtons ? (
-              <form
-                className="onboarding-coach-modal__form"
-                onSubmit={(event) => {
-                  event.preventDefault();
-                  void handleSend();
+
+            <form
+              className="onboarding-coach-modal__form"
+              onSubmit={(event) => {
+                event.preventDefault();
+                void handleSend();
+              }}
+            >
+              <textarea
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    void handleSend();
+                  }
                 }}
+                rows={2}
+                placeholder="Ask about training, meals, your plan..."
+                disabled={loading}
+                className="onboarding-coach-modal__input"
+                aria-label="Message to coach"
+              />
+              <CoachChatMicButton
+                disabled={loading}
+                onAppendTranscript={appendTranscript}
+                onError={handleSpeechError}
+              />
+              <button
+                type="submit"
+                disabled={loading || !input.trim()}
+                className="onboarding-coach-modal__send"
+                aria-label="Send message"
               >
-                <textarea
-                  value={input}
-                  onChange={(event) => setInput(event.target.value)}
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" && !event.shiftKey) {
-                      event.preventDefault();
-                      void handleSend();
-                    }
-                  }}
-                  rows={2}
-                  placeholder="Ask about training, nutrition, form, prep..."
-                  disabled={loading}
-                  className="onboarding-coach-modal__input"
-                  aria-label="Message to coach"
-                />
-                <button
-                  type="submit"
-                  disabled={loading || !input.trim()}
-                  className="onboarding-coach-modal__send"
-                  aria-label="Send message"
-                >
-                  <SendIcon />
-                </button>
-              </form>
-            ) : null}
+                <SendIcon />
+              </button>
+            </form>
           </div>
         </>
       )}

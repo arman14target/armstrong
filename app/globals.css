@@ -93,6 +93,8 @@
   --space-reveal-y: 1.25rem;
   --space-btn-x: 1.25rem;
   --space-btn-y: 0.75rem;
+  --home-bottom-nav-offset: calc(5.75rem + var(--safe-bottom));
+  --home-coach-top-offset: calc(0.75rem + var(--safe-top));
 }
 
 @media (min-width: 640px) {
@@ -265,6 +267,40 @@
 
   .home-screen__tab-content {
     flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .page-shell--home-coach {
+    overflow: hidden;
+    padding-bottom: 0;
+  }
+
+  .page-shell--home-coach .home-screen__content {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .home-coach-tab {
+    position: fixed;
+    top: var(--home-coach-top-offset);
+    right: calc(var(--space-page-x) + var(--safe-right));
+    bottom: var(--home-bottom-nav-offset);
+    left: calc(var(--space-page-x) + var(--safe-left));
+    z-index: 20;
+    display: flex;
+    min-height: 0;
+    flex-direction: column;
+    pointer-events: none;
+  }
+
+  .home-coach-tab > * {
+    pointer-events: auto;
+  }
+
+  @media (min-width: 640px) {
+    :root {
+      --home-coach-top-offset: calc(1rem + var(--safe-top));
+    }
   }
 
   .home-screen__brand {
@@ -1216,7 +1252,6 @@
     font-size: 0.625rem;
     letter-spacing: 0.14em;
     color: var(--color-green);
-    animation: hero-badge-pulse 2.4s ease-in-out infinite;
   }
 
   .landing-subhead {
@@ -1492,7 +1527,6 @@
       transparent 70%
     );
     filter: blur(32px);
-    animation: hero-glow-pulse 3.5s ease-in-out infinite;
     pointer-events: none;
   }
 
@@ -1773,8 +1807,33 @@
   }
 
   .coach-chat-panel {
-    min-height: 22rem;
+    min-height: 18rem;
+    height: clamp(18rem, calc(100dvh - 19rem), 34rem);
+    max-height: clamp(18rem, calc(100dvh - 19rem), 34rem);
     box-shadow: var(--shadow-panel);
+  }
+
+  .coach-chat-panel--home {
+    flex: 1 1 auto;
+    min-height: 0;
+    height: 100%;
+    max-height: none;
+    border-radius: var(--radius-panel);
+  }
+
+  .coach-chat-panel--home .onboarding-coach-modal__messages {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  .coach-chat-panel--home .onboarding-coach-modal__composer {
+    flex-shrink: 0;
+    padding-bottom: max(0.65rem, calc(var(--safe-bottom) * 0.25));
+    box-shadow: 0 -12px 28px color-mix(in srgb, var(--color-bg) 88%, transparent);
+  }
+
+  .coach-chat-panel--home .onboarding-coach-modal__header {
+    flex-shrink: 0;
   }
 
   .coach-chat-empty {
@@ -1890,6 +1949,8 @@
     min-height: 0;
     flex: 1;
     overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
     padding: 1rem;
     background: color-mix(in srgb, var(--color-bg) 35%, transparent);
   }
@@ -1975,6 +2036,11 @@
     color: color-mix(in srgb, var(--color-dim) 85%, transparent);
   }
 
+  .coach-message-actions {
+    margin-left: 2.3rem;
+    max-width: min(100%, 28rem);
+  }
+
   .onboarding-coach-modal__composer {
     shrink: 0;
     border-top: 1px solid var(--color-line);
@@ -1990,6 +2056,7 @@
 
   .onboarding-coach-modal__form {
     display: flex;
+    flex-wrap: wrap;
     align-items: flex-end;
     gap: 0.55rem;
   }
@@ -2058,6 +2125,164 @@
   .onboarding-coach-modal__send svg {
     width: 1.1rem;
     height: 1.1rem;
+  }
+
+  .onboarding-coach-modal__mic {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 1px solid var(--color-line);
+    border-radius: 999px;
+    background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+    color: var(--color-heading);
+    cursor: pointer;
+    transition:
+      transform 150ms ease,
+      box-shadow 200ms ease,
+      opacity 200ms ease,
+      border-color 200ms ease,
+      color 200ms ease;
+  }
+
+  .onboarding-coach-modal__mic:hover:not(:disabled) {
+    border-color: color-mix(in srgb, var(--color-secondary) 45%, var(--color-line));
+    color: var(--color-secondary);
+  }
+
+  .onboarding-coach-modal__mic:active:not(:disabled) {
+    transform: scale(0.96);
+  }
+
+  .onboarding-coach-modal__mic:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .onboarding-coach-modal__mic--listening {
+    border-color: var(--color-secondary);
+    color: var(--color-secondary);
+    background: color-mix(in srgb, var(--color-secondary) 14%, var(--color-bg));
+    box-shadow: 0 0 0 2px color-mix(in srgb, var(--color-secondary) 28%, transparent);
+  }
+
+  .onboarding-coach-modal__mic svg {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .coach-chat-voice__bar {
+    flex: 0 0 100%;
+    order: -1;
+    display: grid;
+    gap: 0.45rem;
+    border-radius: 1rem;
+    border: 1px solid color-mix(in srgb, var(--color-secondary) 35%, var(--color-line));
+    background: color-mix(in srgb, var(--color-secondary) 8%, var(--color-bg));
+    padding: 0.75rem 0.9rem;
+  }
+
+  .coach-chat-voice__status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+
+  .coach-chat-voice__rec {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-size: 0.75rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    color: var(--color-secondary);
+  }
+
+  .coach-chat-voice__rec-dot {
+    width: 0.55rem;
+    height: 0.55rem;
+    border-radius: 999px;
+    background: var(--color-secondary);
+    animation: coach-rec-blink 1s ease-in-out infinite;
+  }
+
+  .coach-chat-voice__timer {
+    font-variant-numeric: tabular-nums;
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: var(--color-heading);
+  }
+
+  .coach-chat-voice__preview {
+    margin: 0;
+    min-height: 1.25rem;
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: var(--color-heading);
+  }
+
+  .coach-chat-voice__hint {
+    margin: 0;
+    font-size: 0.75rem;
+    color: var(--color-dim);
+  }
+
+  .coach-chat-voice__mic-wrap {
+    position: relative;
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .coach-chat-voice__ring {
+    position: absolute;
+    inset: 50% auto auto 50%;
+    translate: -50% -50%;
+    border-radius: 999px;
+    pointer-events: none;
+    transition:
+      width 80ms linear,
+      height 80ms linear,
+      opacity 80ms linear,
+      box-shadow 80ms linear;
+  }
+
+  .coach-chat-voice__ring--inner {
+    width: calc(2.75rem + var(--mic-level, 0) * 1.1rem);
+    height: calc(2.75rem + var(--mic-level, 0) * 1.1rem);
+    box-shadow: 0 0 var(--mic-glow-blur, 12px)
+      color-mix(in srgb, var(--color-secondary) calc(35% + var(--mic-level, 0) * 55%), transparent);
+    opacity: calc(0.25 + var(--mic-level, 0) * 0.65);
+  }
+
+  .coach-chat-voice__ring--outer {
+    width: calc(3.2rem + var(--mic-level, 0) * 2rem);
+    height: calc(3.2rem + var(--mic-level, 0) * 2rem);
+    box-shadow: 0 0 var(--mic-glow-spread, 10px)
+      color-mix(in srgb, var(--color-secondary) calc(18% + var(--mic-level, 0) * 42%), transparent);
+    opacity: calc(0.15 + var(--mic-level, 0) * 0.45);
+  }
+
+  .coach-chat-voice__mic-wrap--recording .onboarding-coach-modal__mic {
+    position: relative;
+    z-index: 1;
+  }
+
+  @keyframes coach-rec-blink {
+    0%,
+    100% {
+      opacity: 1;
+      transform: scale(1);
+    }
+
+    50% {
+      opacity: 0.45;
+      transform: scale(0.88);
+    }
   }
 
   .onboarding-coach-modal__continue {
@@ -2151,7 +2376,6 @@
       transparent 72%
     );
     filter: blur(32px);
-    animation: hero-glow-pulse 3.5s ease-in-out infinite;
     pointer-events: none;
   }
 
@@ -2465,14 +2689,6 @@
       border-color 400ms ease;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .landing-kicker__badge,
-    .landing-callout-anchor,
-    .landing-hero-visual__glow,
-    .landing-hero-figure__warm-glow {
-      animation: none !important;
-    }
-  }
 
   .download-btn {
     display: flex;
@@ -2650,39 +2866,6 @@ html[data-page="landing"] .crt-shell::after {
 @keyframes blink {
   50% {
     opacity: 0;
-  }
-}
-
-@keyframes hero-enter {
-  from {
-    opacity: 0;
-    transform: translateY(1.25rem);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-@keyframes hero-glow-pulse {
-  0%,
-  100% {
-    opacity: 0.65;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.06);
-  }
-}
-
-@keyframes hero-badge-pulse {
-  0%,
-  100% {
-    box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-green) 0%, transparent);
-  }
-  50% {
-    box-shadow: 0 0 14px color-mix(in srgb, var(--color-green) 35%, transparent);
   }
 }
 

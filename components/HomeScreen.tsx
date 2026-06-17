@@ -24,6 +24,7 @@ import { GlitchText } from "@/components/ui/GlitchText";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { useGymStore } from "@/hooks/useGymStore";
+import { cn } from "@/lib/cn";
 import { WORKOUT_LABELS, WORKOUT_TYPES } from "@/lib/types";
 import {
   countLoggedWorkouts,
@@ -46,7 +47,7 @@ const homeTabs: Array<{
 
 export function HomeScreen() {
   const router = useRouter();
-  const { data, hydrated, resetAll, syncAfterAuth, addCustomDay, removeCustomDay, saveNutritionProfile, addFoodEntry, removeFoodEntry, applyCoachWorkoutChange, applyCoachDietPlan, togglePlannedMealComplete } =
+  const { data, hydrated, resetAll, syncAfterAuth, addCustomDay, removeCustomDay, saveNutritionProfile, addFoodEntry, addPlannedFoodEntry, updatePlannedFoodEntry, removeFoodEntry, applyCoachWorkoutChange, applyCoachGymPlan, applyCoachDietPlan, togglePlannedMealComplete } =
     useGymStore();
   const [showAddDayModal, setShowAddDayModal] = useState(false);
   const [activeTab, setActiveTab] = useState<HomeTab>("workout");
@@ -119,7 +120,12 @@ export function HomeScreen() {
   }
 
   return (
-    <main className="page-shell page-shell--home page-shell--footer">
+    <main
+      className={cn(
+        "page-shell page-shell--home page-shell--footer",
+        activeTab === "coach" && "page-shell--home-coach",
+      )}
+    >
       <div className="home-screen__content">
       <div className="home-screen__tab-content">
       {activeTab === "workout" ? (
@@ -186,20 +192,23 @@ export function HomeScreen() {
             onSave={saveNutritionProfile}
             onAddFood={addFoodEntry}
             onRemoveFood={removeFoodEntry}
+            onAddPlannedFood={addPlannedFoodEntry}
+            onUpdatePlannedFood={updatePlannedFoodEntry}
             onTogglePlannedMeal={togglePlannedMealComplete}
           />
         </RevealOnScroll>
       ) : null}
 
       {activeTab === "coach" ? (
-        <RevealOnScroll>
-          <SectionHead index="04." title="Coach" />
+        <div className="home-coach-tab">
           <CoachChatSection
+            layout="home"
             appData={data}
             onApplyWorkoutChange={applyCoachWorkoutChange}
             onApplyDietPlan={applyCoachDietPlan}
+            onApplyGymPlan={applyCoachGymPlan}
           />
-        </RevealOnScroll>
+        </div>
       ) : null}
 
       {activeTab === "profile" ? (
@@ -213,29 +222,33 @@ export function HomeScreen() {
       ) : null}
       </div>
 
-      <section className="hero-section home-screen__brand">
-        <div className="w-full">
-          <GlitchText
-            text="ARMSTRONG"
-            className="text-2xl tracking-[2px] sm:text-4xl lg:text-5xl"
-          />
-          <p className="mt-1 text-xs text-dim sm:text-sm">
-            Train hard. Track everything.
-          </p>
-        </div>
-      </section>
-      </div>
+      {activeTab !== "coach" ? (
+        <>
+          <section className="hero-section home-screen__brand">
+            <div className="w-full">
+              <GlitchText
+                text="ARMSTRONG"
+                className="text-2xl tracking-[2px] sm:text-4xl lg:text-5xl"
+              />
+              <p className="mt-1 text-xs text-dim sm:text-sm">
+                Train hard. Track everything.
+              </p>
+            </div>
+          </section>
 
-      <footer className="home-screen__footer stack-md text-center">
-        <p className="text-xs tracking-wide text-dim">
-          {completedCount}
-          <span className="text-cyan">+</span> logged
-        </p>
-        <p className="text-xs tracking-wide text-dim">
-          Built with <span className="text-magenta">♥</span> and protein shakes
-          — Armstrong
-        </p>
-      </footer>
+          <footer className="home-screen__footer stack-md text-center">
+            <p className="text-xs tracking-wide text-dim">
+              {completedCount}
+              <span className="text-cyan">+</span> logged
+            </p>
+            <p className="text-xs tracking-wide text-dim">
+              Built with <span className="text-magenta">♥</span> and protein shakes
+              — Armstrong
+            </p>
+          </footer>
+        </>
+      ) : null}
+      </div>
 
       <AddDayModal
         open={showAddDayModal}

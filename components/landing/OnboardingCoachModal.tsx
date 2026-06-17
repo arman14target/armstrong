@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useLayoutEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
+import { CoachChatMicButton } from "@/components/CoachChatMicButton";
 import { CloseIcon, CoachIcon } from "@/components/icons/ActionIcons";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { IconButton } from "@/components/ui/IconButton";
@@ -157,6 +158,16 @@ export function OnboardingCoachModal({
   const scrollRef = useRef<HTMLDivElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const configured = isGeminiConfigured();
+
+  const appendTranscript = useCallback((text: string) => {
+    setInput((prev) => (prev ? `${prev.trimEnd()} ${text}` : text).trimStart());
+  }, []);
+
+  const handleSpeechError = useCallback((message: string | null) => {
+    if (message) {
+      setError(message);
+    }
+  }, []);
 
   const scrollToLatest = () => {
     messagesEndRef.current?.scrollIntoView({ block: "end" });
@@ -435,6 +446,11 @@ export function OnboardingCoachModal({
                     disabled={loading || importing}
                     className="onboarding-coach-modal__input"
                     aria-label="Message to coach"
+                  />
+                  <CoachChatMicButton
+                    disabled={loading || importing}
+                    onAppendTranscript={appendTranscript}
+                    onError={handleSpeechError}
                   />
                   <button
                     type="submit"

@@ -12,17 +12,10 @@ export function LandingScrollReveal() {
     const scrollTargets = document.querySelectorAll<HTMLElement>(
       "[data-reveal='scroll']",
     );
-    const heroTargets = document.querySelectorAll<HTMLElement>(
-      "[data-reveal='hero']",
-    );
 
     const reveal = (element: HTMLElement) => {
       element.classList.add("reveal-visible");
     };
-
-    heroTargets.forEach((element) => {
-      requestAnimationFrame(() => reveal(element));
-    });
 
     if (scrollTargets.length === 0) {
       return;
