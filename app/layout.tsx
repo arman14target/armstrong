@@ -1,20 +1,22 @@
 import type { Metadata, Viewport } from "next";
-import { JetBrains_Mono, Orbitron } from "next/font/google";
+import { Barlow_Condensed, DM_Sans } from "next/font/google";
 import { AppShell } from "@/components/AppShell";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { theme } from "@/lib/theme";
 import "./globals.css";
 
 const basePath = process.env.NEXT_PUBLIC_BASE_PATH ?? "";
 
-const jetbrainsMono = JetBrains_Mono({
+const barlowCondensed = Barlow_Condensed({
   subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
+  weight: ["600", "700", "800"],
+  variable: "--font-barlow-condensed",
   display: "swap",
 });
 
-const orbitron = Orbitron({
+const dmSans = DM_Sans({
   subsets: ["latin"],
-  variable: "--font-orbitron",
+  variable: "--font-dm-sans",
   display: "swap",
 });
 
@@ -45,7 +47,7 @@ export const viewport: Viewport = {
   initialScale: 1,
   maximumScale: 1,
   viewportFit: "cover",
-  themeColor: "#04060d",
+  themeColor: theme.colors.background,
 };
 
 export default function RootLayout({
@@ -56,7 +58,7 @@ export default function RootLayout({
   return (
     <html
       lang="en"
-      className={`${jetbrainsMono.variable} ${orbitron.variable}`}
+      className={`${barlowCondensed.variable} ${dmSans.variable}`}
     >
       <head>
         {basePath ? <base href={`${basePath}/`} /> : null}

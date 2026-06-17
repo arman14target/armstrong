@@ -3,6 +3,7 @@ import { cn } from "@/lib/cn";
 
 type CyberButtonVariant = "cyan" | "magenta" | "green";
 
+/** cyan = primary gold, magenta = secondary orange, green = success */
 const variantStyles: Record<CyberButtonVariant, string> = {
   cyan: "cyber-btn--cyan",
   magenta: "cyber-btn--magenta",

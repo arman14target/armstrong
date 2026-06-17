@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from "react";
 import { CheckIcon } from "@/components/icons/ActionIcons";
 import { IconButton } from "@/components/ui/IconButton";
 import { formatPreviousSet } from "@/lib/formatSetDisplay";
+import { tryVibrate } from "@/lib/vibration";
 import { cn } from "@/lib/cn";
 
 const WEIGHT_STEP = 2.5;
@@ -164,6 +165,7 @@ export function SetRow({
       return;
     }
 
+    tryVibrate();
     onComplete(weightValue, parseInt(reps.trim(), 10));
   };
 

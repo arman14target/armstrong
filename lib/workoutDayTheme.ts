@@ -1,6 +1,12 @@
 import type { WorkoutType } from "@/lib/types";
+import { workoutDayAccentMap } from "@/lib/theme";
 
-export type WorkoutDayTheme = "cyan" | "green" | "magenta" | "amber";
+/**
+ * Workout day accent keys map to athletic theme colors via CSS aliases:
+ * cyan → primary (electric gold), magenta → secondary (intense orange),
+ * green → success, amber → bronze (pull day).
+ */
+export type WorkoutDayTheme = keyof typeof workoutDayAccentMap;
 
 export const WORKOUT_DAY_THEMES: WorkoutDayTheme[] = [
   "cyan",
