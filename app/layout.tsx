@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed, DM_Sans } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import { AppShell } from "@/components/AppShell";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { theme } from "@/lib/theme";
@@ -66,6 +67,7 @@ export default function RootLayout({
       <body>
         <AppShell>{children}</AppShell>
         <ServiceWorkerRegister />
+        <Analytics />
       </body>
     </html>
   );
