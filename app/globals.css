@@ -1755,6 +1755,378 @@
     color: var(--color-dim);
   }
 
+  .onboarding-coach-modal,
+  .coach-chat-panel {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    border-radius: var(--radius-panel);
+    border: 1px solid color-mix(in srgb, var(--color-secondary) 30%, var(--color-line));
+    background: var(--color-panel);
+  }
+
+  .onboarding-coach-modal {
+    height: min(96dvh, 56rem);
+    width: min(96vw, 64rem);
+    max-width: none;
+    box-shadow: var(--shadow-modal);
+  }
+
+  .coach-chat-panel {
+    min-height: 22rem;
+    box-shadow: var(--shadow-panel);
+  }
+
+  .coach-chat-empty {
+    border-radius: 1rem;
+    border: 1px dashed color-mix(in srgb, var(--color-secondary) 25%, var(--color-line));
+    background: color-mix(in srgb, var(--color-secondary) 5%, var(--color-bg));
+    padding: 1.25rem 1rem;
+    text-align: center;
+  }
+
+  .coach-chat-empty__title {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-heading);
+  }
+
+  .coach-chat-empty__copy {
+    margin: 0.45rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--color-dim);
+  }
+
+  .onboarding-coach-modal__header {
+    display: flex;
+    shrink: 0;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    border-bottom: 1px solid var(--color-line);
+    background: color-mix(in srgb, var(--color-secondary) 6%, var(--color-bg));
+    padding: 0.85rem 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .onboarding-coach-modal__header {
+      padding: 1rem 1.25rem;
+    }
+  }
+
+  .onboarding-coach-modal__identity {
+    display: flex;
+    min-width: 0;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .onboarding-coach-modal__avatar {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--color-secondary) 35%, transparent);
+    background: linear-gradient(
+      145deg,
+      color-mix(in srgb, var(--color-secondary) 22%, transparent),
+      color-mix(in srgb, var(--color-primary) 12%, transparent)
+    );
+    color: var(--color-secondary);
+  }
+
+  .onboarding-coach-modal__avatar svg {
+    width: 1.15rem;
+    height: 1.15rem;
+  }
+
+  .onboarding-coach-modal__title {
+    margin: 0;
+    font-family: var(--font-display);
+    font-size: 1rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--color-heading);
+  }
+
+  .onboarding-coach-modal__subtitle {
+    margin: 0.15rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.3;
+    color: var(--color-dim);
+  }
+
+  .onboarding-coach-modal__actions {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+
+  .onboarding-coach-modal__restart {
+    border: none;
+    background: transparent;
+    padding: 0.25rem 0.5rem;
+    font-size: 0.8125rem;
+    color: var(--color-dim);
+    cursor: pointer;
+    transition: color 200ms ease;
+  }
+
+  .onboarding-coach-modal__restart:hover:not(:disabled) {
+    color: var(--color-secondary);
+  }
+
+  .onboarding-coach-modal__restart:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  .onboarding-coach-modal__messages {
+    min-height: 0;
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+    background: color-mix(in srgb, var(--color-bg) 35%, transparent);
+  }
+
+  @media (min-width: 640px) {
+    .onboarding-coach-modal__messages {
+      padding: 1.25rem 1.5rem;
+    }
+  }
+
+  .onboarding-coach-modal__thread {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+  }
+
+  .onboarding-coach-message {
+    display: flex;
+    gap: 0.55rem;
+    max-width: 100%;
+  }
+
+  .onboarding-coach-message--user {
+    flex-direction: row-reverse;
+    align-self: flex-end;
+  }
+
+  .onboarding-coach-message__avatar {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 1.75rem;
+    height: 1.75rem;
+    margin-top: 0.15rem;
+    border-radius: 999px;
+    border: 1px solid color-mix(in srgb, var(--color-secondary) 30%, transparent);
+    background: color-mix(in srgb, var(--color-secondary) 12%, transparent);
+    color: var(--color-secondary);
+  }
+
+  .onboarding-coach-message__avatar svg {
+    width: 0.9rem;
+    height: 0.9rem;
+  }
+
+  .onboarding-coach-message__bubble {
+    max-width: min(100%, 28rem);
+    border-radius: 1rem;
+    padding: 0.75rem 0.95rem;
+  }
+
+  .onboarding-coach-message--coach .onboarding-coach-message__bubble {
+    border: 1px solid var(--color-line);
+    background: color-mix(in srgb, var(--color-panel) 95%, var(--color-bg));
+    border-top-left-radius: 0.35rem;
+  }
+
+  .onboarding-coach-message--user .onboarding-coach-message__bubble {
+    border: 1px solid color-mix(in srgb, var(--color-secondary) 25%, transparent);
+    background: color-mix(in srgb, var(--color-secondary) 14%, var(--color-bg));
+    border-top-right-radius: 0.35rem;
+  }
+
+  .onboarding-coach-message__text {
+    margin: 0;
+    white-space: pre-wrap;
+    font-size: 0.9375rem;
+    line-height: 1.55;
+    color: var(--color-heading);
+  }
+
+  @media (min-width: 640px) {
+    .onboarding-coach-message__text {
+      font-size: 1rem;
+    }
+  }
+
+  .onboarding-coach-message__time {
+    display: block;
+    margin-top: 0.35rem;
+    font-size: 0.6875rem;
+    color: color-mix(in srgb, var(--color-dim) 85%, transparent);
+  }
+
+  .onboarding-coach-modal__composer {
+    shrink: 0;
+    border-top: 1px solid var(--color-line);
+    background: var(--color-panel);
+    padding: 0.85rem 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .onboarding-coach-modal__composer {
+      padding: 1rem 1.25rem;
+    }
+  }
+
+  .onboarding-coach-modal__form {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.55rem;
+  }
+
+  .onboarding-coach-modal__input {
+    min-height: 2.75rem;
+    flex: 1;
+    resize: none;
+    border-radius: 1.25rem;
+    border: 1px solid var(--color-line);
+    background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+    padding: 0.7rem 1rem;
+    font-size: 0.9375rem;
+    line-height: 1.45;
+    color: var(--color-heading);
+    outline: none;
+    transition:
+      border-color 200ms ease,
+      box-shadow 200ms ease;
+  }
+
+  .onboarding-coach-modal__input::placeholder {
+    color: var(--color-dim);
+  }
+
+  .onboarding-coach-modal__input:focus {
+    border-color: color-mix(in srgb, var(--color-secondary) 45%, var(--color-line));
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-secondary) 12%, transparent);
+  }
+
+  .onboarding-coach-modal__input:disabled {
+    opacity: 0.6;
+  }
+
+  .onboarding-coach-modal__send {
+    display: inline-flex;
+    flex-shrink: 0;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: none;
+    border-radius: 999px;
+    background: var(--color-secondary);
+    color: var(--color-on-magenta);
+    cursor: pointer;
+    transition:
+      transform 150ms ease,
+      box-shadow 200ms ease,
+      opacity 200ms ease;
+  }
+
+  .onboarding-coach-modal__send:hover:not(:disabled) {
+    box-shadow: 0 0 18px color-mix(in srgb, var(--color-secondary) 45%, transparent);
+  }
+
+  .onboarding-coach-modal__send:active:not(:disabled) {
+    transform: scale(0.96);
+  }
+
+  .onboarding-coach-modal__send:disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+  }
+
+  .onboarding-coach-modal__send svg {
+    width: 1.1rem;
+    height: 1.1rem;
+  }
+
+  .onboarding-coach-modal__continue {
+    display: flex;
+    flex-direction: column;
+    gap: 0.65rem;
+    padding-top: 0.35rem;
+  }
+
+  @media (min-width: 640px) {
+    .onboarding-coach-modal__continue {
+      flex-direction: row;
+    }
+  }
+
+  .onboarding-coach-modal__setup {
+    border-radius: 1rem;
+    border: 1px solid var(--color-line);
+    background: color-mix(in srgb, var(--color-bg) 55%, transparent);
+    padding: 1rem;
+  }
+
+  .onboarding-coach-modal__setup-title {
+    margin: 0;
+    font-size: 0.9375rem;
+    font-weight: 600;
+    color: var(--color-heading);
+  }
+
+  .onboarding-coach-modal__setup-copy {
+    margin: 0.35rem 0 0;
+    font-size: 0.8125rem;
+    line-height: 1.5;
+    color: var(--color-dim);
+  }
+
+  .onboarding-coach-modal__setup-copy code {
+    font-size: 0.75rem;
+    color: var(--color-secondary);
+  }
+
+  .onboarding-coach-status {
+    display: flex;
+    gap: 0.55rem;
+  }
+
+  .onboarding-coach-status__bubble {
+    max-width: min(100%, 28rem);
+    border-radius: 1rem;
+    border: 1px solid color-mix(in srgb, var(--color-secondary) 22%, var(--color-line));
+    border-top-left-radius: 0.35rem;
+    background: color-mix(in srgb, var(--color-secondary) 8%, var(--color-panel));
+    padding: 0.75rem 0.95rem;
+  }
+
+  .onboarding-coach-status__label {
+    margin: 0;
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--color-secondary);
+  }
+
+  .onboarding-coach-status__text {
+    margin: 0.35rem 0 0;
+    font-size: 0.9375rem;
+    line-height: 1.5;
+    color: var(--color-heading);
+  }
+
   .landing-hero-figure {
     position: relative;
     z-index: 1;

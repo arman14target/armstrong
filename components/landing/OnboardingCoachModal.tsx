@@ -2,10 +2,9 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
-import { CloseIcon } from "@/components/icons/ActionIcons";
+import { CloseIcon, CoachIcon } from "@/components/icons/ActionIcons";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { IconButton } from "@/components/ui/IconButton";
-import { PanelDot } from "@/components/ui/PanelDot";
 import { cn } from "@/lib/cn";
 import {
   type CoachChatMessage,
@@ -56,15 +55,30 @@ function formatTime(iso: string): string {
   }).format(new Date(iso));
 }
 
+function SendIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M12 19V5" />
+      <path d="m5 12 7-7 7 7" />
+    </svg>
+  );
+}
+
 function SetupPanel() {
   return (
-    <div className="stack-md rounded-cyber border border-line bg-bg/50 p-[var(--space-panel)]">
-      <p className="text-sm text-heading">Coach unavailable</p>
-      <p className="text-xs leading-relaxed text-dim">
-        The onboarding coach needs a Gemini API key. Add{" "}
-        <code className="text-heading">NEXT_PUBLIC_GEMINI_API_KEY</code> to{" "}
-        <code className="text-heading">.env.local</code> and restart the dev
-        server.
+    <div className="onboarding-coach-modal__setup">
+      <p className="onboarding-coach-modal__setup-title">Coach unavailable</p>
+      <p className="onboarding-coach-modal__setup-copy">
+        Add <code>NEXT_PUBLIC_GEMINI_API_KEY</code> to{" "}
+        <code>.env.local</code> and restart the dev server to chat here.
       </p>
     </div>
   );
@@ -77,21 +91,25 @@ function MessageBubble({ message }: { message: CoachChatMessage }) {
     : stripOnboardingMarkers(message.content);
 
   return (
-    <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
-      <div
-        className={cn(
-          "max-w-[92%] rounded-cyber border px-4 py-3 sm:max-w-[80%]",
-          isUser
-            ? "border-cyan/35 bg-cyan/10"
-            : "border-green/30 bg-green/5",
-        )}
-      >
-        <p className="text-[10px] tracking-wide text-dim uppercase">
-          {isUser ? "You" : "Coach"} · {formatTime(message.createdAt)}
-        </p>
-        <p className="mt-1.5 whitespace-pre-wrap text-base leading-relaxed text-heading sm:text-lg">
-          {displayContent}
-        </p>
+    <div
+      className={cn(
+        "onboarding-coach-message",
+        isUser ? "onboarding-coach-message--user" : "onboarding-coach-message--coach",
+      )}
+    >
+      {!isUser ? (
+        <span className="onboarding-coach-message__avatar" aria-hidden>
+          <CoachIcon />
+        </span>
+      ) : null}
+      <div className="onboarding-coach-message__bubble">
+        <p className="onboarding-coach-message__text">{displayContent}</p>
+        <time
+          className="onboarding-coach-message__time"
+          dateTime={message.createdAt}
+        >
+          {formatTime(message.createdAt)}
+        </time>
       </div>
     </div>
   );
@@ -282,30 +300,30 @@ export function OnboardingCoachModal({
         onClick={loading || importing ? undefined : onClose}
       />
 
-      <div
-        className={cn(
-          "relative z-10 flex h-[min(96dvh,56rem)] w-[min(96vw,64rem)] max-w-none flex-col overflow-hidden rounded-panel border border-green/35 bg-panel shadow-[var(--shadow-modal)]",
-        )}
-      >
-        <div className="panel-header shrink-0 justify-between">
-          <div className="inline-flex min-w-0 items-center">
-            <PanelDot variant="green" />
-            <span
-              id="onboarding-coach-title"
-              className="ml-[var(--space-inline)] tracking-wide text-green"
-            >
-              Armstrong Coach
-            </span>
+      <div className="onboarding-coach-modal relative z-10">
+        <header className="onboarding-coach-modal__header">
+          <div className="onboarding-coach-modal__identity">
+            <div className="onboarding-coach-modal__avatar" aria-hidden>
+              <CoachIcon />
+            </div>
+            <div>
+              <h2 id="onboarding-coach-title" className="onboarding-coach-modal__title">
+                Armstrong Coach
+              </h2>
+              <p className="onboarding-coach-modal__subtitle">
+                Your personal fitness coach
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="onboarding-coach-modal__actions">
             {visibleMessages.length > 1 ? (
               <button
                 type="button"
                 onClick={handleRestart}
                 disabled={loading || importing}
-                className="text-xs tracking-wide text-dim uppercase transition-colors hover:text-magenta disabled:opacity-50"
+                className="onboarding-coach-modal__restart"
               >
-                Restart
+                Start over
               </button>
             ) : null}
             <IconButton
@@ -318,7 +336,7 @@ export function OnboardingCoachModal({
               <CloseIcon />
             </IconButton>
           </div>
-        </div>
+        </header>
 
         {!configured ? (
           <div className="flex min-h-0 flex-1 flex-col">
@@ -327,76 +345,77 @@ export function OnboardingCoachModal({
             </div>
             <div
               ref={scrollRef}
-              className="min-h-0 flex-1 space-y-4 overflow-y-auto p-[var(--space-panel)] sm:p-6"
+              className="onboarding-coach-modal__messages"
             >
-              {visibleMessages.map((message) => (
-                <MessageBubble key={message.id} message={message} />
-              ))}
+              <div className="onboarding-coach-modal__thread">
+                {visibleMessages.map((message) => (
+                  <MessageBubble key={message.id} message={message} />
+                ))}
+              </div>
             </div>
-            <div className="shrink-0 border-t border-line p-[var(--space-panel)]">
-              <p className="text-xs text-dim">
+            <div className="onboarding-coach-modal__composer">
+              <p className="text-sm text-dim">
                 Add your API key above to chat with the coach.
               </p>
             </div>
           </div>
         ) : (
           <>
-            <div
-              ref={scrollRef}
-              className="min-h-0 flex-1 space-y-4 overflow-y-auto p-[var(--space-panel)] sm:p-6"
-            >
-              {visibleMessages.map((message) => (
-                <MessageBubble key={message.id} message={message} />
-              ))}
+            <div ref={scrollRef} className="onboarding-coach-modal__messages">
+              <div className="onboarding-coach-modal__thread">
+                {visibleMessages.map((message) => (
+                  <MessageBubble key={message.id} message={message} />
+                ))}
 
-              {loading || importing ? (
-                <CoachStatusMessage
-                  active
-                  phase={
-                    importing
-                      ? "importing"
-                      : getCoachThinkingPhase(visibleMessages.length)
-                  }
-                  intervalMs={3400}
-                />
-              ) : null}
+                {loading || importing ? (
+                  <CoachStatusMessage
+                    active
+                    phase={
+                      importing
+                        ? "importing"
+                        : getCoachThinkingPhase(visibleMessages.length)
+                    }
+                    intervalMs={3400}
+                  />
+                ) : null}
 
-              {showContinueActions ? (
-                <div className="flex flex-col gap-3 pt-2 sm:flex-row">
-                  {error ? (
-                    <p className="mb-0 w-full text-center text-sm text-magenta sm:mb-0 sm:basis-full">
-                      {error}
-                    </p>
-                  ) : null}
-                  <CyberButton
-                    variant="green"
-                    className="min-h-[3rem] flex-1 px-5 text-base disabled:opacity-50"
-                    disabled={importing}
-                    onClick={() => void handleContinueWithApp()}
-                  >
-                    {importing ? "Setting up..." : "Continue in app"}
-                  </CyberButton>
-                  <CyberButton
-                    variant="cyan"
-                    className="min-h-[3rem] flex-1 px-5 text-base"
-                    onClick={handleKeepChatting}
-                    disabled={importing}
-                  >
-                    Keep chatting
-                  </CyberButton>
-                </div>
-              ) : null}
+                {showContinueActions ? (
+                  <div className="onboarding-coach-modal__continue">
+                    {error ? (
+                      <p className="mb-0 w-full text-center text-sm text-magenta sm:basis-full">
+                        {error}
+                      </p>
+                    ) : null}
+                    <CyberButton
+                      variant="magenta"
+                      className="min-h-[3rem] flex-1 px-5 text-base disabled:opacity-50"
+                      disabled={importing}
+                      onClick={() => void handleContinueWithApp()}
+                    >
+                      {importing ? "Setting up your plans..." : "Continue in app"}
+                    </CyberButton>
+                    <CyberButton
+                      variant="cyan"
+                      className="min-h-[3rem] flex-1 px-5 text-base"
+                      onClick={handleKeepChatting}
+                      disabled={importing}
+                    >
+                      Keep chatting
+                    </CyberButton>
+                  </div>
+                ) : null}
 
-              <div ref={messagesEndRef} aria-hidden="true" />
+                <div ref={messagesEndRef} aria-hidden="true" />
+              </div>
             </div>
 
             {!showContinueActions ? (
-              <div className="shrink-0 border-t border-line p-[var(--space-panel)] sm:p-6">
+              <div className="onboarding-coach-modal__composer">
                 {error ? (
-                  <p className="mb-2 text-xs text-magenta">{error}</p>
+                  <p className="mb-2 text-sm text-magenta">{error}</p>
                 ) : null}
                 <form
-                  className="flex flex-col gap-2 sm:flex-row"
+                  className="onboarding-coach-modal__form"
                   onSubmit={(event) => {
                     event.preventDefault();
                     void handleSend();
@@ -411,20 +430,20 @@ export function OnboardingCoachModal({
                         void handleSend();
                       }
                     }}
-                    rows={3}
-                    placeholder="Tell the coach your goal, age, weight..."
+                    rows={2}
+                    placeholder="Tell me your goal — e.g. I want to bulk, train 4 days, and hit my protein"
                     disabled={loading || importing}
-                    className="cyber-input min-h-[4rem] flex-1 resize-none py-3 text-base sm:min-h-[4.5rem]"
+                    className="onboarding-coach-modal__input"
                     aria-label="Message to coach"
                   />
-                  <CyberButton
+                  <button
                     type="submit"
-                    variant="green"
                     disabled={loading || !input.trim()}
-                    className="min-h-[4rem] px-5 text-base disabled:opacity-50 sm:min-h-[4.5rem]"
+                    className="onboarding-coach-modal__send"
+                    aria-label="Send message"
                   >
-                    Send
-                  </CyberButton>
+                    <SendIcon />
+                  </button>
                 </form>
               </div>
             ) : null}

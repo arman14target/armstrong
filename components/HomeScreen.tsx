@@ -43,7 +43,7 @@ const homeTabs: Array<{
 
 export function HomeScreen() {
   const router = useRouter();
-  const { data, hydrated, resetAll, addCustomDay, removeCustomDay, saveNutritionProfile, addFoodEntry, removeFoodEntry, applyCoachWorkoutChange } =
+  const { data, hydrated, resetAll, addCustomDay, removeCustomDay, saveNutritionProfile, addFoodEntry, removeFoodEntry, applyCoachWorkoutChange, applyCoachDietPlan, togglePlannedMealComplete } =
     useGymStore();
   const [showResetModal, setShowResetModal] = useState(false);
   const [showAddDayModal, setShowAddDayModal] = useState(false);
@@ -187,6 +187,7 @@ export function HomeScreen() {
             onSave={saveNutritionProfile}
             onAddFood={addFoodEntry}
             onRemoveFood={removeFoodEntry}
+            onTogglePlannedMeal={togglePlannedMealComplete}
           />
         </RevealOnScroll>
       ) : null}
@@ -197,6 +198,7 @@ export function HomeScreen() {
           <CoachChatSection
             appData={data}
             onApplyWorkoutChange={applyCoachWorkoutChange}
+            onApplyDietPlan={applyCoachDietPlan}
           />
         </RevealOnScroll>
       ) : null}

@@ -24,6 +24,10 @@ import {
   createDefaultSet,
 } from "@/lib/types";
 import {
+  applyDietPlan,
+  type CoachDietPlan,
+} from "@/lib/coachDiet";
+import {
   applyWorkoutChange,
   type CoachWorkoutChange,
 } from "@/lib/coachWorkout";
@@ -605,6 +609,39 @@ export function useGymStore() {
     [persist],
   );
 
+  const applyCoachDietPlan = useCallback(
+    (plan: CoachDietPlan, dateKey?: string) => {
+      persist((prev) => applyDietPlan(prev, plan, dateKey));
+    },
+    [persist],
+  );
+
+  const togglePlannedMealComplete = useCallback(
+    (dateKey: string, entryId: string, completed: boolean) => {
+      persist((prev) => {
+        const dayEntries = prev.foodLog?.[dateKey];
+        if (!dayEntries?.length) {
+          return prev;
+        }
+
+        const nextDayEntries = dayEntries.map((entry) =>
+          entry.id === entryId && entry.fromPlan
+            ? { ...entry, completed }
+            : entry,
+        );
+
+        return {
+          ...prev,
+          foodLog: {
+            ...prev.foodLog,
+            [dateKey]: nextDayEntries,
+          },
+        };
+      });
+    },
+    [persist],
+  );
+
   const removeFoodEntry = useCallback(
     (dateKey: string, entryId: string) => {
       persist((prev) => {
@@ -660,5 +697,7 @@ export function useGymStore() {
     addFoodEntry,
     removeFoodEntry,
     applyCoachWorkoutChange,
+    applyCoachDietPlan,
+    togglePlannedMealComplete,
   };
 }

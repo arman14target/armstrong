@@ -18,8 +18,8 @@ export function LandingHeroCTA({ className }: LandingHeroCTAProps) {
     <>
       <div className={cn("stack-md max-w-xl", className)}>
         <CyberButton
-          variant="cyan"
-          className="min-h-[3.25rem] px-6 text-base tracking-wide glow-primary-hover"
+          variant="magenta"
+          className="min-h-[3.25rem] px-6 text-base"
           onClick={() => setCoachOpen(true)}
         >
           {landingHero.cta}

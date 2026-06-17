@@ -2,8 +2,8 @@
 
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CoachChatThinkingMessage } from "@/components/CoachChatThinkingMessage";
+import { CoachIcon } from "@/components/icons/ActionIcons";
 import { CyberButton } from "@/components/ui/CyberButton";
-import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import {
   clearCoachChatMessages,
   loadCoachChatMessages,
@@ -18,6 +18,15 @@ import {
   stripWorkoutChangeMarker,
   type CoachWorkoutChange,
 } from "@/lib/coachWorkout";
+import {
+  canApplyDietPlan,
+  describeDietPlan,
+  formatDietPlanPreview,
+  getDietPlanApplyLabel,
+  parseDietPlan,
+  stripDietPlanMarker,
+  type CoachDietPlan,
+} from "@/lib/coachDiet";
 import { cn } from "@/lib/cn";
 import {
   type CoachChatMessage,
@@ -36,6 +45,10 @@ function createMessage(role: CoachChatMessage["role"], content: string): CoachCh
   };
 }
 
+function stripCoachMarkers(content: string): string {
+  return stripDietPlanMarker(stripWorkoutChangeMarker(content));
+}
+
 function formatTime(iso: string): string {
   return new Intl.DateTimeFormat(undefined, {
     hour: "numeric",
@@ -43,41 +56,39 @@ function formatTime(iso: string): string {
   }).format(new Date(iso));
 }
 
+function SendIcon() {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+    >
+      <path d="M12 19V5" />
+      <path d="m5 12 7-7 7 7" />
+    </svg>
+  );
+}
+
 function SetupPanel() {
   return (
-    <div className="stack-md rounded-cyber border border-line bg-bg/50 p-[var(--space-panel)]">
-      <p className="text-sm text-heading">Connect your coach</p>
-      <p className="text-xs leading-relaxed text-dim">
-        Armstrong Coach runs on Google Gemini Flash. You need a free API key from
-        Google AI Studio.
-      </p>
-      <ol className="list-decimal space-y-2 pl-4 text-xs leading-relaxed text-dim">
-        <li>
-          Go to{" "}
-          <a
-            href="https://aistudio.google.com/apikey"
-            target="_blank"
-            rel="noreferrer"
-            className="text-cyan underline-offset-2 hover:underline"
-          >
-            aistudio.google.com/apikey
-          </a>{" "}
-          and create an API key.
-        </li>
-        <li>
-          Add it to <span className="text-heading">.env.local</span> in the project
-          root:
-          <code className="mt-1 block rounded-cyber border border-line bg-bg/70 px-2 py-1.5 text-[11px] text-green">
-            NEXT_PUBLIC_GEMINI_API_KEY=your_key_here
-          </code>
-        </li>
-        <li>Restart the dev server, then come back to this tab.</li>
-      </ol>
-      <p className="text-[11px] leading-relaxed text-dim">
-        Uses Google&apos;s official <code className="text-heading">@google/genai</code>{" "}
-        SDK with Gemini Flash (gemini-3.5-flash). If you see quota errors, enable
-        billing in Google AI Studio — free usage stays $0, but Google requires a
-        billing account linked to activate free limits.
+    <div className="onboarding-coach-modal__setup">
+      <p className="onboarding-coach-modal__setup-title">Connect your coach</p>
+      <p className="onboarding-coach-modal__setup-copy">
+        Armstrong Coach runs on Google Gemini Flash. Create a free API key at{" "}
+        <a
+          href="https://aistudio.google.com/apikey"
+          target="_blank"
+          rel="noreferrer"
+          className="text-magenta underline-offset-2 hover:underline"
+        >
+          aistudio.google.com/apikey
+        </a>
+        , add <code>NEXT_PUBLIC_GEMINI_API_KEY</code> to <code>.env.local</code>,
+        then restart the dev server.
       </p>
     </div>
   );
@@ -87,24 +98,28 @@ function MessageBubble({ message }: { message: CoachChatMessage }) {
   const isUser = message.role === "user";
   const displayContent = isUser
     ? message.content
-    : stripWorkoutChangeMarker(message.content);
+    : stripCoachMarkers(message.content);
 
   return (
-    <div className={cn("flex", isUser ? "justify-end" : "justify-start")}>
-      <div
-        className={cn(
-          "max-w-[92%] rounded-cyber border px-3 py-2 sm:max-w-[80%]",
-          isUser
-            ? "border-cyan/35 bg-cyan/10"
-            : "border-green/30 bg-green/5",
-        )}
-      >
-        <p className="text-[10px] tracking-wide text-dim uppercase">
-          {isUser ? "You" : "Coach"} · {formatTime(message.createdAt)}
-        </p>
-        <p className="mt-1 whitespace-pre-wrap text-sm leading-relaxed text-heading">
-          {displayContent}
-        </p>
+    <div
+      className={cn(
+        "onboarding-coach-message",
+        isUser ? "onboarding-coach-message--user" : "onboarding-coach-message--coach",
+      )}
+    >
+      {!isUser ? (
+        <span className="onboarding-coach-message__avatar" aria-hidden>
+          <CoachIcon />
+        </span>
+      ) : null}
+      <div className="onboarding-coach-message__bubble">
+        <p className="onboarding-coach-message__text">{displayContent}</p>
+        <time
+          className="onboarding-coach-message__time"
+          dateTime={message.createdAt}
+        >
+          {formatTime(message.createdAt)}
+        </time>
       </div>
     </div>
   );
@@ -113,11 +128,13 @@ function MessageBubble({ message }: { message: CoachChatMessage }) {
 interface CoachChatSectionProps {
   appData: AppData;
   onApplyWorkoutChange: (change: CoachWorkoutChange) => void;
+  onApplyDietPlan: (plan: CoachDietPlan) => void;
 }
 
 export function CoachChatSection({
   appData,
   onApplyWorkoutChange,
+  onApplyDietPlan,
 }: CoachChatSectionProps) {
   const [messages, setMessages] = useState<CoachChatMessage[]>([]);
   const [input, setInput] = useState("");
@@ -196,8 +213,13 @@ export function CoachChatSection({
   const lastMessage = messages[messages.length - 1];
   const pendingChange =
     lastMessage?.role === "coach" ? parseWorkoutChange(lastMessage.content) : null;
+  const pendingDietPlan =
+    lastMessage?.role === "coach" ? parseDietPlan(lastMessage.content) : null;
   const showWorkoutChangeActions =
     pendingChange !== null && !dismissedChangeIds.has(lastMessage.id);
+  const showDietPlanActions =
+    pendingDietPlan !== null && !dismissedChangeIds.has(lastMessage.id);
+  const showActionButtons = showWorkoutChangeActions || showDietPlanActions;
 
   const handleSend = async () => {
     const trimmed = input.trim();
@@ -235,6 +257,27 @@ export function CoachChatSection({
     setError(null);
   };
 
+  const handleApplyDietPlan = () => {
+    if (!pendingDietPlan || !lastMessage) {
+      return;
+    }
+
+    if (!canApplyDietPlan(appData)) {
+      setError(
+        "Set up your nutrition targets in the Food tracker tab first, then ask for a meal plan again.",
+      );
+      return;
+    }
+
+    onApplyDietPlan(pendingDietPlan);
+    setDismissedChangeIds((prev) => new Set(prev).add(lastMessage.id));
+    setError(null);
+    setMessages((prev) => [
+      ...prev,
+      createMessage("coach", describeDietPlan(pendingDietPlan)),
+    ]);
+  };
+
   const handleApplyChange = () => {
     if (!pendingChange || !lastMessage) {
       return;
@@ -263,88 +306,131 @@ export function CoachChatSection({
 
   if (!hydrated) {
     return (
-      <TerminalWindow title="Armstrong Coach">
-        <p className="animate-blink text-sm text-green">Loading coach...</p>
-      </TerminalWindow>
+      <div className="coach-chat-panel">
+        <header className="onboarding-coach-modal__header">
+          <div className="onboarding-coach-modal__identity">
+            <div className="onboarding-coach-modal__avatar" aria-hidden>
+              <CoachIcon />
+            </div>
+            <div>
+              <h2 className="onboarding-coach-modal__title">Armstrong Coach</h2>
+              <p className="onboarding-coach-modal__subtitle">Loading...</p>
+            </div>
+          </div>
+        </header>
+      </div>
     );
   }
 
   return (
-    <TerminalWindow
-      title="Armstrong Coach"
-      dotVariant="green"
-      headerAction={
-        messages.length > 0 ? (
-          <button
-            type="button"
-            onClick={handleClear}
-            className="text-[10px] tracking-wide text-dim uppercase transition-colors hover:text-magenta"
-          >
-            Clear
-          </button>
-        ) : null
-      }
-      bodyClassName="!p-0"
-    >
+    <div className="coach-chat-panel">
+      <header className="onboarding-coach-modal__header">
+        <div className="onboarding-coach-modal__identity">
+          <div className="onboarding-coach-modal__avatar" aria-hidden>
+            <CoachIcon />
+          </div>
+          <div>
+            <h2 className="onboarding-coach-modal__title">Armstrong Coach</h2>
+            <p className="onboarding-coach-modal__subtitle">
+              Ask about training, nutrition, or your plan
+            </p>
+          </div>
+        </div>
+        {messages.length > 0 ? (
+          <div className="onboarding-coach-modal__actions">
+            <button
+              type="button"
+              onClick={handleClear}
+              className="onboarding-coach-modal__restart"
+            >
+              Clear chat
+            </button>
+          </div>
+        ) : null}
+      </header>
+
       {!configured ? (
-        <div className="p-[var(--space-panel)]">
+        <div className="onboarding-coach-modal__messages">
           <SetupPanel />
         </div>
       ) : (
-        <div className="flex min-h-[22rem] flex-col">
-          <div
-            ref={scrollRef}
-            className="flex-1 space-y-3 overflow-y-auto p-[var(--space-panel)]"
-          >
-            {messages.length === 0 ? (
-              <div className="rounded-cyber border border-dashed border-line bg-bg/40 p-[var(--space-panel)] text-center">
-                <p className="text-sm text-heading">Ask your coach anything</p>
-                <p className="mt-2 text-xs leading-relaxed text-dim">
-                  Splits, macros, form, prep, recovery — or ask to swap exercises
-                  in your plan.
-                </p>
-              </div>
-            ) : (
-              messages.map((message) => (
-                <div
-                  key={message.id}
-                  ref={setMessageRef(message.id)}
-                  className="scroll-mt-3"
-                >
-                  <MessageBubble message={message} />
+        <>
+          <div ref={scrollRef} className="onboarding-coach-modal__messages">
+            <div className="onboarding-coach-modal__thread">
+              {messages.length === 0 ? (
+                <div className="coach-chat-empty">
+                  <p className="coach-chat-empty__title">Ask your coach anything</p>
+                  <p className="coach-chat-empty__copy">
+                    Splits, macros, form, prep, recovery — swap exercises in your
+                    plan or ask for a daily meal plan.
+                  </p>
                 </div>
-              ))
-            )}
+              ) : (
+                messages.map((message) => (
+                  <div
+                    key={message.id}
+                    ref={setMessageRef(message.id)}
+                    className="scroll-mt-3"
+                  >
+                    <MessageBubble message={message} />
+                  </div>
+                ))
+              )}
 
-            <CoachChatThinkingMessage active={loading} />
+              <CoachChatThinkingMessage active={loading} />
 
-            {showWorkoutChangeActions && pendingChange ? (
-              <div className="flex flex-col gap-2 pt-1 sm:flex-row">
-                <CyberButton
-                  variant="green"
-                  className="min-h-[2.75rem] flex-1 px-4 disabled:opacity-50"
-                  onClick={handleApplyChange}
-                >
-                  {getWorkoutChangeApplyLabel(pendingChange)}
-                </CyberButton>
-                <CyberButton
-                  variant="cyan"
-                  className="min-h-[2.75rem] flex-1 px-4"
-                  onClick={handleKeepChatting}
-                >
-                  Keep chatting
-                </CyberButton>
-              </div>
-            ) : null}
+              {showDietPlanActions && pendingDietPlan ? (
+                <div className="onboarding-coach-modal__continue stack-sm">
+                  <p className="w-full rounded-cyber border border-cyan/20 bg-cyan/5 px-3 py-2 text-xs leading-relaxed whitespace-pre-line text-dim">
+                    {formatDietPlanPreview(pendingDietPlan)}
+                  </p>
+                  <div className="flex w-full flex-wrap gap-2">
+                    <CyberButton
+                      variant="magenta"
+                      className="min-h-[2.75rem] flex-1 px-4 disabled:opacity-50"
+                      onClick={handleApplyDietPlan}
+                    >
+                      {getDietPlanApplyLabel()}
+                    </CyberButton>
+                    <CyberButton
+                      variant="cyan"
+                      className="min-h-[2.75rem] flex-1 px-4"
+                      onClick={handleKeepChatting}
+                    >
+                      Keep chatting
+                    </CyberButton>
+                  </div>
+                </div>
+              ) : null}
+
+              {showWorkoutChangeActions && pendingChange ? (
+                <div className="onboarding-coach-modal__continue">
+                  <CyberButton
+                    variant="magenta"
+                    className="min-h-[2.75rem] flex-1 px-4 disabled:opacity-50"
+                    onClick={handleApplyChange}
+                  >
+                    {getWorkoutChangeApplyLabel(pendingChange)}
+                  </CyberButton>
+                  <CyberButton
+                    variant="cyan"
+                    className="min-h-[2.75rem] flex-1 px-4"
+                    onClick={handleKeepChatting}
+                  >
+                    Keep chatting
+                  </CyberButton>
+                </div>
+              ) : null}
+            </div>
           </div>
 
-          <div className="border-t border-line p-[var(--space-panel)]">
+          <div className="onboarding-coach-modal__composer">
             {error ? (
-              <p className="mb-2 text-xs text-magenta">{error}</p>
+              <p className="mb-2 text-sm text-magenta">{error}</p>
             ) : null}
-            {!showWorkoutChangeActions ? (
+            {!showActionButtons ? (
               <form
-                className="flex flex-col gap-2 sm:flex-row"
+                className="onboarding-coach-modal__form"
                 onSubmit={(event) => {
                   event.preventDefault();
                   void handleSend();
@@ -362,22 +448,22 @@ export function CoachChatSection({
                   rows={2}
                   placeholder="Ask about training, nutrition, form, prep..."
                   disabled={loading}
-                  className="cyber-input min-h-[3.25rem] flex-1 resize-none py-2 text-sm"
+                  className="onboarding-coach-modal__input"
                   aria-label="Message to coach"
                 />
-                <CyberButton
+                <button
                   type="submit"
-                  variant="green"
                   disabled={loading || !input.trim()}
-                  className="min-h-[3.25rem] px-4 disabled:opacity-50"
+                  className="onboarding-coach-modal__send"
+                  aria-label="Send message"
                 >
-                  Send
-                </CyberButton>
+                  <SendIcon />
+                </button>
               </form>
             ) : null}
           </div>
-        </div>
+        </>
       )}
-    </TerminalWindow>
+    </div>
   );
 }

@@ -90,6 +90,8 @@ export function formatGoalLabel(goal: NutritionGoal): string {
   return goal === "bulk" ? "Bulk" : "Cut";
 }
 
+export type MealSlot = "breakfast" | "lunch" | "dinner" | "snack";
+
 export interface FoodEntry {
   id: string;
   name: string;
@@ -98,6 +100,19 @@ export interface FoodEntry {
   carbsG: number;
   fatG: number;
   loggedAt: string;
+  /** From a coach-generated diet plan — counts toward totals only when completed. */
+  fromPlan?: boolean;
+  completed?: boolean;
+  mealSlot?: MealSlot;
+}
+
+export interface PlannedMealInput {
+  name: string;
+  calories: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+  mealSlot?: MealSlot;
 }
 
 export interface DailyNutritionTotals {
@@ -107,8 +122,16 @@ export interface DailyNutritionTotals {
   fatG: number;
 }
 
+export function countsTowardDailyTotals(entry: FoodEntry): boolean {
+  if (entry.fromPlan) {
+    return entry.completed === true;
+  }
+
+  return true;
+}
+
 export function sumDailyNutrition(entries: FoodEntry[]): DailyNutritionTotals {
-  return entries.reduce(
+  return entries.filter(countsTowardDailyTotals).reduce(
     (totals, entry) => ({
       calories: totals.calories + entry.calories,
       proteinG: totals.proteinG + entry.proteinG,
@@ -117,6 +140,41 @@ export function sumDailyNutrition(entries: FoodEntry[]): DailyNutritionTotals {
     }),
     { calories: 0, proteinG: 0, carbsG: 0, fatG: 0 },
   );
+}
+
+export function sumPlannedMealNutrition(entries: FoodEntry[]): DailyNutritionTotals {
+  return entries
+    .filter((entry) => entry.fromPlan)
+    .reduce(
+      (totals, entry) => ({
+        calories: totals.calories + entry.calories,
+        proteinG: totals.proteinG + entry.proteinG,
+        carbsG: totals.carbsG + entry.carbsG,
+        fatG: totals.fatG + entry.fatG,
+      }),
+      { calories: 0, proteinG: 0, carbsG: 0, fatG: 0 },
+    );
+}
+
+export function formatMealSlotLabel(slot: MealSlot): string {
+  return {
+    breakfast: "Breakfast",
+    lunch: "Lunch",
+    dinner: "Dinner",
+    snack: "Snack",
+  }[slot];
+}
+
+export function createPlannedFoodEntry(
+  data: PlannedMealInput,
+): FoodEntry {
+  return {
+    ...data,
+    id: crypto.randomUUID(),
+    loggedAt: new Date().toISOString(),
+    fromPlan: true,
+    completed: false,
+  };
 }
 
 export function createFoodEntry(

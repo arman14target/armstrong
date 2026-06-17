@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CoachIcon } from "@/components/icons/ActionIcons";
 
 const COACH_CHAT_THINKING = [
   "Reading our chat history...",
@@ -76,13 +77,17 @@ export function CoachChatThinkingMessage({
   }
 
   return (
-    <div className="flex justify-start" aria-live="polite" aria-busy="true">
-      <div className="min-w-[min(100%,16rem)] rounded-cyber border border-green/30 bg-green/5 px-3 py-2 sm:min-w-[18rem]">
-        <p className="text-[10px] tracking-wide text-dim uppercase">Coach</p>
-        <p
-          key={message}
-          className="coach-status-message mt-1 text-sm leading-relaxed text-green"
-        >
+    <div
+      className="onboarding-coach-status"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <span className="onboarding-coach-message__avatar" aria-hidden>
+        <CoachIcon />
+      </span>
+      <div className="onboarding-coach-status__bubble">
+        <p className="onboarding-coach-status__label">Coach is thinking</p>
+        <p key={message} className="onboarding-coach-status__text coach-status-message">
           {message}
         </p>
       </div>

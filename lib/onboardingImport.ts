@@ -1,6 +1,7 @@
+import { applyDietPlan } from "@/lib/coachDiet";
 import type { CoachChatMessage } from "@/lib/gemini";
 import { sendCoachMessage } from "@/lib/gemini";
-import { createNutritionProfile, type NutritionGoal, type NutritionSex } from "@/lib/nutrition";
+import { createNutritionProfile, type NutritionGoal, type NutritionSex, type PlannedMealInput } from "@/lib/nutrition";
 import { loadAppData, saveAppData } from "@/lib/storage";
 import {
   AppData,
@@ -40,6 +41,16 @@ Return ONLY valid JSON — no markdown, no commentary — matching this schema:
         }
       ]
     }
+  ],
+  "meals": [
+    {
+      "name": string,
+      "mealSlot": "breakfast" | "lunch" | "dinner" | "snack",
+      "calories": number,
+      "proteinG": number,
+      "carbsG": number,
+      "fatG": number
+    }
   ]
 }
 
@@ -54,6 +65,9 @@ Rules:
 - If two days share a type, differentiate with focus (e.g. "Push Day — Chest Focus", "Leg Day 2") — not letters A/B.
 - Each exercise needs sets (default 3), reps (default 10), restSeconds (default 60), weightKg (0 if not specified).
 - Include every exercise from the coach's latest workout plan.
+- Include every meal from the coach's latest daily diet plan (breakfast, lunch, dinner, snacks).
+- mealSlot must be breakfast, lunch, dinner, or snack.
+- Use reasonable macro estimates if the coach only listed calories and protein.
 - Use the most recent plan if the coach revised it.`;
 
 export interface OnboardingImportExercise {
@@ -79,9 +93,19 @@ export interface OnboardingImportProfile {
   fitnessGoal: string;
 }
 
+export interface OnboardingImportMeal {
+  name: string;
+  mealSlot: PlannedMealInput["mealSlot"];
+  calories: number;
+  proteinG: number;
+  carbsG: number;
+  fatG: number;
+}
+
 export interface OnboardingImportPayload {
   profile: OnboardingImportProfile;
   days: OnboardingImportDay[];
+  meals: OnboardingImportMeal[];
 }
 
 function parseJsonFromModelText(text: string): unknown {
@@ -145,6 +169,46 @@ function normalizeExercise(value: unknown): OnboardingImportExercise | null {
   };
 }
 
+function normalizeMealSlot(value: unknown): OnboardingImportMeal["mealSlot"] {
+  const raw = String(value ?? "").toLowerCase().trim();
+  if (raw === "breakfast" || raw === "lunch" || raw === "dinner" || raw === "snack") {
+    return raw;
+  }
+
+  if (raw.includes("breakfast")) {
+    return "breakfast";
+  }
+  if (raw.includes("lunch")) {
+    return "lunch";
+  }
+  if (raw.includes("dinner") || raw.includes("supper")) {
+    return "dinner";
+  }
+
+  return "snack";
+}
+
+function normalizeMeal(value: unknown): OnboardingImportMeal | null {
+  if (!value || typeof value !== "object") {
+    return null;
+  }
+
+  const record = value as Record<string, unknown>;
+  const name = String(record.name ?? "").trim();
+  if (!name) {
+    return null;
+  }
+
+  return {
+    name,
+    mealSlot: normalizeMealSlot(record.mealSlot),
+    calories: Math.round(asNumber(record.calories, 0)),
+    proteinG: Math.round(asNumber(record.proteinG, 0)),
+    carbsG: Math.round(asNumber(record.carbsG, 0)),
+    fatG: Math.round(asNumber(record.fatG, 0)),
+  };
+}
+
 function normalizeDay(value: unknown): OnboardingImportDay | null {
   if (!value || typeof value !== "object") {
     return null;
@@ -191,6 +255,12 @@ export function parseOnboardingImportPayload(raw: unknown): OnboardingImportPayl
         .filter((day): day is OnboardingImportDay => day !== null)
     : [];
 
+  const meals = Array.isArray(record.meals)
+    ? record.meals
+        .map(normalizeMeal)
+        .filter((meal): meal is OnboardingImportMeal => meal !== null)
+    : [];
+
   if (days.length === 0) {
     throw new Error("No workout days found in the coach plan.");
   }
@@ -208,6 +278,7 @@ export function parseOnboardingImportPayload(raw: unknown): OnboardingImportPayl
       fitnessGoal: String(profileRecord.fitnessGoal ?? "").trim() || "Training",
     },
     days: refineImportedDays(days),
+    meals,
   };
 }
 
@@ -250,7 +321,7 @@ export function applyOnboardingImport(
     workoutSetupSeen[workout.id] = true;
   }
 
-  return {
+  const nextData: AppData = {
     ...data,
     coachPlanActive: true,
     workouts: createDefaultAppData().workouts,
@@ -265,6 +336,12 @@ export function applyOnboardingImport(
       goal: payload.profile.nutritionGoal,
     }),
   };
+
+  if (payload.meals.length === 0) {
+    return nextData;
+  }
+
+  return applyDietPlan(nextData, { meals: payload.meals });
 }
 
 function formatTranscript(messages: CoachChatMessage[]): string {

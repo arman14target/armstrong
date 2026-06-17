@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { CoachIcon } from "@/components/icons/ActionIcons";
 
 const COACH_THINKING_EARLY = [
   "Reviewing your goal...",
@@ -30,12 +31,26 @@ const COACH_THINKING_PLAN = [
   "Polishing the details — almost there...",
 ] as const;
 
+const COACH_THINKING_DIET = [
+  "Calculating your protein target...",
+  "Planning breakfast around your goal...",
+  "Building a simple lunch...",
+  "Adding dinner and snacks...",
+  "Spreading protein across the day...",
+  "Keeping meals easy to prep...",
+  "Checking total daily macros...",
+  "Adjusting for allergies if needed...",
+  "Balancing calories with your goal...",
+  "Finalizing your meal plan...",
+] as const;
+
 const COACH_IMPORTING = [
   "Reading your coach conversation...",
   "Extracting your training days...",
   "Loading exercises into your split...",
   "Assigning stickers and day colors...",
   "Calculating your daily macros...",
+  "Importing your meal plan...",
   "Setting up your food tracker...",
   "Mapping workouts to your calendar...",
   "Saving your profile...",
@@ -45,7 +60,7 @@ const COACH_IMPORTING = [
 
 interface CoachStatusMessageProps {
   active: boolean;
-  phase: "thinking-early" | "thinking-plan" | "importing";
+  phase: "thinking-early" | "thinking-plan" | "thinking-diet" | "importing";
   intervalMs?: number;
 }
 
@@ -55,6 +70,8 @@ function getMessages(phase: CoachStatusMessageProps["phase"]): readonly string[]
       return COACH_THINKING_EARLY;
     case "thinking-plan":
       return COACH_THINKING_PLAN;
+    case "thinking-diet":
+      return COACH_THINKING_DIET;
     case "importing":
       return COACH_IMPORTING;
   }
@@ -92,12 +109,19 @@ export function CoachStatusMessage({
   const message = messages[index];
 
   return (
-    <div className="flex justify-start" aria-live="polite" aria-busy="true">
-      <div className="min-w-[min(100%,18rem)] rounded-cyber border border-green/30 bg-green/5 px-4 py-3 sm:min-w-[20rem]">
-        <p className="text-[10px] tracking-wide text-dim uppercase">Coach</p>
+    <div
+      className="onboarding-coach-status"
+      aria-live="polite"
+      aria-busy="true"
+    >
+      <span className="onboarding-coach-message__avatar" aria-hidden>
+        <CoachIcon />
+      </span>
+      <div className="onboarding-coach-status__bubble">
+        <p className="onboarding-coach-status__label">Coach is thinking</p>
         <p
           key={`${phase}-${index}`}
-          className="coach-status-message mt-1.5 text-sm leading-relaxed text-green sm:text-base"
+          className="onboarding-coach-status__text coach-status-message"
         >
           {message}
         </p>
@@ -108,6 +132,14 @@ export function CoachStatusMessage({
 
 export function getCoachThinkingPhase(
   messageCount: number,
-): "thinking-early" | "thinking-plan" {
-  return messageCount <= 3 ? "thinking-early" : "thinking-plan";
+): "thinking-early" | "thinking-plan" | "thinking-diet" {
+  if (messageCount <= 3) {
+    return "thinking-early";
+  }
+
+  if (messageCount <= 7) {
+    return "thinking-plan";
+  }
+
+  return "thinking-diet";
 }

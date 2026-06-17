@@ -16,7 +16,9 @@ import {
   calculateNutritionTargets,
   createNutritionProfile,
   formatGoalLabel,
+  formatMealSlotLabel,
   sumDailyNutrition,
+  type MealSlot,
 } from "@/lib/nutrition";
 import { toLocalDateKey } from "@/lib/workoutCalendar";
 
@@ -31,6 +33,11 @@ interface FoodTrackerSectionProps {
     entry: Pick<FoodEntry, "name" | "calories" | "proteinG" | "carbsG" | "fatG">,
   ) => void;
   onRemoveFood: (dateKey: string, entryId: string) => void;
+  onTogglePlannedMeal: (
+    dateKey: string,
+    entryId: string,
+    completed: boolean,
+  ) => void;
 }
 
 function parseNumber(value: string): number | null {
@@ -523,46 +530,135 @@ function DailyTargetReminder({
   );
 }
 
+const MEAL_SLOT_ORDER: MealSlot[] = ["breakfast", "lunch", "dinner", "snack"];
+
+function sortFoodEntries(entries: FoodEntry[]): FoodEntry[] {
+  return [...entries].sort((left, right) => {
+    if (left.fromPlan !== right.fromPlan) {
+      return left.fromPlan ? -1 : 1;
+    }
+
+    if (left.fromPlan && right.fromPlan) {
+      const leftIndex = left.mealSlot
+        ? MEAL_SLOT_ORDER.indexOf(left.mealSlot)
+        : MEAL_SLOT_ORDER.length;
+      const rightIndex = right.mealSlot
+        ? MEAL_SLOT_ORDER.indexOf(right.mealSlot)
+        : MEAL_SLOT_ORDER.length;
+      return leftIndex - rightIndex;
+    }
+
+    return 0;
+  });
+}
+
 function FoodLogList({
   entries,
   onRemove,
+  onTogglePlannedMeal,
 }: {
   entries: FoodEntry[];
   onRemove: (entryId: string) => void;
+  onTogglePlannedMeal: (entryId: string, completed: boolean) => void;
 }) {
-  if (entries.length === 0) {
+  const sortedEntries = sortFoodEntries(entries);
+  const plannedEntries = sortedEntries.filter((entry) => entry.fromPlan);
+  const manualEntries = sortedEntries.filter((entry) => !entry.fromPlan);
+
+  if (sortedEntries.length === 0) {
     return (
       <p className="rounded-cyber border border-dashed border-line bg-bg/30 px-[var(--space-panel)] py-6 text-center text-xs leading-relaxed text-dim">
-        Nothing logged yet. Tap &ldquo;Add food&rdquo; to track your first meal.
+        Nothing logged yet. Ask your coach for a meal plan, or tap &ldquo;Add
+        food&rdquo; to log what you eat.
       </p>
     );
   }
 
-  return (
-    <ul className="stack-sm">
-      {entries.map((entry) => (
-        <li
-          key={entry.id}
-          className="flex items-start gap-2 rounded-cyber border border-line bg-bg/40 p-[var(--space-panel)]"
-        >
-          <div className="min-w-0 flex-1">
+  const renderEntry = (entry: FoodEntry) => {
+    const isPlanned = entry.fromPlan === true;
+    const slotLabel = entry.mealSlot ? formatMealSlotLabel(entry.mealSlot) : null;
+
+    return (
+      <li
+        key={entry.id}
+        className={cn(
+          "flex items-start gap-2 rounded-cyber border p-[var(--space-panel)]",
+          isPlanned
+            ? entry.completed
+              ? "border-green/30 bg-green/5"
+              : "border-cyan/25 bg-cyan/5"
+            : "border-line bg-bg/40",
+        )}
+      >
+        {isPlanned ? (
+          <label className="mt-0.5 flex shrink-0 items-start gap-2">
+            <input
+              type="checkbox"
+              checked={entry.completed === true}
+              onChange={(event) =>
+                onTogglePlannedMeal(entry.id, event.target.checked)
+              }
+              className="mt-0.5 size-4 shrink-0 accent-green"
+              aria-label={`Mark ${entry.name} as eaten`}
+            />
+          </label>
+        ) : null}
+        <div className="min-w-0 flex-1">
+          <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">
+            {slotLabel ? (
+              <span className="text-[10px] tracking-wide text-cyan uppercase">
+                {slotLabel}
+              </span>
+            ) : null}
+            {isPlanned ? (
+              <span className="rounded bg-cyan/10 px-1.5 py-0.5 text-[9px] tracking-wide text-cyan uppercase">
+                Plan
+              </span>
+            ) : null}
             <p className="truncate text-sm font-medium text-heading">{entry.name}</p>
-            <p className="mt-0.5 text-xs text-dim">
-              {entry.calories} kcal · P {entry.proteinG}g · C {entry.carbsG}g · F{" "}
-              {entry.fatG}g
-            </p>
           </div>
-          <IconButton
-            label={`Remove ${entry.name}`}
-            variant="ghost"
-            className="size-8 shrink-0 text-dim hover:text-magenta"
-            onClick={() => onRemove(entry.id)}
-          >
-            <TrashIcon />
-          </IconButton>
-        </li>
-      ))}
-    </ul>
+          <p className="mt-0.5 text-xs text-dim">
+            {entry.calories} kcal · P {entry.proteinG}g · C {entry.carbsG}g · F{" "}
+            {entry.fatG}g
+            {isPlanned && !entry.completed ? (
+              <span className="text-dim/70"> · check when eaten</span>
+            ) : null}
+          </p>
+        </div>
+        <IconButton
+          label={`Remove ${entry.name}`}
+          variant="ghost"
+          className="size-8 shrink-0 text-dim hover:text-magenta"
+          onClick={() => onRemove(entry.id)}
+        >
+          <TrashIcon />
+        </IconButton>
+      </li>
+    );
+  };
+
+  return (
+    <div className="stack-md">
+      {plannedEntries.length > 0 ? (
+        <div className="stack-sm">
+          <p className="text-[10px] tracking-wide text-dim uppercase">
+            Today&apos;s meal plan
+          </p>
+          <ul className="stack-sm">{plannedEntries.map(renderEntry)}</ul>
+        </div>
+      ) : null}
+
+      {manualEntries.length > 0 ? (
+        <div className="stack-sm">
+          {plannedEntries.length > 0 ? (
+            <p className="text-[10px] tracking-wide text-dim uppercase">
+              Other foods
+            </p>
+          ) : null}
+          <ul className="stack-sm">{manualEntries.map(renderEntry)}</ul>
+        </div>
+      ) : null}
+    </div>
   );
 }
 
@@ -574,6 +670,7 @@ function NutritionDashboard({
   onDateChange,
   onAddFood,
   onRemoveFood,
+  onTogglePlannedMeal,
 }: {
   profile: NutritionProfile;
   dateKey: string;
@@ -582,6 +679,7 @@ function NutritionDashboard({
   onDateChange: (dateKey: string) => void;
   onAddFood: () => void;
   onRemoveFood: (entryId: string) => void;
+  onTogglePlannedMeal: (entryId: string, completed: boolean) => void;
 }) {
   const totals = useMemo(() => sumDailyNutrition(entries), [entries]);
   const todayKey = toLocalDateKey(new Date());
@@ -677,7 +775,11 @@ function NutritionDashboard({
             Add food
           </CyberButton>
         </div>
-        <FoodLogList entries={entries} onRemove={onRemoveFood} />
+        <FoodLogList
+          entries={entries}
+          onRemove={onRemoveFood}
+          onTogglePlannedMeal={onTogglePlannedMeal}
+        />
       </div>
     </div>
   );
@@ -689,6 +791,7 @@ export function FoodTrackerSection({
   onSave,
   onAddFood,
   onRemoveFood,
+  onTogglePlannedMeal,
 }: FoodTrackerSectionProps) {
   const [recalibrating, setRecalibrating] = useState(false);
   const [showAddFoodModal, setShowAddFoodModal] = useState(false);
@@ -735,6 +838,9 @@ export function FoodTrackerSection({
           onDateChange={setSelectedDateKey}
           onAddFood={() => setShowAddFoodModal(true)}
           onRemoveFood={(entryId) => onRemoveFood(selectedDateKey, entryId)}
+          onTogglePlannedMeal={(entryId, completed) =>
+            onTogglePlannedMeal(selectedDateKey, entryId, completed)
+          }
         />
       </TerminalWindow>
 

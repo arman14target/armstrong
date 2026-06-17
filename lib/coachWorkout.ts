@@ -9,6 +9,7 @@ import {
   getWorkoutTemplate,
   updateWorkoutMoves,
 } from "@/lib/workouts";
+import { appendDietCoachPrompt } from "@/lib/coachDiet";
 import { COACH_SYSTEM_PROMPT } from "@/lib/gemini";
 
 export const WORKOUT_CHANGE_PREFIX = "[[WORKOUT_CHANGE:";
@@ -66,10 +67,11 @@ export function formatWorkoutPlanForCoach(data: AppData): string {
 
 export function buildCoachSystemPrompt(data: AppData): string {
   const plan = formatWorkoutPlanForCoach(data);
-  return `${COACH_SYSTEM_PROMPT}${WORKOUT_EDITING_PROMPT}
+  const base = `${COACH_SYSTEM_PROMPT}${WORKOUT_EDITING_PROMPT}
 
 Current workout plan:
 ${plan}`;
+  return appendDietCoachPrompt(base, data);
 }
 
 function normalizeWorkoutChange(value: unknown): CoachWorkoutChange | null {
