@@ -2519,6 +2519,12 @@
     transition: color 200ms ease;
   }
 
+  .download-btn__icon svg {
+    display: block;
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
   .download-btn:hover:not(:disabled) .download-btn__icon {
     color: var(--color-heading);
   }
