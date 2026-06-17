@@ -4,6 +4,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CoachChatThinkingMessage } from "@/components/CoachChatThinkingMessage";
 import { CoachIcon } from "@/components/icons/ActionIcons";
 import { CyberButton } from "@/components/ui/CyberButton";
+import { scheduleCloudSync } from "@/lib/cloudSyncScheduler";
 import {
   clearCoachChatMessages,
   loadCoachChatMessages,
@@ -170,6 +171,7 @@ export function CoachChatSection({
     }
 
     saveCoachChatMessages(messages);
+    scheduleCloudSync();
   }, [hydrated, messages]);
 
   useLayoutEffect(() => {

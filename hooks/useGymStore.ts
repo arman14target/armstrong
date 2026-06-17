@@ -1,7 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { scheduleCloudSync, setCloudSyncUserId } from "@/lib/cloudSyncScheduler";
 import { loadAppData, saveAppData, clearAllAppData } from "@/lib/storage";
+import {
+  clearUserPlanEverywhere,
+  syncUserPlanOnLogin,
+} from "@/lib/userPlanSync";
 import {
   BatchExercisePreset,
   createMoveFromPreset,
@@ -34,18 +40,41 @@ import {
 import { createFoodEntry, FoodEntry, NutritionProfile } from "@/lib/nutrition";
 
 export function useGymStore() {
+  const { user } = useAuth();
   const [data, setData] = useState<AppData>(createDefaultAppData);
   const [hydrated, setHydrated] = useState(false);
+  const syncedUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     setData(loadAppData());
     setHydrated(true);
   }, []);
 
+  useEffect(() => {
+    setCloudSyncUserId(user?.id ?? null);
+  }, [user?.id]);
+
+  const syncForUser = useCallback(async (userId: string) => {
+    const synced = await syncUserPlanOnLogin(userId);
+    setData(synced);
+    syncedUserIdRef.current = userId;
+  }, []);
+
+  useEffect(() => {
+    if (!hydrated || !user?.id || syncedUserIdRef.current === user.id) {
+      return;
+    }
+
+    syncForUser(user.id).catch(() => {
+      syncedUserIdRef.current = user.id;
+    });
+  }, [hydrated, user?.id, syncForUser]);
+
   const persist = useCallback((updater: (prev: AppData) => AppData) => {
     setData((prev) => {
       const next = updater(prev);
       saveAppData(next);
+      scheduleCloudSync();
       return next;
     });
   }, []);
@@ -567,9 +596,18 @@ export function useGymStore() {
   );
 
   const resetAll = useCallback(async () => {
-    await clearAllAppData();
+    if (user?.id) {
+      await clearUserPlanEverywhere(user.id);
+      syncedUserIdRef.current = user.id;
+    } else {
+      await clearAllAppData();
+    }
     setData(createDefaultAppData());
-  }, []);
+  }, [user?.id]);
+
+  const syncAfterAuth = useCallback(async (userId: string) => {
+    await syncForUser(userId);
+  }, [syncForUser]);
 
   const saveNutritionProfile = useCallback(
     (profile: NutritionProfile) => {
@@ -693,6 +731,7 @@ export function useGymStore() {
     getWorkout,
     getSession,
     resetAll,
+    syncAfterAuth,
     saveNutritionProfile,
     addFoodEntry,
     removeFoodEntry,

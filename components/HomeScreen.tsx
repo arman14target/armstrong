@@ -15,7 +15,9 @@ import {
   CoachIcon,
   DumbbellIcon,
   FoodIcon,
+  ProfileIcon,
 } from "@/components/icons/ActionIcons";
+import { ProfileSection } from "@/components/ProfileSection";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { FoodTrackerSection } from "@/components/FoodTrackerSection";
 import { GlitchText } from "@/components/ui/GlitchText";
@@ -39,15 +41,14 @@ const homeTabs: Array<{
   { id: "food-tracker", label: "Food tracker", icon: FoodIcon },
   { id: "calendar", label: "Calendar", icon: CalendarIcon },
   { id: "coach", label: "Coach", icon: CoachIcon },
+  { id: "profile", label: "Profile", icon: ProfileIcon },
 ];
 
 export function HomeScreen() {
   const router = useRouter();
-  const { data, hydrated, resetAll, addCustomDay, removeCustomDay, saveNutritionProfile, addFoodEntry, removeFoodEntry, applyCoachWorkoutChange, applyCoachDietPlan, togglePlannedMealComplete } =
+  const { data, hydrated, resetAll, syncAfterAuth, addCustomDay, removeCustomDay, saveNutritionProfile, addFoodEntry, removeFoodEntry, applyCoachWorkoutChange, applyCoachDietPlan, togglePlannedMealComplete } =
     useGymStore();
-  const [showResetModal, setShowResetModal] = useState(false);
   const [showAddDayModal, setShowAddDayModal] = useState(false);
-  const [resetting, setResetting] = useState(false);
   const [activeTab, setActiveTab] = useState<HomeTab>("workout");
   const [entryChoiceId, setEntryChoiceId] = useState<string | null>(null);
   const [removeDayId, setRemoveDayId] = useState<string | null>(null);
@@ -101,14 +102,12 @@ export function HomeScreen() {
     ? getWorkoutLabel(data, removeDayId)
     : "";
 
-  const handleResetConfirm = async () => {
-    setResetting(true);
-    try {
-      await resetAll();
-      window.location.reload();
-    } catch {
-      setResetting(false);
-    }
+  const handleAuthSuccess = async (userId: string) => {
+    await syncAfterAuth(userId);
+  };
+
+  const handleClearData = async () => {
+    await resetAll();
   };
 
   if (!hydrated) {
@@ -202,6 +201,16 @@ export function HomeScreen() {
           />
         </RevealOnScroll>
       ) : null}
+
+      {activeTab === "profile" ? (
+        <RevealOnScroll>
+          <SectionHead index="05." title="Profile" />
+          <ProfileSection
+            onAuthSuccess={handleAuthSuccess}
+            onClearData={handleClearData}
+          />
+        </RevealOnScroll>
+      ) : null}
       </div>
 
       <section className="hero-section home-screen__brand">
@@ -226,13 +235,6 @@ export function HomeScreen() {
           Built with <span className="text-magenta">♥</span> and protein shakes
           — Armstrong
         </p>
-        <button
-          type="button"
-          onClick={() => setShowResetModal(true)}
-          className="text-sm font-medium tracking-wide text-red-400 transition-colors hover:text-red-300"
-        >
-          Reset app data
-        </button>
       </footer>
 
       <AddDayModal
@@ -265,26 +267,6 @@ export function HomeScreen() {
         cancelLabel="Keep day"
         onConfirm={handleRemoveDayConfirm}
         onCancel={() => setRemoveDayId(null)}
-      />
-
-      <ConfirmModal
-        open={showResetModal}
-        title="Reset everything?"
-        message={
-          <>
-            This will permanently delete all your workout history, exercises,
-            weights, and active sessions. Stored app data, cookies, and cached
-            files will also be cleared.
-            <span className="mt-[var(--space-gap)] block font-semibold text-magenta">
-              This action cannot be undone.
-            </span>
-          </>
-        }
-        confirmLabel="Yes, reset everything"
-        cancelLabel="Keep my data"
-        confirming={resetting}
-        onConfirm={handleResetConfirm}
-        onCancel={() => setShowResetModal(false)}
       />
 
       <HomeBottomNav

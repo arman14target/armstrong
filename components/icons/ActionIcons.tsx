@@ -191,6 +191,24 @@ export function GripIcon({ className }: IconProps) {
   );
 }
 
+export function ProfileIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={cn("size-4", className)}
+      aria-hidden
+    >
+      <path d="M12 12a4 4 0 1 0-4-4 4 4 0 0 0 4 4z" />
+      <path d="M6 20v-1a6 6 0 0 1 12 0v1" />
+    </svg>
+  );
+}
+
 export function FoodIcon({ className }: IconProps) {
   return (
     <svg

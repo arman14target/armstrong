@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed, DM_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { AppShell } from "@/components/AppShell";
+import { AuthProvider } from "@/contexts/AuthContext";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { theme } from "@/lib/theme";
 import "./globals.css";
@@ -65,7 +66,9 @@ export default function RootLayout({
         {basePath ? <base href={`${basePath}/`} /> : null}
       </head>
       <body>
-        <AppShell>{children}</AppShell>
+        <AuthProvider>
+          <AppShell>{children}</AppShell>
+        </AuthProvider>
         <ServiceWorkerRegister />
         <Analytics />
       </body>

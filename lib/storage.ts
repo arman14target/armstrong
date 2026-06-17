@@ -1,3 +1,5 @@
+import { clearCoachChatMessages } from "./coachChatStorage";
+import { clearOnboardingMessages } from "./onboardingStorage";
 import { AppData, createDefaultAppData } from "./types";
 import { collectLegacyCompletionDates, migrateWorkoutDayLog } from "./workouts";
 
@@ -65,6 +67,8 @@ export async function clearAllAppData(): Promise<void> {
   }
 
   localStorage.removeItem(STORAGE_KEY);
+  clearCoachChatMessages();
+  clearOnboardingMessages();
   sessionStorage.clear();
   clearCookies();
 
