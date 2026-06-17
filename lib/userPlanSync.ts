@@ -105,12 +105,33 @@ export async function deleteUserPlan(userId: string): Promise<void> {
   }
 }
 
+function mergeRemoteAppDataWithLocalSession(
+  remote: AppData,
+  local: AppData,
+): AppData {
+  if (!local.activeSession) {
+    return remote;
+  }
+
+  return {
+    ...remote,
+    activeSession: local.activeSession,
+  };
+}
+
 export async function syncUserPlanOnLogin(userId: string): Promise<AppData> {
   const localPayload = buildLocalUserPlanPayload();
   const remotePayload = await fetchUserPlan(userId);
 
   if (remotePayload) {
-    return applyUserPlanPayload(remotePayload);
+    const mergedPayload: UserPlanPayload = {
+      ...remotePayload,
+      appData: mergeRemoteAppDataWithLocalSession(
+        remotePayload.appData,
+        localPayload.appData,
+      ),
+    };
+    return applyUserPlanPayload(mergedPayload);
   }
 
   await saveUserPlan(userId, localPayload);

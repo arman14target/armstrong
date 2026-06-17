@@ -58,7 +58,21 @@ export function useGymStore() {
 
   const syncForUser = useCallback(async (userId: string) => {
     const synced = await syncUserPlanOnLogin(userId);
-    setData(synced);
+    setData((prev) => {
+      const localSession =
+        prev.activeSession ?? loadAppData().activeSession;
+      if (!localSession) {
+        return synced;
+      }
+
+      if (synced.activeSession === localSession) {
+        return synced;
+      }
+
+      const merged = { ...synced, activeSession: localSession };
+      saveAppData(merged);
+      return merged;
+    });
     syncedUserIdRef.current = userId;
   }, []);
 

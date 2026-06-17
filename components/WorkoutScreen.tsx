@@ -67,10 +67,19 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
   const [setupIntentHandled, setSetupIntentHandled] = useState(false);
 
   useEffect(() => {
-    if (hydrated) {
+    if (!hydrated) {
+      return;
+    }
+
+    const active = data.activeSession;
+    if (
+      !active ||
+      active.workoutType !== workoutId ||
+      !active.startedAt
+    ) {
       startSession(workoutId);
     }
-  }, [hydrated, workoutId, startSession]);
+  }, [hydrated, workoutId, data.activeSession, startSession]);
 
   useEffect(() => {
     const sentinel = headerSentinelRef.current;
