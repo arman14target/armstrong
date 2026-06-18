@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed, DM_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
+import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AppShell } from "@/components/AppShell";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { GymStoreProvider } from "@/hooks/useGymStore";
@@ -74,6 +75,7 @@ export default function RootLayout({
         </AuthProvider>
         <ServiceWorkerRegister />
         <Analytics />
+        <SpeedInsights />
       </body>
     </html>
   );
