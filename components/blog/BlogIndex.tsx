@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { PostListItem } from "@/lib/posts";
+import { withBasePath } from "@/lib/basePath";
 
 interface BlogIndexProps {
   posts: PostListItem[];
@@ -36,6 +37,24 @@ export function BlogIndex({ posts }: BlogIndexProps) {
           {posts.map((post) => (
             <li key={post.id} className="blog-card">
               <article>
+                {post.image ? (
+                  <Link
+                    href={`/blog/${post.id}/`}
+                    className="blog-card__image-link"
+                    tabIndex={-1}
+                    aria-hidden
+                  >
+                    <img
+                      src={withBasePath(post.image)}
+                      alt=""
+                      className="blog-card__image"
+                      width={1280}
+                      height={720}
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </Link>
+                ) : null}
                 <time
                   className="blog-card__date"
                   dateTime={post.date}

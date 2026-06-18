@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+  type ReactNode,
+} from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { scheduleCloudSync, setCloudSyncUserId } from "@/lib/cloudSyncScheduler";
 import { loadAppData, saveAppData, clearAllAppData } from "@/lib/storage";
@@ -41,11 +48,16 @@ import {
 } from "@/lib/coachWorkout";
 import { createFoodEntry, createPlannedFoodEntry, FoodEntry, NutritionProfile, PlannedMealInput } from "@/lib/nutrition";
 
-export function useGymStore() {
+type GymStoreValue = ReturnType<typeof useGymStoreState>;
+
+const GymStoreContext = createContext<GymStoreValue | null>(null);
+
+let syncedUserId: string | null = null;
+
+function useGymStoreState() {
   const { user } = useAuth();
   const [data, setData] = useState<AppData>(createDefaultAppData);
   const [hydrated, setHydrated] = useState(false);
-  const syncedUserIdRef = useRef<string | null>(null);
 
   useEffect(() => {
     setData(loadAppData());
@@ -73,16 +85,22 @@ export function useGymStore() {
       saveAppData(merged);
       return merged;
     });
-    syncedUserIdRef.current = userId;
+    syncedUserId = userId;
   }, []);
 
   useEffect(() => {
-    if (!hydrated || !user?.id || syncedUserIdRef.current === user.id) {
+    if (!user?.id) {
+      syncedUserId = null;
+    }
+  }, [user?.id]);
+
+  useEffect(() => {
+    if (!hydrated || !user?.id || syncedUserId === user.id) {
       return;
     }
 
     syncForUser(user.id).catch(() => {
-      syncedUserIdRef.current = user.id;
+      syncedUserId = user.id;
     });
   }, [hydrated, user?.id, syncForUser]);
 
@@ -547,6 +565,7 @@ export function useGymStore() {
 
         return {
           ...applyWorkoutTemplate(prev, workoutId, {
+            ...template,
             moves: updatedMoves,
             lastCompletedAt: completedAt,
             lastSessionDurationSeconds,
@@ -614,7 +633,7 @@ export function useGymStore() {
   const resetAll = useCallback(async () => {
     if (user?.id) {
       await clearUserPlanEverywhere(user.id);
-      syncedUserIdRef.current = user.id;
+      syncedUserId = user.id;
     } else {
       await clearAllAppData();
     }
@@ -622,6 +641,7 @@ export function useGymStore() {
   }, [user?.id]);
 
   const syncAfterAuth = useCallback(async (userId: string) => {
+    syncedUserId = null;
     await syncForUser(userId);
   }, [syncForUser]);
 
@@ -809,4 +829,20 @@ export function useGymStore() {
     applyCoachDietPlan,
     togglePlannedMealComplete,
   };
+}
+
+export function GymStoreProvider({ children }: { children: ReactNode }) {
+  const value = useGymStoreState();
+  return (
+    <GymStoreContext.Provider value={value}>{children}</GymStoreContext.Provider>
+  );
+}
+
+export function useGymStore(): GymStoreValue {
+  const context = useContext(GymStoreContext);
+  if (!context) {
+    throw new Error("useGymStore must be used within GymStoreProvider");
+  }
+
+  return context;
 }

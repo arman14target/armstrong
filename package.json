@@ -7,6 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
+    "blog:images": "node scripts/generate-blog-images.mjs",
     "cap:sync": "next build && cap sync",
     "android": "next build && cap sync android && CAPACITOR_ANDROID_STUDIO_PATH=$HOME/.local/bin/android-studio cap open android",
     "ios": "next build && cap sync ios && cap open ios"

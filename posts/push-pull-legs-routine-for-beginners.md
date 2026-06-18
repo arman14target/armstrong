@@ -1,15 +1,19 @@
 ---
 title: 'Push Pull Legs Routine for Beginners: A Complete 6-Day Split Guide'
-description: 'Learn how to structure a push pull legs (PPL) workout split for beginners. Covers exercise selection, weekly volume, rest days, and how to track progress in the gym.'
+description: >-
+  Learn how to structure a push pull legs (PPL) workout split for beginners.
+  Covers exercise selection, weekly volume, rest days, and how to track progress
+  in the gym.
 date: '2026-03-10'
 updated: '2026-03-10'
-author: 'Armstrong Team'
+author: Armstrong Team
 keywords:
   - push pull legs routine
   - PPL workout split
   - beginner bodybuilding program
   - 6 day gym split
   - push day pull day leg day
+image: /images/blog/push-pull-legs-routine-for-beginners.jpg
 ---
 
 The **push pull legs (PPL) routine** is one of the most popular workout splits in bodybuilding because it groups muscles by movement pattern. Push days train chest, shoulders, and triceps. Pull days hit back and biceps. Leg days cover quads, hamstrings, glutes, and calves.

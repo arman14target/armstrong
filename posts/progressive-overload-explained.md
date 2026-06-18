@@ -1,15 +1,19 @@
 ---
 title: 'Progressive Overload Explained: The #1 Rule for Strength and Muscle Gains'
-description: 'Understand progressive overload for bodybuilding and strength training. Learn when to add weight, reps, or volume — and how workout logs prove you are actually progressing.'
+description: >-
+  Understand progressive overload for bodybuilding and strength training. Learn
+  when to add weight, reps, or volume — and how workout logs prove you are
+  actually progressing.
 date: '2026-02-20'
 updated: '2026-02-20'
-author: 'Armstrong Team'
+author: Armstrong Team
 keywords:
   - progressive overload
   - strength training progression
   - how to get stronger in the gym
   - muscle hypertrophy principles
   - workout progression plan
+image: /images/blog/progressive-overload-explained.jpg
 ---
 
 If you lift the same weight for the same reps every month, your body has no reason to grow. **Progressive overload** is the principle of gradually increasing training stress so muscles and nervous system keep adapting.

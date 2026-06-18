@@ -1,3 +1,5 @@
+import { withBasePath } from "@/lib/basePath";
+
 const DEFAULT_SITE_URL = "https://armstrong.app";
 
 export function getSiteUrl(): string {
@@ -17,4 +19,8 @@ export function absoluteUrl(path: string): string {
   const normalized = path.startsWith("/") ? path : `/${path}`;
   const withTrailingSlash = normalized.endsWith("/") ? normalized : `${normalized}/`;
   return `${getSiteUrl()}${base}${withTrailingSlash}`;
+}
+
+export function absoluteAssetUrl(assetPath: string): string {
+  return `${getSiteUrl()}${withBasePath(assetPath)}`;
 }

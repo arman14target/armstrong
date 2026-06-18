@@ -2976,6 +2976,21 @@ html[data-page="landing"] .crt-shell::after {
   background: var(--color-panel);
   padding: var(--space-panel-lg);
   transition: border-color 0.15s ease;
+  overflow: hidden;
+}
+
+.blog-card__image-link {
+  display: block;
+  margin: calc(var(--space-panel-lg) * -1) calc(var(--space-panel-lg) * -1)
+    var(--space-panel-lg);
+}
+
+.blog-card__image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-bottom: 1px solid var(--color-line);
 }
 
 .blog-card:hover {
@@ -3065,6 +3080,19 @@ html[data-page="landing"] .crt-shell::after {
   margin-bottom: var(--space-section-lg);
   padding-bottom: var(--space-section);
   border-bottom: 1px solid var(--color-line);
+}
+
+.blog-article__image-wrap {
+  margin-inline: calc(var(--space-panel-lg) * -0.25);
+}
+
+.blog-article__image {
+  display: block;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: var(--radius-panel);
+  border: 1px solid var(--color-line);
 }
 
 .blog-article__meta {

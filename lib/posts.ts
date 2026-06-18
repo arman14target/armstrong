@@ -12,6 +12,7 @@ export interface PostFrontMatter {
   updated?: string;
   author: string;
   keywords: string[];
+  image?: string;
 }
 
 export interface PostListItem extends PostFrontMatter {
@@ -37,8 +38,9 @@ function parseFrontMatter(
   const keywords = Array.isArray(data.keywords)
     ? data.keywords.filter((item): item is string => typeof item === "string")
     : [];
+  const image = typeof data.image === "string" ? data.image : undefined;
 
-  return { title, description, date, updated, author, keywords };
+  return { title, description, date, updated, author, keywords, image };
 }
 
 export function getSortedPostsData(): PostListItem[] {

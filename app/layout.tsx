@@ -3,6 +3,7 @@ import { Barlow_Condensed, DM_Sans } from "next/font/google";
 import { Analytics } from "@vercel/analytics/next";
 import { AppShell } from "@/components/AppShell";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { GymStoreProvider } from "@/hooks/useGymStore";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { theme } from "@/lib/theme";
 import "./globals.css";
@@ -67,7 +68,9 @@ export default function RootLayout({
       </head>
       <body>
         <AuthProvider>
-          <AppShell>{children}</AppShell>
+          <GymStoreProvider>
+            <AppShell>{children}</AppShell>
+          </GymStoreProvider>
         </AuthProvider>
         <ServiceWorkerRegister />
         <Analytics />

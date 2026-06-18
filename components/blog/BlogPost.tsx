@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { PostData } from "@/lib/posts";
+import { withBasePath } from "@/lib/basePath";
 
 interface BlogPostProps {
   post: PostData;
@@ -31,6 +32,19 @@ export function BlogPost({ post }: BlogPostProps) {
 
       <header className="blog-article__header">
         <p className="blog-kicker">{post.author}</p>
+        {post.image ? (
+          <div className="blog-article__image-wrap">
+            <img
+              src={withBasePath(post.image)}
+              alt=""
+              className="blog-article__image"
+              width={1280}
+              height={720}
+              loading="eager"
+              decoding="async"
+            />
+          </div>
+        ) : null}
         <h1 className="blog-title font-display text-heading uppercase">
           {post.title}
         </h1>

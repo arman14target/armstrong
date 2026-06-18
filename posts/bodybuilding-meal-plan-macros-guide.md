@@ -1,15 +1,19 @@
 ---
 title: 'Bodybuilding Meal Plan Basics: How to Set Macros for Muscle Growth'
-description: 'A practical guide to bodybuilding nutrition — calculate protein, carbs, and fats for bulking or cutting, time meals around training, and track macros without obsession.'
+description: >-
+  A practical guide to bodybuilding nutrition — calculate protein, carbs, and
+  fats for bulking or cutting, time meals around training, and track macros
+  without obsession.
 date: '2026-02-28'
 updated: '2026-02-28'
-author: 'Armstrong Team'
+author: Armstrong Team
 keywords:
   - bodybuilding meal plan
   - macro tracking for muscle gain
   - bodybuilding nutrition guide
   - protein for muscle growth
   - bulking macros calculator
+image: /images/blog/bodybuilding-meal-plan-macros-guide.jpg
 ---
 
 Training builds the stimulus. **Nutrition determines whether that stimulus becomes muscle** or just soreness and frustration.

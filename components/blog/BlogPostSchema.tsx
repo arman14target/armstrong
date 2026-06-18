@@ -1,5 +1,5 @@
 import type { PostData } from "@/lib/posts";
-import { absoluteUrl } from "@/lib/siteUrl";
+import { absoluteAssetUrl, absoluteUrl } from "@/lib/siteUrl";
 
 interface BlogPostSchemaProps {
   post: PostData;
@@ -34,6 +34,14 @@ export function BlogPostSchema({ post }: BlogPostSchemaProps) {
     keywords: post.keywords.join(", "),
     articleSection: "Fitness",
     inLanguage: "en-US",
+    ...(post.image
+      ? {
+          image: {
+            "@type": "ImageObject",
+            url: absoluteAssetUrl(post.image),
+          },
+        }
+      : {}),
   };
 
   return (

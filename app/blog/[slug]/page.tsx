@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { BlogPost } from "@/components/blog/BlogPost";
 import { BlogPostSchema } from "@/components/blog/BlogPostSchema";
 import { getAllPostIds, getPostData } from "@/lib/posts";
-import { absoluteUrl } from "@/lib/siteUrl";
+import { absoluteAssetUrl, absoluteUrl } from "@/lib/siteUrl";
 
 interface BlogPostPageProps {
   params: Promise<{ slug: string }>;
@@ -21,6 +21,7 @@ export async function generateMetadata({
   try {
     const post = await getPostData(slug);
     const url = absoluteUrl(`/blog/${post.id}`);
+    const imageUrl = post.image ? absoluteAssetUrl(post.image) : undefined;
 
     return {
       title: `${post.title} | Armstrong Blog`,
@@ -40,11 +41,13 @@ export async function generateMetadata({
         modifiedTime: new Date(post.updated ?? post.date).toISOString(),
         authors: [post.author],
         tags: post.keywords,
+        ...(imageUrl ? { images: [{ url: imageUrl, alt: post.title }] } : {}),
       },
       twitter: {
         card: "summary_large_image",
         title: post.title,
         description: post.description,
+        ...(imageUrl ? { images: [imageUrl] } : {}),
       },
       robots: {
         index: true,

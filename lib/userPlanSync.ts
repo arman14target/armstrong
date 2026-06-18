@@ -11,7 +11,14 @@ import {
   saveOnboardingMessages,
 } from "@/lib/onboardingStorage";
 import { loadAppData, saveAppData } from "@/lib/storage";
-import { AppData, createDefaultAppData } from "@/lib/types";
+import {
+  AppData,
+  CustomWorkoutDay,
+  WORKOUT_TYPES,
+  WorkoutDayEntry,
+  WorkoutTemplate,
+  createDefaultAppData,
+} from "@/lib/types";
 
 export interface UserPlanPayload {
   appData: AppData;
@@ -105,17 +112,105 @@ export async function deleteUserPlan(userId: string): Promise<void> {
   }
 }
 
-function mergeRemoteAppDataWithLocalSession(
-  remote: AppData,
-  local: AppData,
-): AppData {
-  if (!local.activeSession) {
-    return remote;
+function workoutCompletedAtTime(template: WorkoutTemplate | undefined): number {
+  if (!template?.lastCompletedAt) {
+    return 0;
+  }
+
+  return new Date(template.lastCompletedAt).getTime();
+}
+
+function pickNewerWorkoutTemplate(
+  remote: WorkoutTemplate,
+  local: WorkoutTemplate,
+): WorkoutTemplate {
+  return workoutCompletedAtTime(local) >= workoutCompletedAtTime(remote)
+    ? local
+    : remote;
+}
+
+function pickNewerCustomWorkout(
+  remote: CustomWorkoutDay,
+  local: CustomWorkoutDay,
+): CustomWorkoutDay {
+  return workoutCompletedAtTime(local) >= workoutCompletedAtTime(remote)
+    ? local
+    : remote;
+}
+
+function mergeCompletionDates(
+  remote: string[] | undefined,
+  local: string[] | undefined,
+): string[] {
+  return [...new Set([...(remote ?? []), ...(local ?? [])])];
+}
+
+function mergeWorkoutDayLogs(
+  remote: Record<string, WorkoutDayEntry[]> | undefined,
+  local: Record<string, WorkoutDayEntry[]> | undefined,
+): Record<string, WorkoutDayEntry[]> {
+  const merged: Record<string, WorkoutDayEntry[]> = { ...(remote ?? {}) };
+
+  for (const [dateKey, entries] of Object.entries(local ?? {})) {
+    const existing = merged[dateKey] ?? [];
+    const seen = new Set(
+      existing.map((entry) => `${entry.workoutId}:${entry.completedAt}`),
+    );
+    const added = entries.filter(
+      (entry) => !seen.has(`${entry.workoutId}:${entry.completedAt}`),
+    );
+
+    if (added.length > 0) {
+      merged[dateKey] = [...existing, ...added];
+    }
+  }
+
+  return merged;
+}
+
+export function mergeAppDataOnSync(remote: AppData, local: AppData): AppData {
+  const workouts = { ...remote.workouts };
+  for (const type of WORKOUT_TYPES) {
+    workouts[type] = pickNewerWorkoutTemplate(
+      remote.workouts[type],
+      local.workouts[type],
+    );
+  }
+
+  const customById = new Map(
+    remote.customWorkouts.map((workout) => [workout.id, workout]),
+  );
+
+  for (const localWorkout of local.customWorkouts) {
+    const remoteWorkout = customById.get(localWorkout.id);
+    customById.set(
+      localWorkout.id,
+      remoteWorkout
+        ? pickNewerCustomWorkout(remoteWorkout, localWorkout)
+        : localWorkout,
+    );
   }
 
   return {
     ...remote,
-    activeSession: local.activeSession,
+    workouts,
+    customWorkouts: [...customById.values()],
+    workoutCompletionDates: mergeCompletionDates(
+      remote.workoutCompletionDates,
+      local.workoutCompletionDates,
+    ),
+    workoutDayLog: mergeWorkoutDayLogs(remote.workoutDayLog, local.workoutDayLog),
+    workoutSetupSeen: {
+      ...remote.workoutSetupSeen,
+      ...local.workoutSetupSeen,
+    },
+    activeSession: local.activeSession ?? remote.activeSession,
+    nutritionProfile: local.nutritionProfile ?? remote.nutritionProfile,
+    foodLog: {
+      ...remote.foodLog,
+      ...local.foodLog,
+    },
+    coachPlanActive: remote.coachPlanActive ?? local.coachPlanActive,
   };
 }
 
@@ -126,12 +221,11 @@ export async function syncUserPlanOnLogin(userId: string): Promise<AppData> {
   if (remotePayload) {
     const mergedPayload: UserPlanPayload = {
       ...remotePayload,
-      appData: mergeRemoteAppDataWithLocalSession(
-        remotePayload.appData,
-        localPayload.appData,
-      ),
+      appData: mergeAppDataOnSync(remotePayload.appData, localPayload.appData),
     };
-    return applyUserPlanPayload(mergedPayload);
+    const appData = applyUserPlanPayload(mergedPayload);
+    await saveUserPlan(userId, mergedPayload);
+    return appData;
   }
 
   await saveUserPlan(userId, localPayload);
