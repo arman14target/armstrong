@@ -6,9 +6,16 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "cap:sync": "next build && cap sync",
+    "android": "next build && cap sync android && CAPACITOR_ANDROID_STUDIO_PATH=$HOME/.local/bin/android-studio cap open android",
+    "ios": "next build && cap sync ios && cap open ios"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.0",
+    "@capacitor/cli": "^8.4.0",
+    "@capacitor/core": "^8.4.0",
+    "@capacitor/ios": "^8.4.0",
     "@google/genai": "^2.8.0",
     "@supabase/ssr": "^0.12.0",
     "@supabase/supabase-js": "^2.108.2",

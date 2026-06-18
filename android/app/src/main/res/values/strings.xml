@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Armstrong</string>
+    <string name="title_activity_main">Armstrong</string>
+    <string name="package_name">com.armstrong.app</string>
+    <string name="custom_url_scheme">com.armstrong.app</string>
+</resources>
