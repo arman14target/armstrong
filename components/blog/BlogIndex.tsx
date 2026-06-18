@@ -1,18 +1,8 @@
-import Link from "next/link";
 import type { PostListItem } from "@/lib/posts";
-import { withBasePath } from "@/lib/basePath";
+import { BlogInfiniteList } from "@/components/blog/BlogInfiniteList";
 
 interface BlogIndexProps {
   posts: PostListItem[];
-}
-
-function formatDate(date: string): string {
-  return new Date(date).toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "long",
-    day: "numeric",
-    timeZone: "UTC",
-  });
 }
 
 export function BlogIndex({ posts }: BlogIndexProps) {
@@ -24,7 +14,7 @@ export function BlogIndex({ posts }: BlogIndexProps) {
           id="blog-heading"
           className="blog-title font-display text-heading uppercase"
         >
-          Armstrong Blog
+          Blog
         </h1>
         <p className="blog-lead">
           Workout splits, macro guides, and strength training advice for lifters
@@ -32,51 +22,7 @@ export function BlogIndex({ posts }: BlogIndexProps) {
         </p>
       </section>
 
-      <section aria-label="Blog posts">
-        <ol className="blog-list">
-          {posts.map((post) => (
-            <li key={post.id} className="blog-card">
-              <article>
-                {post.image ? (
-                  <Link
-                    href={`/blog/${post.id}/`}
-                    className="blog-card__image-link"
-                    tabIndex={-1}
-                    aria-hidden
-                  >
-                    <img
-                      src={withBasePath(post.image)}
-                      alt=""
-                      className="blog-card__image"
-                      width={1280}
-                      height={720}
-                      loading="lazy"
-                      decoding="async"
-                    />
-                  </Link>
-                ) : null}
-                <time
-                  className="blog-card__date"
-                  dateTime={post.date}
-                >
-                  {formatDate(post.date)}
-                </time>
-                <h2 className="blog-card__title">
-                  <Link href={`/blog/${post.id}/`}>{post.title}</Link>
-                </h2>
-                <p className="blog-card__description">{post.description}</p>
-                <Link
-                  href={`/blog/${post.id}/`}
-                  className="blog-card__read-more"
-                  aria-label={`Read ${post.title}`}
-                >
-                  Read article →
-                </Link>
-              </article>
-            </li>
-          ))}
-        </ol>
-      </section>
+      <BlogInfiniteList posts={posts} />
     </div>
   );
 }

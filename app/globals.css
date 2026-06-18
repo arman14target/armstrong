@@ -3047,6 +3047,31 @@ html[data-page="landing"] .crt-shell::after {
   text-decoration: underline;
 }
 
+.blog-list__loader {
+  display: flex;
+  justify-content: center;
+  padding: var(--space-stack-lg) 0;
+}
+
+.blog-list__loader-text {
+  font-size: 0.8125rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-dim);
+  animation: blog-loader-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes blog-loader-pulse {
+  0%,
+  100% {
+    opacity: 0.45;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}
+
 .blog-breadcrumb ol {
   display: flex;
   flex-wrap: wrap;

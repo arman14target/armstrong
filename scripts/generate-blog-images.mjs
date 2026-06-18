@@ -41,13 +41,66 @@ function loadEnvFile(filePath) {
   }
 }
 
-function buildPrompt(title, description) {
+const NO_TEXT_SUFFIX =
+  "Pure photograph only. Absolutely no text, letters, numbers, words, typography, labels, signs, banners, logos, watermarks, captions, subtitles, or readable writing anywhere in the image.";
+
+/** Visual-only scenes — never pass post titles/descriptions (models render them as text). */
+const SLUG_SCENES = {
+  "best-high-protein-foods-muscle-growth":
+    "overhead food photography of grilled chicken breast, hard boiled eggs, and Greek yogurt in ceramic bowls on dark wooden surface",
+  "creatine-benefits-and-side-effects":
+    "close-up of white supplement powder in a metal scoop beside a shaker bottle on a black gym bench",
+  "how-many-calories-to-lose-weight":
+    "kitchen scene with food scale, measuring cup, and portion of rice and chicken under soft window light",
+  "full-body-workout-beginners":
+    "wide gym shot of barbell on lifting platform with dumbbells, empty training floor",
+  "best-home-workout-no-equipment":
+    "yoga mat on living room floor with resistance band and water bottle, minimal home interior",
+  "walking-vs-running-fat-loss":
+    "running shoes on a forest trail at golden hour, shallow depth of field",
+  "best-exercises-for-belly-fat":
+    "athlete holding a plank on gym mat, side angle, core-focused composition",
+  "how-much-protein-per-day":
+    "macro meal prep containers with chicken, rice, and broccoli on dark countertop",
+  "three-day-gym-workout-busy-professionals":
+    "dumbbell rack and gym bench at early morning, empty gym, cinematic lighting",
+  "intermittent-fasting-weight-loss":
+    "empty white plate and fork on wooden table, moody morning window light",
+  "push-pull-legs-routine-for-beginners":
+    "barbell bench press station with weight plates, pull-up bar visible in background",
+  "bodybuilding-meal-plan-macros-guide":
+    "meal prep containers with chicken, sweet potato, and green vegetables, overhead shot",
+  "how-to-track-gym-workouts-effectively":
+    "gym notebook beside barbell clip and chalk on rubber gym floor, overhead angle",
+  "progressive-overload-explained":
+    "barbell loaded with weight plates on squat rack, chalk dust in air, dramatic gym lighting",
+  "circadian-performance-workout-log-patterns":
+    "gym interior at sunrise through large windows, empty squat rack, warm amber light",
+  "grip-fatigue-hidden-pull-day-ceiling":
+    "close-up of hands gripping a thick barbell during a deadlift, chalk on palms",
+  "volume-creep-unconscious-gym-inflation":
+    "rows of dumbbells on gym rack, selective focus, dark moody atmosphere",
+  "unilateral-asymmetry-when-to-stop-chasing-balance":
+    "single dumbbell on gym bench, mirror reflection blurred in background",
+  "session-density-vs-total-volume":
+    "stopwatch and water bottle beside barbell on gym floor, training session still life",
+};
+
+const DEFAULT_SCENE =
+  "editorial fitness photograph, gym equipment, atmospheric lighting, no people in close-up";
+
+function visualSceneFromSlug(slug) {
+  return SLUG_SCENES[slug] ?? DEFAULT_SCENE;
+}
+
+function buildPrompt(slug) {
+  const scene = visualSceneFromSlug(slug);
   return [
-    "Editorial fitness photograph for a strength training blog article.",
-    `Topic: ${title}.`,
-    description,
+    "Editorial fitness photograph for a strength training blog.",
+    scene,
     "Dark moody gym atmosphere with warm golden amber accent lighting, cinematic depth, professional magazine quality.",
-    "Photorealistic, no text, no logos, no watermarks, no faces in close-up.",
+    "Photorealistic, no faces in close-up.",
+    NO_TEXT_SUFFIX,
   ].join(" ");
 }
 
@@ -190,9 +243,6 @@ async function main() {
     const postPath = path.join(POSTS_DIR, file);
 
     const { data } = matter(fs.readFileSync(postPath, "utf8"));
-    const title = typeof data.title === "string" ? data.title : slugId;
-    const description =
-      typeof data.description === "string" ? data.description : "";
 
     const existingImage =
       typeof data.image === "string" ? data.image : undefined;
@@ -206,7 +256,7 @@ async function main() {
       continue;
     }
 
-    const prompt = buildPrompt(title, description);
+    const prompt = buildPrompt(slugId);
     console.log(`generate ${slugId}...`);
 
     try {

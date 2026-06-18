@@ -4,7 +4,7 @@ export function BlogIndexSchema() {
   const schema = {
     "@context": "https://schema.org",
     "@type": "Blog",
-    name: "Armstrong Blog",
+    name: "Blog",
     description:
       "Workout plans, macro guides, and strength training advice from Armstrong.",
     url: absoluteUrl("/blog"),

@@ -24,7 +24,7 @@ export async function generateMetadata({
     const imageUrl = post.image ? absoluteAssetUrl(post.image) : undefined;
 
     return {
-      title: `${post.title} | Armstrong Blog`,
+      title: `${post.title} | Blog`,
       description: post.description,
       keywords: post.keywords,
       authors: [{ name: post.author }],
