@@ -1,0 +1,36 @@
+name: Backend migrate
+
+# Vercel auto-deploys the backend function on every push (via the linked Vercel
+# project). The only thing CI must do is apply pending Prisma migrations to Neon
+# before the new function goes live. Runs on backend changes to main.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "backend/**"
+      - ".github/workflows/backend-deploy.yml"
+  workflow_dispatch:
+
+jobs:
+  migrate:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+          cache-dependency-path: backend/package-lock.json
+
+      - run: npm ci
+
+      - name: Apply database migrations
+        # DIRECT_URL = Neon direct (non-pooled) connection string.
+        run: npx prisma migrate deploy
+        env:
+          DATABASE_URL: ${{ secrets.DIRECT_URL }}
+          DIRECT_URL: ${{ secrets.DIRECT_URL }}

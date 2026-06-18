@@ -1,0 +1,205 @@
+// Normalized schema for the Armstrong gym tracker backend.
+// The frontend syncs a single payload { appData, coachChat, onboardingChat };
+// the plan mapper (src/plan/plan.mapper.ts) explodes that payload into these
+// tables and reconstructs it on read. Deeply-nested / settings-like structures
+// (nutrition profile, baseline-workout snapshot, set weight/rep maps,
+// workoutSetupSeen) are kept as jsonb columns on purpose.
+
+generator client {
+  provider = "prisma-client-js"
+  // native = local/Docker; rhel targets = Vercel serverless (AWS Lambda) runtime.
+  binaryTargets = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  // Pooled connection (Neon PgBouncer) for serverless runtime queries.
+  url       = env("DATABASE_URL")
+  // Direct (non-pooled) connection — used by `prisma migrate`.
+  directUrl = env("DIRECT_URL")
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+
+  meta             PlanMeta?
+  builtinWorkouts  BuiltinWorkout[]
+  customWorkouts   CustomWorkout[]
+  activeSession    ActiveSession?
+  completionDates  CompletionDate[]
+  dayEntries       WorkoutDayEntry[]
+  foodEntries      FoodEntry[]
+  chatMessages     ChatMessage[]
+
+  @@map("users")
+}
+
+/// 1:1 bag for plan-level settings that don't warrant their own tables.
+model PlanMeta {
+  userId           String   @id @map("user_id")
+  user             User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  coachPlanActive  Boolean  @default(false) @map("coach_plan_active")
+  workoutSetupSeen Json     @default("{}") @map("workout_setup_seen")
+  nutritionProfile Json?    @map("nutrition_profile")
+  updatedAt        DateTime @updatedAt @map("updated_at")
+
+  @@map("plan_meta")
+}
+
+enum BuiltinWorkoutType {
+  push
+  leg
+  abs
+  pull
+}
+
+/// One of the four builtin split days. Exactly four rows per user.
+model BuiltinWorkout {
+  id                         String             @id @default(uuid())
+  userId                     String             @map("user_id")
+  user                       User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  type                       BuiltinWorkoutType
+  lastCompletedAt            DateTime?          @map("last_completed_at")
+  lastSessionDurationSeconds Int?               @map("last_session_duration_seconds")
+  moves                      Move[]
+
+  @@unique([userId, type])
+  @@map("builtin_workouts")
+}
+
+/// A coach-imported / user-created custom day. `clientId` is the id the app uses.
+model CustomWorkout {
+  id                         String    @id @default(uuid())
+  userId                     String    @map("user_id")
+  user                       User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId                   String    @map("client_id")
+  name                       String
+  theme                      String?
+  sticker                    String?
+  position                   Int       @default(0)
+  lastCompletedAt            DateTime? @map("last_completed_at")
+  lastSessionDurationSeconds Int?      @map("last_session_duration_seconds")
+  moves                      Move[]
+
+  @@unique([userId, clientId])
+  @@map("custom_workouts")
+}
+
+/// An exercise. Belongs to exactly one builtin OR one custom workout.
+model Move {
+  id              String         @id @default(uuid())
+  clientId        String         @map("client_id")
+  name            String
+  position        Int            @default(0)
+  builtinWorkout  BuiltinWorkout? @relation(fields: [builtinWorkoutId], references: [id], onDelete: Cascade)
+  builtinWorkoutId String?       @map("builtin_workout_id")
+  customWorkout   CustomWorkout?  @relation(fields: [customWorkoutId], references: [id], onDelete: Cascade)
+  customWorkoutId String?        @map("custom_workout_id")
+  sets            ExerciseSet[]
+
+  @@index([builtinWorkoutId])
+  @@index([customWorkoutId])
+  @@map("moves")
+}
+
+model ExerciseSet {
+  id          String  @id @default(uuid())
+  clientId    String  @map("client_id")
+  restSeconds Int     @map("rest_seconds")
+  lastWeight  Float?  @map("last_weight")
+  lastReps    Int?    @map("last_reps")
+  position    Int     @default(0)
+  moveId      String  @map("move_id")
+  move        Move    @relation(fields: [moveId], references: [id], onDelete: Cascade)
+
+  @@index([moveId])
+  @@map("exercise_sets")
+}
+
+/// In-progress workout. At most one per user (preserved across sync).
+model ActiveSession {
+  userId          String   @id @map("user_id")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutType     String   @map("workout_type")
+  startedAt       DateTime @map("started_at")
+  setWeights      Json     @default("{}") @map("set_weights")
+  setReps         Json     @default("{}") @map("set_reps")
+  completedSetIds String[] @map("completed_set_ids")
+  activeRestSetId String?  @map("active_rest_set_id")
+  restEndsAt      DateTime? @map("rest_ends_at")
+  baselineWorkout Json     @map("baseline_workout")
+
+  @@map("active_sessions")
+}
+
+/// Local YYYY-MM-DD date a workout was finished (calendar dots).
+model CompletionDate {
+  id     String @id @default(uuid())
+  userId String @map("user_id")
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date   String
+
+  @@unique([userId, date])
+  @@map("completion_dates")
+}
+
+/// One finished workout, keyed by local day.
+model WorkoutDayEntry {
+  id              String   @id @default(uuid())
+  userId          String   @map("user_id")
+  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  dateKey         String   @map("date_key")
+  workoutId       String   @map("workout_id")
+  completedAt     DateTime @map("completed_at")
+  durationSeconds Int?     @map("duration_seconds")
+
+  @@index([userId, dateKey])
+  @@map("workout_day_entries")
+}
+
+/// A logged food item, keyed by local day. Macro fields are first-class;
+/// the small optional flags ride along in `extra` jsonb.
+model FoodEntry {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  clientId  String   @map("client_id")
+  dateKey   String   @map("date_key")
+  name      String
+  calories  Float
+  proteinG  Float    @map("protein_g")
+  carbsG    Float    @map("carbs_g")
+  fatG      Float    @map("fat_g")
+  loggedAt  DateTime @map("logged_at")
+  fromPlan  Boolean  @default(false) @map("from_plan")
+  completed Boolean?
+  mealSlot  String?  @map("meal_slot")
+
+  @@index([userId, dateKey])
+  @@map("food_entries")
+}
+
+enum ChatKind {
+  coach
+  onboarding
+}
+
+/// Coach + onboarding chat history. `kind` discriminates the two streams.
+model ChatMessage {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  kind      ChatKind
+  clientId  String   @map("client_id")
+  role      String
+  content   String
+  createdAt DateTime @map("created_at")
+  position  Int      @default(0)
+
+  @@index([userId, kind, position])
+  @@map("chat_messages")
+}
