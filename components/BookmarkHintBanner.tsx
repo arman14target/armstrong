@@ -1,5 +1,7 @@
 "use client";
 
+import { Capacitor } from "@capacitor/core";
+import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 
 const DISMISS_KEY = "armstrong-bookmark-hint-dismissed";
@@ -16,16 +18,37 @@ function isStandalone(): boolean {
   );
 }
 
+function isMobileBrowser(): boolean {
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return window.matchMedia("(pointer: coarse)").matches;
+}
+
+function isMainAppRoute(pathname: string): boolean {
+  const normalized = pathname.replace(/\/$/, "") || "/";
+  return normalized === "/";
+}
+
 export function BookmarkHintBanner() {
+  const pathname = usePathname();
   const [visible, setVisible] = useState(false);
 
   useEffect(() => {
-    if (isStandalone() || localStorage.getItem(DISMISS_KEY) === "1") {
+    if (
+      !isMainAppRoute(pathname) ||
+      !isMobileBrowser() ||
+      isStandalone() ||
+      Capacitor.isNativePlatform() ||
+      localStorage.getItem(DISMISS_KEY) === "1"
+    ) {
+      setVisible(false);
       return;
     }
 
     setVisible(true);
-  }, []);
+  }, [pathname]);
 
   const handleDismiss = () => {
     localStorage.setItem(DISMISS_KEY, "1");
