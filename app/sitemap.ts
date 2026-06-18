@@ -1,0 +1,38 @@
+import type { MetadataRoute } from "next";
+import { getSortedPostsData } from "@/lib/posts";
+import { absoluteUrl } from "@/lib/siteUrl";
+
+export const dynamic = "force-static";
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const posts = getSortedPostsData();
+
+  const blogPosts: MetadataRoute.Sitemap = posts.map((post) => ({
+    url: absoluteUrl(`/blog/${post.id}`),
+    lastModified: new Date(post.updated ?? post.date),
+    changeFrequency: "monthly",
+    priority: 0.8,
+  }));
+
+  return [
+    {
+      url: absoluteUrl("/"),
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 1,
+    },
+    {
+      url: absoluteUrl("/landing"),
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    {
+      url: absoluteUrl("/blog"),
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.9,
+    },
+    ...blogPosts,
+  ];
+}

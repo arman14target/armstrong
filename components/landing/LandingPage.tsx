@@ -227,6 +227,14 @@ export function LandingPage() {
           © {new Date().getFullYear()} Armstrong. Free AI fitness coach for
           bodybuilders who train with intent.
         </p>
+        <p className="mt-2 text-xs">
+          <Link
+            href="/blog/"
+            className="text-dim underline decoration-cyan/40 underline-offset-2 transition-colors hover:text-cyan"
+          >
+            Training guides &amp; workout tips
+          </Link>
+        </p>
       </footer>
     </div>
   );
