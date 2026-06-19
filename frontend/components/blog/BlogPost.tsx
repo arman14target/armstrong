@@ -1,4 +1,5 @@
 import Link from "next/link";
+import Image from "next/image";
 import type { PostData } from "@/lib/posts";
 import { withBasePath } from "@/lib/basePath";
 
@@ -34,7 +35,7 @@ export function BlogPost({ post }: BlogPostProps) {
         <p className="blog-kicker">{post.author}</p>
         {post.image ? (
           <div className="blog-article__image-wrap">
-            <img
+            <Image
               src={withBasePath(post.image)}
               alt=""
               className="blog-article__image"

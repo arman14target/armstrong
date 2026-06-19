@@ -8,7 +8,7 @@ const footerLinks = [
   { href: "/app/", label: "App" },
 ] as const;
 
-interface LandingFooterProps extends React.ComponentPropsWithoutRef<"footer"> {}
+type LandingFooterProps = React.ComponentPropsWithoutRef<"footer">;
 
 export function LandingFooter({ className, ...props }: LandingFooterProps) {
   return (

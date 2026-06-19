@@ -26,7 +26,6 @@ function getSetupBatch(label: string): WorkoutBatch {
 
 export function WorkoutSetupModal({
   open,
-  workoutId: _workoutId,
   label,
   onImport,
   onCancel,

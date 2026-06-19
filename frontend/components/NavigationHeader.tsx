@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { CloseIcon, MenuIcon } from "@/components/icons/ActionIcons";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { IconButton } from "@/components/ui/IconButton";
@@ -40,7 +41,7 @@ export function NavigationHeader({ className }: NavigationHeaderProps) {
     >
       <div className="nav-header__bar">
         <Link href="/" className="nav-header__logo" onClick={closeMenu}>
-          <img
+          <Image
             src={withBasePath("/icons/icon-192.png")}
             alt=""
             width={32}
