@@ -1,5 +1,6 @@
 import {
   ConflictException,
+  ForbiddenException,
   Injectable,
   UnauthorizedException,
 } from "@nestjs/common";
@@ -47,6 +48,10 @@ export class AuthService {
 
     if (!user || !(await bcrypt.compare(password, user.passwordHash))) {
       throw new UnauthorizedException("Invalid login credentials");
+    }
+
+    if (user.disabled) {
+      throw new ForbiddenException("This account has been disabled");
     }
 
     const safeUser: AuthedUser = { id: user.id, email: user.email };

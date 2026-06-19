@@ -4,17 +4,22 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Repo layout
 
-Monorepo with two independently-deployed apps:
+Monorepo with three independently-deployed apps + one shared backend:
 
 - `frontend/` — Next.js static-export PWA + Capacitor config. Deployed to **Vercel** (project root = `frontend/`). Run frontend + all `cap` commands from here.
-- `backend/` — NestJS + Prisma + PostgreSQL API. Deployed to **Vercel serverless** (project root = `backend/`); DB is **Neon**.
+- `admin/` — Next.js static-export **admin dashboard** (staff only). Deployed to its own **Vercel** project (root = `admin/`), domain `admin.armstrong-fitness.com`. Same gold/orange theme, ported. Talks to the same backend's `/api/admin/*` routes.
+- `backend/` — NestJS + Prisma + PostgreSQL API serving both apps. Deployed to **Vercel serverless** (project root = `backend/`); DB is **Neon**.
 - `android/`, `ios/` — Capacitor native shells at repo root (pointed to via `android.path`/`ios.path` in `frontend/capacitor.config.ts`). Generated/synced by `cap sync`, which runs from `frontend/` and copies `frontend/out` into them; their gradle/pods resolve back to `../frontend/node_modules`.
-- Root — `docker-compose.yml` (full local stack), `.github/workflows/`, this file.
+- Root — `docker-compose.yml` (full local stack: db + api + web:8080 + admin:8081), `.github/workflows/`, this file.
+
+### Admin auth (separate from app users)
+
+Admins live in their own `admins` table (`AdminRole` = `ADMIN`/`SUPERADMIN`), **not** on `User`. Completely separate auth: own JWT signed with `ADMIN_JWT_SECRET` (distinct from `JWT_SECRET`), own passport strategy (`admin-jwt`), own sign-in at `/api/admin/auth/signin`. `RolesGuard` + `@Roles()` gate routes by tier (SUPERADMIN ⊇ ADMIN); SUPERADMIN-only: delete users, manage admins. The `backend/src/admin/` module holds all of this. App `User` gained only a `disabled` flag (admins lock users out; login is refused while true). First admin: `cd backend && npm run admin:create -- email pass SUPERADMIN`.
 
 ## CI/CD
 
 GitHub Actions (all free on Linux runners; private-safe):
-- `test.yml` — frontend (lint + `tsc --noEmit` + Vitest) and backend (`tsc --noEmit` + Jest) on PR/push.
+- `test.yml` — frontend (lint + `tsc --noEmit` + Vitest), backend (`tsc --noEmit` + Jest), admin (lint + `tsc --noEmit` + build) on PR/push.
 - `mobile-android.yml` — builds web, `cap sync`, assembles a debug APK artifact.
 - `backend-deploy.yml` — applies Prisma migrations to Neon on backend push; optionally fires a Vercel deploy hook after (ordered release, gated on `VERCEL_BACKEND_DEPLOY_HOOK`).
 - `semgrep.yml` — free SAST (replaces CodeQL, which needs paid GHAS on private repos).
@@ -30,6 +35,11 @@ Frontend (run in `frontend/`):
 - `npm run build` — production build; emits static site to `out/` (`output: "export"`)
 - `npm run lint` — ESLint (`next/core-web-vitals` + `next/typescript`)
 - `npm run android` / `npm run ios` — build + `cap sync` + open native IDE
+
+Admin (run in `admin/`):
+- `npm run dev` — admin dashboard on `:3001`
+- `npm run build` / `npm run lint`
+- First admin: `cd backend && npm run admin:create -- email pass SUPERADMIN`
 
 Backend (run in `backend/`):
 - `npm run start:dev` — watch-mode API on `:4000`

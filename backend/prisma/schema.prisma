@@ -19,10 +19,32 @@ datasource db {
   directUrl = env("DIRECT_URL")
 }
 
+/// Staff accounts for the admin app. Completely separate from app `User`s —
+/// different table, different auth (own JWT secret), own role tiers.
+enum AdminRole {
+  ADMIN
+  SUPERADMIN
+}
+
+model Admin {
+  id           String    @id @default(uuid())
+  email        String    @unique
+  passwordHash String    @map("password_hash")
+  role         AdminRole @default(ADMIN)
+  disabled     Boolean   @default(false)
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  @@map("admins")
+}
+
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
   passwordHash String   @map("password_hash")
+  // App users have no roles; admins manage them from the Admin app. `disabled`
+  // lets an admin lock a user out (login is refused while true).
+  disabled     Boolean  @default(false)
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
