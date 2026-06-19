@@ -41,7 +41,12 @@ model Admin {
 model User {
   id           String   @id @default(uuid())
   email        String   @unique
-  passwordHash String   @map("password_hash")
+  // Optional: SSO-only accounts (Google/Apple) have no local password.
+  passwordHash String?  @map("password_hash")
+  // Stable provider subject ids for SSO account linking (more reliable than
+  // email — Apple can hide the email / use a private relay).
+  googleSub    String?  @unique @map("google_sub")
+  appleSub     String?  @unique @map("apple_sub")
   // App users have no roles; admins manage them from the Admin app. `disabled`
   // lets an admin lock a user out (login is refused while true).
   disabled     Boolean  @default(false)

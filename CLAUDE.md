@@ -72,6 +72,10 @@ The cloud payload (`UserPlanPayload`) is still `{ appData, coachChat, onboarding
 
 Auth is email/password against the backend (`POST /api/auth/{signup,signin}`, `GET /api/auth/me`) via `contexts/AuthContext.tsx` + `lib/api/auth.ts`; bcrypt hashes + JWT, token kept in localStorage. Both auth and cloud sync are **optional**: `isApiConfigured()` (`NEXT_PUBLIC_API_URL`) / `isGeminiConfigured()` gate features so the app fully works with no backend (pure localStorage).
 
+### Social sign-in (Google + Apple)
+
+`POST /api/auth/google` (Google ID token) and `POST /api/auth/apple` (Apple identity token). The backend verifies tokens in `backend/src/auth/social-verify.ts` — Google via `google-auth-library` (audience = `GOOGLE_CLIENT_IDS`, a comma list of web/iOS/Android client IDs), Apple via `jose` against Apple's JWKS (issuer `appleid.apple.com`, audience = `APPLE_CLIENT_IDS`). `AuthService.signInWithSocial` **finds-or-links** by stable provider subject (`googleSub`/`appleSub` columns), falling back to verified email, else creates the account. SSO-only accounts have `passwordHash = null` (password sign-in is then refused). On the **web**, the GSI / Apple-JS widgets run in the browser (`lib/googleAuth.ts`, `lib/appleAuth.ts`, `*SignInButton`). On **native** (Capacitor), the webview blocks those, so the buttons branch via `lib/nativeSocialAuth.ts` to `@capgo/capacitor-social-login` (one plugin, Google + Apple, Cap 8). All paths POST the provider token to the same backend endpoints; the multi-audience verify accepts web/iOS/Android tokens for the same user. Each provider is gated by its config (`NEXT_PUBLIC_GOOGLE_CLIENT_ID`, `NEXT_PUBLIC_APPLE_CLIENT_ID`+`_REDIRECT_URI`).
+
 ### AI coach: marker protocol
 
 `lib/gemini.ts` talks to Google Gemini (`@google/genai`) directly from the browser. `getCoachModels()` returns a fallback chain (`FREE_TIER_MODELS`); `sendCoachMessage()` walks it, skipping 404'd/deprecated models and retrying 429/503 with backoff. `formatCoachError()` maps API errors to user-facing text.
