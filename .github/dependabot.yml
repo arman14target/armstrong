@@ -5,6 +5,10 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 3
+    # Major bumps are breaking — handle them manually, not via auto-PRs.
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       # One PR for all non-major frontend updates instead of one-per-package.
       frontend:
@@ -15,6 +19,9 @@ updates:
     schedule:
       interval: weekly
     open-pull-requests-limit: 3
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-major"]
     groups:
       backend:
         update-types: [minor, patch]
