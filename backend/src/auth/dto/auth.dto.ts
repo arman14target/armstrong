@@ -16,3 +16,8 @@ export class SignInDto {
   @IsString()
   password!: string;
 }
+
+export class GoogleSignInDto {
+  @IsString()
+  idToken!: string;
+}

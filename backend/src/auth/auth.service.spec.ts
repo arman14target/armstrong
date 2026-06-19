@@ -82,4 +82,17 @@ describe("AuthService.signIn", () => {
       service.signIn("nobody@b.com", "secret1"),
     ).rejects.toBeInstanceOf(UnauthorizedException);
   });
+
+  it("rejects a Google-only account on password sign-in", async () => {
+    const { service, prisma } = makeService();
+    prisma.user.findUnique.mockResolvedValue({
+      id: "u1",
+      email: "a@b.com",
+      passwordHash: null,
+    });
+
+    await expect(service.signIn("a@b.com", "secret1")).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
+  });
 });

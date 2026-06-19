@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
@@ -18,7 +19,7 @@ export function ProfileSection({
   onAuthSuccess,
   onClearData,
 }: ProfileSectionProps) {
-  const { configured, user, loading, signIn, signUp, signOut } = useAuth();
+  const { configured, googleConfigured, user, loading, signIn, signUp, signInWithGoogle, signOut } = useAuth();
   const [mode, setMode] = useState<AuthMode>("sign-in");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -27,6 +28,31 @@ export function ProfileSection({
   const [signingOut, setSigningOut] = useState(false);
   const [showClearModal, setShowClearModal] = useState(false);
   const [clearing, setClearing] = useState(false);
+
+  const handleGoogleCredential = async (idToken: string) => {
+    setError(null);
+    setSubmitting(true);
+
+    try {
+      const { error: authError, userId } = await signInWithGoogle(idToken);
+
+      if (authError) {
+        setError(authError);
+        return;
+      }
+
+      if (!userId) {
+        setError("Could not start your session. Please try again.");
+        return;
+      }
+
+      await onAuthSuccess(userId);
+    } catch {
+      setError("Something went wrong. Please try again.");
+    } finally {
+      setSubmitting(false);
+    }
+  };
 
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
@@ -198,6 +224,21 @@ export function ProfileSection({
             Sign up
           </button>
         </div>
+
+        {googleConfigured ? (
+          <>
+            <GoogleSignInButton
+              onCredential={handleGoogleCredential}
+              disabled={submitting}
+            />
+
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-line" />
+              <span className="text-xs uppercase tracking-wide text-dim">or</span>
+              <div className="h-px flex-1 bg-line" />
+            </div>
+          </>
+        ) : null}
 
         <form className="stack-md" onSubmit={handleSubmit}>
           <label className="block">
