@@ -1,0 +1,60 @@
+name: Android build check
+
+# Verifies the Android app still builds (debug, unsigned) after web or native
+# changes. Catches Capacitor / gradle breakage. No signing, no secrets.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "android/**"
+      - ".github/workflows/mobile-android.yml"
+  pull_request:
+    paths:
+      - "frontend/**"
+      - "android/**"
+      - ".github/workflows/mobile-android.yml"
+  workflow_dispatch:
+
+jobs:
+  android:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # Capacitor CLI 8.x requires Node >= 22.
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          # Capacitor 8 compiles its Android plugins against Java 21.
+          java-version: "21"
+
+      - uses: android-actions/setup-android@v3
+
+      # Build the web assets and sync them into ../android. `cap` runs from
+      # frontend/ (where capacitor.config.ts + out/ live); android.path points
+      # back to the repo-root android/ project.
+      - name: Build web + Capacitor sync
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+          npx cap sync android
+
+      - name: Assemble debug APK
+        working-directory: android
+        run: |
+          chmod +x ./gradlew
+          ./gradlew assembleDebug --no-daemon --stacktrace
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: app-debug-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error
