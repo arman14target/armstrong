@@ -62,6 +62,47 @@ export class ExercisesService {
     return { total, page, pageSize, exercises };
   }
 
+  /** Public catalog for the frontend — lightweight, with a thumbnail. */
+  async publicCatalog() {
+    const rows = await this.prisma.exercise.findMany({
+      orderBy: { name: "asc" },
+      select: {
+        slug: true,
+        name: true,
+        category: true,
+        equipment: true,
+        level: true,
+        primaryMuscles: true,
+        media: {
+          orderBy: { position: "asc" },
+          take: 1,
+          select: { url: true, type: true },
+        },
+      },
+    });
+    return rows.map((r) => ({
+      id: r.slug,
+      name: r.name,
+      category: r.category,
+      equipment: r.equipment,
+      level: r.level,
+      primaryMuscles: r.primaryMuscles,
+      image: r.media[0]?.type === "IMAGE" ? r.media[0].url : null,
+    }));
+  }
+
+  /** Public detail by slug (frontend uses the dataset slug as the id). */
+  async publicDetail(slug: string) {
+    const exercise = await this.prisma.exercise.findUnique({
+      where: { slug },
+      include: { media: { orderBy: { position: "asc" } } },
+    });
+    if (!exercise) {
+      throw new NotFoundException("Exercise not found");
+    }
+    return exercise;
+  }
+
   async detail(id: string) {
     const exercise = await this.prisma.exercise.findUnique({
       where: { id },
