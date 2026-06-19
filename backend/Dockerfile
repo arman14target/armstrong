@@ -17,6 +17,8 @@ RUN npm install --omit=dev
 COPY prisma ./prisma
 RUN npx prisma generate
 COPY --from=build /app/dist ./dist
+# Ops scripts (e.g. admin:create) need to be runnable in the container.
+COPY scripts ./scripts
 EXPOSE 4000
 # Apply migrations on boot, then start the API.
 CMD ["sh", "-c", "npx prisma migrate deploy && node dist/main.js"]
