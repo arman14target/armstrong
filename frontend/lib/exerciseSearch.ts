@@ -1,6 +1,16 @@
-/** Free public exercise dataset (873 exercises). */
+import { getApiBaseUrl } from "@/lib/api/client";
+
+/** Fallback dataset when our backend API isn't configured. */
 const EXERCISE_CATALOG_URL =
   "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/dist/exercises.json";
+const GITHUB_IMAGE_BASE =
+  "https://raw.githubusercontent.com/yuhonas/free-exercise-db/main/exercises";
+
+/** Prefer our backend (curated catalog + media); fall back to GitHub. */
+function catalogUrl(): string {
+  const base = getApiBaseUrl();
+  return base ? `${base}/api/exercises` : EXERCISE_CATALOG_URL;
+}
 
 /** Lifting-focused categories from the dataset. */
 const BODYBUILDING_CATEGORIES = new Set(["strength", "powerlifting"]);
@@ -13,6 +23,8 @@ export interface ExerciseSearchResult {
   name: string;
   category: string;
   primaryMuscle: string;
+  /** Demonstration image, when available. */
+  imageUrl?: string;
 }
 
 interface FreeExerciseRecord {
@@ -20,6 +32,18 @@ interface FreeExerciseRecord {
   name?: string;
   category?: string;
   primaryMuscles?: string[];
+  /** From our backend API. */
+  image?: string | null;
+  /** From the GitHub fallback dataset. */
+  images?: string[];
+}
+
+function resolveImageUrl(record: FreeExerciseRecord): string | undefined {
+  if (record.image) {
+    return record.image;
+  }
+  const first = record.images?.[0];
+  return first ? `${GITHUB_IMAGE_BASE}/${first}` : undefined;
 }
 
 let catalogPromise: Promise<ExerciseSearchResult[]> | null = null;
@@ -74,7 +98,7 @@ function scoreMatch(name: string, query: string): number {
 
 async function loadCatalog(): Promise<ExerciseSearchResult[]> {
   if (!catalogPromise) {
-    catalogPromise = fetch(EXERCISE_CATALOG_URL)
+    catalogPromise = fetch(catalogUrl())
       .then(async (response) => {
         if (!response.ok) {
           throw new Error(
@@ -85,7 +109,7 @@ async function loadCatalog(): Promise<ExerciseSearchResult[]> {
         const payload = (await response.json()) as FreeExerciseRecord[];
         return payload
           .filter(isBodybuildingExercise)
-          .map((record, index) => {
+          .map((record, index): ExerciseSearchResult | null => {
             const name = record.name?.trim();
             if (!name) {
               return null;
@@ -96,6 +120,7 @@ async function loadCatalog(): Promise<ExerciseSearchResult[]> {
               name,
               category: record.category?.trim() || "Strength",
               primaryMuscle: formatMuscleLabel(record.primaryMuscles),
+              imageUrl: resolveImageUrl(record),
             };
           })
           .filter((record): record is ExerciseSearchResult => record !== null);

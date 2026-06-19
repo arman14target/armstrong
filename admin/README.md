@@ -7,6 +7,7 @@ Staff-only admin dashboard for the Armstrong gym tracker. Next.js static export 
 - **Dashboard** — total/new users (today/7d/30d), coach-plan + nutrition adoption, active sessions, workouts/food logged, 14-day signup chart.
 - **Users** — search, paginate, **disable/enable** (locks the user out), **delete** (SUPERADMIN only).
 - **Admins** (SUPERADMIN only) — list staff, create new admins with a role, disable admins.
+- **Exercises** — browse the catalog (search, muscle filter, paginate), open an exercise for detail (fields + instructions), and upload/delete images or video per exercise (Cloudinary).
 
 ## Auth model
 

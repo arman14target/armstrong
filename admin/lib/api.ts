@@ -194,3 +194,92 @@ export function setAdminDisabled(
     body: { disabled },
   });
 }
+
+// --- Exercises ---
+export interface ExerciseMedia {
+  id: string;
+  type: "IMAGE" | "VIDEO";
+  url: string;
+  position: number;
+  source: string;
+}
+
+export interface ExerciseListItem {
+  id: string;
+  slug: string;
+  name: string;
+  category: string | null;
+  equipment: string | null;
+  level: string | null;
+  primaryMuscles: string[];
+  media: { url: string; type: "IMAGE" | "VIDEO" }[];
+  _count: { media: number };
+}
+
+export interface ExerciseDetail {
+  id: string;
+  slug: string;
+  name: string;
+  category: string | null;
+  force: string | null;
+  level: string | null;
+  mechanic: string | null;
+  equipment: string | null;
+  primaryMuscles: string[];
+  secondaryMuscles: string[];
+  instructions: string[];
+  media: ExerciseMedia[];
+}
+
+export function fetchExercises(params: {
+  page: number;
+  pageSize: number;
+  search?: string;
+  muscle?: string;
+}): Promise<{
+  total: number;
+  page: number;
+  pageSize: number;
+  exercises: ExerciseListItem[];
+}> {
+  const q = new URLSearchParams({
+    page: String(params.page),
+    pageSize: String(params.pageSize),
+  });
+  if (params.search) q.set("search", params.search);
+  if (params.muscle) q.set("muscle", params.muscle);
+  return apiFetch(`/admin/exercises?${q.toString()}`);
+}
+
+export function fetchExercise(id: string): Promise<ExerciseDetail> {
+  return apiFetch(`/admin/exercises/${id}`);
+}
+
+export async function uploadExerciseMedia(
+  id: string,
+  file: File,
+): Promise<ExerciseMedia> {
+  const url = `${baseUrl()}/api/admin/exercises/${id}/media`;
+  const form = new FormData();
+  form.append("file", file);
+  const headers: Record<string, string> = {};
+  const token = getToken();
+  if (token) headers["Authorization"] = `Bearer ${token}`;
+
+  const res = await fetch(url, { method: "POST", headers, body: form });
+  const text = await res.text();
+  const data = text ? JSON.parse(text) : null;
+  if (!res.ok) {
+    throw new ApiError(res.status, extractMessage(data) ?? "Upload failed");
+  }
+  return data as ExerciseMedia;
+}
+
+export function deleteExerciseMedia(
+  id: string,
+  mediaId: string,
+): Promise<void> {
+  return apiFetch(`/admin/exercises/${id}/media/${mediaId}`, {
+    method: "DELETE",
+  });
+}
