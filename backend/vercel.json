@@ -1,6 +1,6 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
-  "buildCommand": "prisma generate && nest build && mkdir -p public && echo 'Armstrong API' > public/index.html",
+  "buildCommand": "prisma generate && nest build && rm -rf public && cp -r landing public",
   "outputDirectory": "public",
   "functions": {
     "api/index.ts": {

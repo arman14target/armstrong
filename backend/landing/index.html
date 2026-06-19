@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="robots" content="noindex" />
+    <title>Armstrong API</title>
+    <style>
+      :root {
+        --bg: #05070a;
+        --panel: #0b0f14;
+        --line: #1b2530;
+        --green: #43f08f;
+        --cyan: #38e1ff;
+        --dim: #6b7a89;
+        --heading: #e7eef5;
+      }
+      * { box-sizing: border-box; }
+      html, body { height: 100%; margin: 0; }
+      body {
+        background:
+          radial-gradient(1200px 600px at 50% -10%, rgba(56, 225, 255, 0.08), transparent 60%),
+          var(--bg);
+        color: var(--heading);
+        font-family: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
+        display: grid;
+        place-items: center;
+        padding: 24px;
+      }
+      .scanlines {
+        position: fixed;
+        inset: 0;
+        pointer-events: none;
+        background: repeating-linear-gradient(
+          to bottom,
+          rgba(255, 255, 255, 0.02) 0px,
+          rgba(255, 255, 255, 0.02) 1px,
+          transparent 1px,
+          transparent 3px
+        );
+        mix-blend-mode: overlay;
+      }
+      .card {
+        width: min(560px, 100%);
+        background: linear-gradient(180deg, rgba(67, 240, 143, 0.04), transparent 40%), var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 28px 28px 24px;
+        box-shadow: 0 0 0 1px rgba(56, 225, 255, 0.05), 0 30px 80px -40px rgba(56, 225, 255, 0.25);
+      }
+      .bar {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 22px;
+        color: var(--dim);
+        font-size: 12px;
+        letter-spacing: 0.08em;
+      }
+      .dot { width: 11px; height: 11px; border-radius: 50%; }
+      .dot.r { background: #ff5f57; }
+      .dot.y { background: #febc2e; }
+      .dot.g { background: #28c840; }
+      .bar .path { margin-left: auto; }
+      h1 {
+        font-size: 30px;
+        margin: 0 0 6px;
+        letter-spacing: 0.14em;
+        color: var(--heading);
+      }
+      h1 .accent { color: var(--green); }
+      .status {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        margin: 6px 0 20px;
+        font-size: 13px;
+        color: var(--green);
+      }
+      .pulse {
+        width: 9px; height: 9px; border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 0 0 rgba(67, 240, 143, 0.6);
+        animation: pulse 1.8s infinite;
+      }
+      @keyframes pulse {
+        0% { box-shadow: 0 0 0 0 rgba(67, 240, 143, 0.5); }
+        70% { box-shadow: 0 0 0 9px rgba(67, 240, 143, 0); }
+        100% { box-shadow: 0 0 0 0 rgba(67, 240, 143, 0); }
+      }
+      p { color: var(--dim); line-height: 1.6; font-size: 14px; margin: 0 0 18px; }
+      .endpoints {
+        border-top: 1px solid var(--line);
+        padding-top: 16px;
+        display: grid;
+        gap: 8px;
+        font-size: 13px;
+      }
+      .ep { display: flex; align-items: center; gap: 12px; }
+      .verb {
+        min-width: 56px;
+        text-align: center;
+        padding: 2px 6px;
+        border-radius: 6px;
+        font-size: 11px;
+        letter-spacing: 0.05em;
+        border: 1px solid var(--line);
+        color: var(--cyan);
+      }
+      .ep code { color: var(--heading); }
+      .foot {
+        margin-top: 22px;
+        font-size: 12px;
+        color: var(--dim);
+      }
+      .foot a { color: var(--cyan); text-decoration: none; }
+      .foot a:hover { text-decoration: underline; }
+    </style>
+  </head>
+  <body>
+    <div class="scanlines"></div>
+    <main class="card">
+      <div class="bar">
+        <span class="dot r"></span><span class="dot y"></span><span class="dot g"></span>
+        <span class="path">armstrong://api</span>
+      </div>
+      <h1>ARMSTRONG<span class="accent">_API</span></h1>
+      <div class="status"><span class="pulse"></span> online</div>
+      <p>
+        Backend service for the Armstrong gym tracker — authentication and plan
+        sync. This host serves the API only; there's nothing to see here.
+      </p>
+      <div class="endpoints">
+        <div class="ep"><span class="verb">POST</span><code>/api/auth/signup</code></div>
+        <div class="ep"><span class="verb">POST</span><code>/api/auth/signin</code></div>
+        <div class="ep"><span class="verb">GET</span><code>/api/auth/me</code></div>
+        <div class="ep"><span class="verb">GET/PUT</span><code>/api/plan</code></div>
+      </div>
+      <div class="foot">
+        App → <a href="https://armstrong-fitness.com">armstrong-fitness.com</a>
+      </div>
+    </main>
+  </body>
+</html>
