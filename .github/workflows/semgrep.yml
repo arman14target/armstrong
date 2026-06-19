@@ -1,0 +1,31 @@
+name: Semgrep
+
+# Free static analysis (no token, works on private repos). Replaces CodeQL,
+# which needs paid GitHub Advanced Security on private repos.
+on:
+  pull_request:
+    paths:
+      - "frontend/**"
+      - "backend/**"
+      - ".github/workflows/semgrep.yml"
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "backend/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  semgrep:
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      # Curated rulesets for JS/TS security + correctness. --error fails the
+      # build on findings; loosen to a warning by removing it if too noisy.
+      - run: semgrep scan --config=p/default --config=p/typescript --error

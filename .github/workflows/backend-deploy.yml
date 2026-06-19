@@ -1,8 +1,10 @@
-name: Backend migrate
+name: Backend release
 
-# Vercel auto-deploys the backend function on every push (via the linked Vercel
-# project). The only thing CI must do is apply pending Prisma migrations to Neon
-# before the new function goes live. Runs on backend changes to main.
+# Ordered release: apply Prisma migrations to Neon FIRST, then (optionally)
+# trigger the Vercel backend deploy so new code never serves against an old
+# schema. The deploy step is gated on a secret — until you set it (and switch
+# the Vercel backend project to "no automatic git deploys"), Vercel keeps
+# auto-deploying and only the migration runs here.
 on:
   push:
     branches: [main]
@@ -11,8 +13,13 @@ on:
       - ".github/workflows/backend-deploy.yml"
   workflow_dispatch:
 
+# Never cancel a migration mid-run; let queued releases finish in order.
+concurrency:
+  group: backend-release
+  cancel-in-progress: false
+
 jobs:
-  migrate:
+  release:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -22,7 +29,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 22
           cache: npm
           cache-dependency-path: backend/package-lock.json
 
@@ -34,3 +41,12 @@ jobs:
         env:
           DATABASE_URL: ${{ secrets.DIRECT_URL }}
           DIRECT_URL: ${{ secrets.DIRECT_URL }}
+
+      - name: Trigger Vercel deploy (after migrations)
+        # Runs only when the deploy-hook secret is set. Create a Deploy Hook in
+        # the Vercel backend project and add it as VERCEL_BACKEND_DEPLOY_HOOK,
+        # then set that project to skip automatic git deploys.
+        if: ${{ env.HOOK != '' }}
+        env:
+          HOOK: ${{ secrets.VERCEL_BACKEND_DEPLOY_HOOK }}
+        run: curl -fsSL -X POST "$HOOK"
