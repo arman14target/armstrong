@@ -6,6 +6,8 @@ const footerLinks = [
   { href: "/diet-planner/", label: "Diet Planner" },
   { href: "/gym-planner/", label: "Gym Planner" },
   { href: "/app/", label: "App" },
+  { href: "/privacy/", label: "Privacy" },
+  { href: "/terms/", label: "Terms" },
 ] as const;
 
 type LandingFooterProps = React.ComponentPropsWithoutRef<"footer">;
