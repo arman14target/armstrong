@@ -6,11 +6,13 @@ on:
     paths:
       - "frontend/**"
       - "backend/**"
+      - "admin/**"
       - ".github/workflows/test.yml"
   pull_request:
     paths:
       - "frontend/**"
       - "backend/**"
+      - "admin/**"
       - ".github/workflows/test.yml"
   workflow_dispatch:
 
@@ -54,3 +56,22 @@ jobs:
       - run: npx prisma generate
       - run: npx tsc --noEmit -p tsconfig.json
       - run: npm test
+
+  admin:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: admin
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: admin/package-lock.json
+      - run: npm ci
+      - run: npm run lint
+      - run: npx tsc --noEmit
+      - run: npm run build
+        env:
+          NEXT_PUBLIC_API_URL: http://localhost:4000

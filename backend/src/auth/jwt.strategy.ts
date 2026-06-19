@@ -26,13 +26,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   async validate(payload: JwtPayload): Promise<AuthedUser> {
     const user = await this.prisma.user.findUnique({
       where: { id: payload.sub },
-      select: { id: true, email: true },
+      select: { id: true, email: true, disabled: true },
     });
 
-    if (!user) {
+    if (!user || user.disabled) {
       throw new UnauthorizedException();
     }
 
-    return user;
+    return { id: user.id, email: user.email };
   }
 }
