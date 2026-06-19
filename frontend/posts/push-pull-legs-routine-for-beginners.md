@@ -79,3 +79,5 @@ Small jumps beat big ego lifts. Even 2.5 lb (1 kg) per week compounds into serio
 ## Final Takeaway
 
 A push pull legs routine works because it is simple, repeatable, and easy to measure. Pick your exercises, log every session, and progress gradually. Consistency beats perfection every time.
+
+**Try it free:** Build a custom PPL or full-body split with Armstrong’s [free gym planner](/gym-planner/) — pick days, equipment, and experience level, then import the plan into the app.

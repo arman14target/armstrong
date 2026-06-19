@@ -43,3 +43,8 @@ export const gymPlannerFaq = [
       "Open the app to log sets, hit PRs, and sync your plan to the cloud. The planner gives you the blueprint — the app is where you execute it.",
   },
 ] as const;
+
+export const gymPlannerAbout = {
+  title: "How the free gym planner works",
+  copy: "Choose your training days, goal, and equipment. Three days defaults to full body, four to upper/lower, five to push/pull/legs plus upper/lower, and six to a double PPL rotation. Weekly volume, rest periods, and exercise complexity scale with the amateur-to-pro slider — so beginners get fewer movements and pros get higher set counts.",
+} as const;

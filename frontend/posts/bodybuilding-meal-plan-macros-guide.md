@@ -108,3 +108,5 @@ Your meal plan should flex with your training block — bulk, cut, or maintenanc
 ## Key Takeaway
 
 Set calories for your goal, prioritize protein, fill carbs and fats based on preference and performance, then track consistently for a few weeks. Nutrition is a skill. The lifters who measure it improve it.
+
+**Try it free:** Use Armstrong’s [free diet planner](/diet-planner/) to calculate your daily macros and get a full four-meal day from your stats — no signup required.

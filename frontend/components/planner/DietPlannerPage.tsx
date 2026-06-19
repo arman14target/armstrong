@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useMemo, useState } from "react";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { NavigationHeader } from "@/components/NavigationHeader";
@@ -11,6 +12,7 @@ import { CyberButton } from "@/components/ui/CyberButton";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { useGymStore } from "@/hooks/useGymStore";
 import {
+  dietPlannerAbout,
   dietPlannerFaq,
   dietPlannerHero,
 } from "@/lib/planner/dietContent";
@@ -43,6 +45,32 @@ export function DietPlannerPage() {
   return (
     <div className="landing-shell planner-page">
       <NavigationHeader className="nav-header--embedded mb-[var(--space-stack-lg)]" />
+
+      <section className="planner-page__intro planner-page__intro--hero" aria-labelledby="diet-planner-headline">
+        <p className="landing-kicker">
+          <span className="landing-kicker__badge">{dietPlannerHero.badge}</span>
+          {dietPlannerHero.kicker}
+        </p>
+        <h1
+          id="diet-planner-headline"
+          className="max-w-3xl font-display text-[clamp(1.75rem,5vw,3rem)] font-black leading-[1.05] tracking-[1px] text-heading sm:tracking-[3px]"
+        >
+          {dietPlannerHero.headline}
+        </h1>
+        <p className="landing-subhead max-w-2xl">{dietPlannerHero.subhead}</p>
+      </section>
+
+      <section className="landing-section planner-page__about" aria-labelledby="diet-planner-about">
+        <h2
+          id="diet-planner-about"
+          className="max-w-2xl font-display text-xl tracking-wide text-heading uppercase sm:text-2xl"
+        >
+          {dietPlannerAbout.title}
+        </h2>
+        <p className="max-w-3xl text-sm leading-relaxed text-dim sm:text-base">
+          {dietPlannerAbout.copy}
+        </p>
+      </section>
 
       <section className="planner-page__tool" aria-labelledby="diet-planner-tool">
         <SectionHead index="01" title="Build Your Plan" />
@@ -160,20 +188,6 @@ export function DietPlannerPage() {
         </div>
       </section>
 
-      <section className="planner-page__intro" aria-labelledby="diet-planner-headline">
-        <p className="landing-kicker">
-          <span className="landing-kicker__badge">{dietPlannerHero.badge}</span>
-          {dietPlannerHero.kicker}
-        </p>
-        <h1
-          id="diet-planner-headline"
-          className="max-w-3xl font-display text-[clamp(1.75rem,5vw,3rem)] font-black leading-[1.05] tracking-[1px] text-heading sm:tracking-[3px]"
-        >
-          {dietPlannerHero.headline}
-        </h1>
-        <p className="landing-subhead max-w-2xl">{dietPlannerHero.subhead}</p>
-      </section>
-
       <section className="landing-section" aria-labelledby="diet-faq-heading">
         <SectionHead index="02" title="FAQ" />
         <h2 id="diet-faq-heading" className="sr-only">
@@ -196,10 +210,20 @@ export function DietPlannerPage() {
           </h2>
           <p className="max-w-lg text-base text-dim sm:text-lg">
             Your plan is the start. The app tracks meals, PRs, and progress — free, no credit card.
+            Need a workout split too?{" "}
+            <Link href="/gym-planner/" className="text-cyan hover:text-heading">
+              Try the free gym planner
+            </Link>
+            .
           </p>
-          <CyberButton href="/app/" variant="cyan">
-            Open App
-          </CyberButton>
+          <div className="flex flex-wrap gap-3">
+            <CyberButton href="/app/" variant="cyan">
+              Open App
+            </CyberButton>
+            <CyberButton href="/gym-planner/" variant="magenta">
+              Gym Planner
+            </CyberButton>
+          </div>
         </div>
       </section>
 

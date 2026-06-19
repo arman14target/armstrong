@@ -43,3 +43,8 @@ export const dietPlannerFaq = [
       "No. This is general fitness guidance. Consult a registered dietitian for medical conditions, eating disorders, or clinical needs.",
   },
 ] as const;
+
+export const dietPlannerAbout = {
+  title: "How the free diet planner works",
+  copy: "Armstrong uses the Mifflin–St Jeor equation for basal metabolic rate, applies a training activity factor, then sets protein, fat, and carbs for a lean bulk or cut. Meals are scaled to hit those targets with four structured slots per day. Slide the experience bar from amateur to pro for tighter meal-prep guidance and higher protein density.",
+} as const;

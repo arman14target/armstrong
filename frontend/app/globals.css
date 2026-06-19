@@ -3402,11 +3402,25 @@ html[data-page="landing"] .crt-shell::after {
   padding-top: calc(var(--space-page-top) + var(--safe-top));
 }
 
+.planner-page__intro--hero {
+  padding-bottom: var(--space-stack-lg);
+  border-top: none;
+}
+
+.planner-page__about {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-stack);
+  padding-bottom: var(--space-section);
+}
+
 .planner-page__tool {
   display: flex;
   flex-direction: column;
   gap: var(--space-stack-lg);
+  padding-top: var(--space-section-lg);
   padding-bottom: var(--space-section);
+  border-top: 1px solid var(--color-line);
 }
 
 .planner-page__intro {

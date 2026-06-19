@@ -2,9 +2,10 @@ import type { Metadata } from "next";
 import { LandingFAQSchema } from "@/components/landing/LandingFAQSchema";
 import { LandingPage } from "@/components/landing/LandingPage";
 import { landingSeo } from "@/lib/landingContent";
-import { absoluteAssetUrl, absoluteUrl } from "@/lib/siteUrl";
+import { buildOgImage } from "@/lib/seo";
+import { absoluteUrl } from "@/lib/siteUrl";
 
-const ogImageUrl = absoluteAssetUrl("/og-image.jpg");
+const ogImage = buildOgImage("Armstrong — free AI fitness coach and gym tracker");
 
 export const metadata: Metadata = {
   title: landingSeo.title,
@@ -19,20 +20,13 @@ export const metadata: Metadata = {
     type: "website",
     url: absoluteUrl("/"),
     siteName: "Armstrong",
-    images: [
-      {
-        url: ogImageUrl,
-        width: 1200,
-        height: 630,
-        alt: "Armstrong — free AI fitness coach and gym tracker",
-      },
-    ],
+    images: [ogImage],
   },
   twitter: {
     card: "summary_large_image",
     title: landingSeo.title,
     description: landingSeo.description,
-    images: [ogImageUrl],
+    images: [ogImage.url],
   },
   robots: {
     index: true,

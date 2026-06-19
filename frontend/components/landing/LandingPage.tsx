@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { DownloadButtons } from "@/components/landing/DownloadButtons";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { LandingHeroCTA } from "@/components/landing/LandingHeroCTA";
@@ -10,6 +11,7 @@ import {
   landingHero,
   landingRiskReversal,
   landingSteps,
+  landingTools,
 } from "@/lib/landingContent";
 import { revealDelayStyle } from "@/lib/revealAnimation";
 import { SectionHead } from "@/components/ui/SectionHead";
@@ -56,6 +58,53 @@ export function LandingPage() {
         </div>
       </section>
 
+      {/* Free planners */}
+      <section className="landing-section" aria-labelledby="tools-heading">
+        <div
+          className="reveal-hidden"
+          data-reveal="scroll"
+          style={revealDelayStyle(0)}
+        >
+          <SectionHead index="01" title="Free Planning Tools" />
+          <h2
+            id="tools-heading"
+            className="mb-[var(--space-section)] max-w-2xl font-display text-2xl tracking-wide text-heading uppercase sm:mb-[var(--space-section-lg)] sm:text-3xl"
+          >
+            Diet & Gym Planners — No Signup
+          </h2>
+        </div>
+        <div className="landing-benefits">
+          {landingTools.map((tool, index) => (
+            <article
+              key={tool.title}
+              className={`landing-benefit reveal-hidden ${accentBorder[tool.accent]}`}
+              data-reveal="scroll"
+              style={revealDelayStyle(index * 100)}
+            >
+              <p
+                className={`text-xs font-semibold tracking-[0.14em] uppercase ${accentText[tool.accent]}`}
+              >
+                {tool.tag}
+              </p>
+              <h3 className="font-display text-xl tracking-wide text-heading uppercase">
+                <Link href={tool.href} className="hover:text-cyan">
+                  {tool.title}
+                </Link>
+              </h3>
+              <p className="text-sm leading-relaxed text-dim sm:text-base">
+                {tool.description}
+              </p>
+              <Link
+                href={tool.href}
+                className={`text-sm font-semibold tracking-wide uppercase ${accentText[tool.accent]} hover:text-heading`}
+              >
+                Open planner →
+              </Link>
+            </article>
+          ))}
+        </div>
+      </section>
+
       {/* How It Works */}
       <section className="landing-section" aria-labelledby="how-heading">
         <div
@@ -63,7 +112,7 @@ export function LandingPage() {
           data-reveal="scroll"
           style={revealDelayStyle(0)}
         >
-          <SectionHead index="01" title="How It Works" />
+          <SectionHead index="02" title="How It Works" />
         </div>
         <h2 id="how-heading" className="sr-only">
           Three-step AI workout generator process
@@ -99,7 +148,7 @@ export function LandingPage() {
           data-reveal="scroll"
           style={revealDelayStyle(0)}
         >
-          <SectionHead index="02" title="Built for Serious Lifters" />
+          <SectionHead index="03" title="Built for Serious Lifters" />
           <h2
             id="features-heading"
             className="mb-[var(--space-section)] max-w-2xl font-display text-2xl tracking-wide text-heading uppercase sm:mb-[var(--space-section-lg)] sm:text-3xl"
@@ -138,7 +187,7 @@ export function LandingPage() {
           data-reveal="scroll"
           style={revealDelayStyle(0)}
         >
-          <SectionHead index="03" title="No Risk. All Reward." />
+          <SectionHead index="04" title="No Risk. All Reward." />
         </div>
         <div
           className="landing-risk-reversal reveal-hidden"
@@ -169,7 +218,7 @@ export function LandingPage() {
           data-reveal="scroll"
           style={revealDelayStyle(0)}
         >
-          <SectionHead index="04" title="FAQ" />
+          <SectionHead index="05" title="FAQ" />
           <h2 id="faq-heading" className="sr-only">
             Frequently asked questions about Armstrong AI fitness coach
           </h2>
