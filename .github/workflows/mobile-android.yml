@@ -39,7 +39,7 @@ jobs:
           # Capacitor 8 compiles its Android plugins against Java 21.
           java-version: "21"
 
-      - uses: android-actions/setup-android@v3
+      - uses: android-actions/setup-android@v4
 
       # Build the web assets and sync them into ../android. `cap` runs from
       # frontend/ (where capacitor.config.ts + out/ live); android.path points
