@@ -25,7 +25,7 @@ jobs:
     container:
       image: semgrep/semgrep
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       # Informational scan: reports findings in the logs but does not fail the
       # build (the app's existing findings are benign — Capacitor boilerplate,
       # blog markdown rendering, etc.). To turn it into a gate later, append
