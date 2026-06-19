@@ -6,6 +6,7 @@ import { AppShell } from "@/components/AppShell";
 import { AuthProvider } from "@/contexts/AuthContext";
 import { GymStoreProvider } from "@/hooks/useGymStore";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { getSiteUrl } from "@/lib/siteUrl";
 import { theme } from "@/lib/theme";
 import "./globals.css";
 
@@ -25,6 +26,7 @@ const dmSans = DM_Sans({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(getSiteUrl()),
   title: "Armstrong — Gym Tracker",
   description: "Gym workout tracker for push, leg, abs, and pull days",
   manifest: `${basePath}/manifest.json`,

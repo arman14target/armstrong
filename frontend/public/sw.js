@@ -1,4 +1,4 @@
-const CACHE_NAME = "armstrong-v2";
+const CACHE_NAME = "armstrong-v3";
 
 function scopePath() {
   const scope = self.registration.scope;
@@ -20,7 +20,7 @@ self.addEventListener("install", (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) =>
       cache.addAll([
-        assetUrl("/"),
+        assetUrl("/app/"),
         assetUrl("/manifest.json"),
         assetUrl("/icons/favicon-32.png"),
         assetUrl("/icons/apple-touch-icon.png"),
@@ -77,7 +77,7 @@ self.addEventListener("notificationclick", (event) => {
           }
         }
 
-        return clients.openWindow(assetUrl("/"));
+        return clients.openWindow(assetUrl("/app/"));
       }),
   );
 });

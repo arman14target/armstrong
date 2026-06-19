@@ -1,6 +1,6 @@
 import { withBasePath } from "@/lib/basePath";
 
-const DEFAULT_SITE_URL = "https://armstrong.app";
+const DEFAULT_SITE_URL = "https://armstrong-fitness.com";
 
 export function getSiteUrl(): string {
   const configured = process.env.NEXT_PUBLIC_SITE_URL?.trim();

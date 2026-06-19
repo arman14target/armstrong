@@ -1,7 +1,7 @@
 import Script from "next/script";
 import { LandingPageRoot } from "@/components/landing/LandingPageRoot";
 
-export default function LandingLayout({
+export default function MarketingLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;

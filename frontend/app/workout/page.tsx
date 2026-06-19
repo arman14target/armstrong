@@ -1,5 +1,14 @@
+import type { Metadata } from "next";
 import { Suspense } from "react";
 import { WorkoutPageClient } from "@/components/WorkoutPageClient";
+
+export const metadata: Metadata = {
+  title: "Workout — Armstrong",
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
 
 export default function WorkoutPage() {
   return (

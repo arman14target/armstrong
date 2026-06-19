@@ -1,7 +1,8 @@
-import Link from "next/link";
 import { DownloadButtons } from "@/components/landing/DownloadButtons";
+import { LandingFooter } from "@/components/landing/LandingFooter";
 import { LandingHeroCTA } from "@/components/landing/LandingHeroCTA";
 import { LandingHeroVisual } from "@/components/landing/LandingHeroVisual";
+import { NavigationHeader } from "@/components/NavigationHeader";
 import {
   landingFeatures,
   landingFaq,
@@ -31,17 +32,9 @@ const accentText: Record<(typeof landingFeatures)[number]["accent"], string> = {
 export function LandingPage() {
   return (
     <div className="landing-shell">
-      <header
-        className="landing-nav reveal-hidden"
-        data-reveal="scroll"
-      >
-        <Link
-          href="/"
-          className="font-display text-sm tracking-[3px] text-heading uppercase transition-colors hover:text-cyan"
-        >
-          Armstrong
-        </Link>
-      </header>
+      <div className="reveal-hidden" data-reveal="scroll">
+        <NavigationHeader className="nav-header--embedded" />
+      </div>
 
       <section className="landing-hero" aria-labelledby="landing-headline">
         <div className="landing-hero__grid">
@@ -218,24 +211,11 @@ export function LandingPage() {
         </div>
       </section>
 
-      <footer
-        className="landing-footer reveal-hidden"
+      <LandingFooter
+        className="reveal-hidden"
         data-reveal="scroll"
         style={revealDelayStyle(60)}
-      >
-        <p className="text-xs text-dim">
-          © {new Date().getFullYear()} Armstrong. Free AI fitness coach for
-          bodybuilders who train with intent.
-        </p>
-        <p className="mt-2 text-xs">
-          <Link
-            href="/blog/"
-            className="text-dim underline decoration-cyan/40 underline-offset-2 transition-colors hover:text-cyan"
-          >
-            Training guides &amp; workout tips
-          </Link>
-        </p>
-      </footer>
+      />
     </div>
   );
 }

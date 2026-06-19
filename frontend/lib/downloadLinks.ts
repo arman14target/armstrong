@@ -1,10 +1,12 @@
+import { APP_ROUTE } from "@/lib/routes";
+
 export const APP_STORE_URL =
   process.env.NEXT_PUBLIC_APP_STORE_URL?.trim() || "";
 
 export const PLAY_STORE_URL =
   process.env.NEXT_PUBLIC_PLAY_STORE_URL?.trim() || "";
 
-export const PWA_PATH = "/";
+export const PWA_PATH = APP_ROUTE;
 
 export type DownloadPlatform = "apple" | "android" | "pwa";
 
