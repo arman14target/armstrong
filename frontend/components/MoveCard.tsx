@@ -2,7 +2,8 @@
 
 import { Fragment, useEffect, useRef, useState } from "react";
 import { Move, SetConfig } from "@/lib/types";
-import { CloseIcon, PlusIcon } from "@/components/icons/ActionIcons";
+import { CloseIcon, InfoIcon, PlusIcon } from "@/components/icons/ActionIcons";
+import { ExerciseInfoModal } from "@/components/ExerciseInfoModal";
 import { ExerciseSearchModal } from "@/components/ExerciseSearchModal";
 import { SetRestDivider } from "@/components/SetRestDivider";
 import { SetRow } from "@/components/SetRow";
@@ -10,6 +11,7 @@ import { SwipeToDeleteRow } from "@/components/SwipeToDeleteRow";
 import { IconButton } from "@/components/ui/IconButton";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { formatRestLabel } from "@/lib/formatSetDisplay";
+import { findCatalogExerciseByName } from "@/lib/exerciseSearch";
 import { isTimeBasedExercise } from "@/lib/timeBasedExercises";
 
 interface MoveCardProps {
@@ -57,6 +59,8 @@ export function MoveCard({
   onAllSetsComplete,
 }: MoveCardProps) {
   const [nameSearchOpen, setNameSearchOpen] = useState(false);
+  const [infoOpen, setInfoOpen] = useState(false);
+  const [catalogSlug, setCatalogSlug] = useState<string | null>(null);
   const title = move.name.trim() || "Exercise";
   const timeBased = isTimeBasedExercise(move.name);
   const allSetsComplete =
@@ -65,6 +69,20 @@ export function MoveCard({
   const wasAllSetsCompleteRef = useRef(allSetsComplete);
   const defaultRestForNewSet =
     move.sets[move.sets.length - 1]?.restSeconds ?? 90;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    void findCatalogExerciseByName(move.name).then((match) => {
+      if (!cancelled) {
+        setCatalogSlug(match?.id ?? null);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [move.name]);
 
   useEffect(() => {
     if (allSetsComplete && !wasAllSetsCompleteRef.current) {
@@ -86,14 +104,26 @@ export function MoveCard({
         }}
         headerPrefix={dragHandle}
         headerAction={
-          <IconButton
-            label={`Remove ${title}`}
-            variant="danger"
-            className="size-8"
-            onClick={onDelete}
-          >
-            <CloseIcon />
-          </IconButton>
+          <div className="flex items-center gap-1">
+            {catalogSlug ? (
+              <IconButton
+                label={`About ${title}`}
+                variant="ghost"
+                className="size-8"
+                onClick={() => setInfoOpen(true)}
+              >
+                <InfoIcon />
+              </IconButton>
+            ) : null}
+            <IconButton
+              label={`Remove ${title}`}
+              variant="danger"
+              className="size-8"
+              onClick={onDelete}
+            >
+              <CloseIcon />
+            </IconButton>
+          </div>
         }
       >
         <div className="set-table">
@@ -167,6 +197,12 @@ export function MoveCard({
           <span>Add Set ({formatRestLabel(defaultRestForNewSet)})</span>
         </button>
       </TerminalWindow>
+
+      <ExerciseInfoModal
+        open={infoOpen}
+        slug={catalogSlug}
+        onClose={() => setInfoOpen(false)}
+      />
 
       <ExerciseSearchModal
         open={nameSearchOpen}

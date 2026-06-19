@@ -7,7 +7,8 @@ import {
   type FormEvent,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
-import { CloseIcon } from "@/components/icons/ActionIcons";
+import { CloseIcon, InfoIcon } from "@/components/icons/ActionIcons";
+import { ExerciseInfoModal } from "@/components/ExerciseInfoModal";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { IconButton } from "@/components/ui/IconButton";
 import { PanelDot } from "@/components/ui/PanelDot";
@@ -44,6 +45,7 @@ export function ExerciseSearchModal({
   const [searching, setSearching] = useState(false);
   const [searchError, setSearchError] = useState<string | null>(null);
   const [highlightedIndex, setHighlightedIndex] = useState(-1);
+  const [infoSlug, setInfoSlug] = useState<string | null>(null);
   const searchRequestId = useRef(0);
   const inputRef = useRef<HTMLInputElement>(null);
 
@@ -250,22 +252,36 @@ export function ExerciseSearchModal({
             <ul className="stack-sm">
               {suggestions.map((result, index) => (
                 <li key={result.id}>
-                  <button
-                    type="button"
+                  <div
                     className={cn(
-                      "w-full rounded-cyber border border-line bg-panel px-3 py-3 text-left transition-colors hover:border-cyan/35 hover:bg-cyan/5",
+                      "flex items-stretch gap-2 rounded-cyber border border-line bg-panel transition-colors",
                       index === highlightedIndex &&
                         "border-cyan/35 bg-cyan/10",
                     )}
-                    onClick={() => commit(result.name)}
                   >
-                    <span className="block text-sm text-heading">
-                      {result.name}
-                    </span>
-                    <span className="mt-0.5 block text-xs text-dim">
-                      {result.primaryMuscle}
-                    </span>
-                  </button>
+                    <button
+                      type="button"
+                      className="min-w-0 flex-1 px-3 py-3 text-left hover:bg-cyan/5"
+                      onClick={() => commit(result.name)}
+                    >
+                      <span className="block text-sm text-heading">
+                        {result.name}
+                      </span>
+                      <span className="mt-0.5 block text-xs text-dim">
+                        {result.primaryMuscle}
+                      </span>
+                    </button>
+                    <div className="flex shrink-0 items-center pr-2">
+                      <IconButton
+                        label={`About ${result.name}`}
+                        variant="ghost"
+                        className="size-8"
+                        onClick={() => setInfoSlug(result.id)}
+                      >
+                        <InfoIcon />
+                      </IconButton>
+                    </div>
+                  </div>
                 </li>
               ))}
             </ul>
@@ -287,6 +303,12 @@ export function ExerciseSearchModal({
           </CyberButton>
         </div>
       </form>
+
+      <ExerciseInfoModal
+        open={infoSlug !== null}
+        slug={infoSlug}
+        onClose={() => setInfoSlug(null)}
+      />
     </div>
   );
 }
