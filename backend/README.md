@@ -46,6 +46,16 @@ The same Nest app runs serverless on Vercel via `src/serverless.ts` (boots once 
 
 Point the frontend at the deployed function with `NEXT_PUBLIC_API_URL=https://<backend>.vercel.app`.
 
+## Exercise catalog
+
+Seed the global exercise catalog from [free-exercise-db](https://github.com/yuhonas/free-exercise-db) (~873 exercises, 2 demo photos each):
+
+```bash
+npm run seed:exercises        # uses DATABASE_URL; idempotent
+```
+
+Admin endpoints (`/api/admin/exercises*`) list/detail exercises and upload/delete media. Uploaded media go to **Cloudinary** — set `CLOUDINARY_CLOUD_NAME`, `CLOUDINARY_API_KEY`, `CLOUDINARY_API_SECRET` (free account at cloudinary.com). Without them, seed images still work; uploads are disabled.
+
 ## Health check
 
 `GET /api/health` → `{ "status": "ok", "db": "up", "uptime": <seconds> }`, or `503` with `db: "down"` if Postgres is unreachable. No auth. Point an uptime monitor (UptimeRobot / BetterStack free tier) at `https://api.armstrong-fitness.com/api/health`.

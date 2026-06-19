@@ -12,6 +12,10 @@ Monorepo with three independently-deployed apps + one shared backend:
 - `android/`, `ios/` — Capacitor native shells at repo root (pointed to via `android.path`/`ios.path` in `frontend/capacitor.config.ts`). Generated/synced by `cap sync`, which runs from `frontend/` and copies `frontend/out` into them; their gradle/pods resolve back to `../frontend/node_modules`.
 - Root — `docker-compose.yml` (full local stack: db + api + web:8080 + admin:8081), `.github/workflows/`, this file.
 
+### Exercise catalog + media
+
+`backend/src/exercises/` owns a global exercise catalog (`exercises` + `exercise_media` tables), seeded from the **free-exercise-db** dataset (`npm run seed:exercises`, ~873 exercises, each with 2 demo photos referenced from GitHub raw, `source:"seed"`). Admins browse/curate it from the admin app: `GET /api/admin/exercises[/:id]`, and upload/delete media (`POST`/`DELETE …/:id/media`). Uploads go to **Cloudinary** (`CloudinaryService`, creds in `CLOUDINARY_*`); `ExerciseMedia` keeps `cloudinaryId` for deletion and `type` (IMAGE/VIDEO) for future video. Seed media (GitHub URLs) and uploads (Cloudinary) coexist; re-seeding refreshes only `source:"seed"` rows. The frontend still reads the dataset directly from GitHub (`frontend/lib/exerciseSearch.ts`) — switching it to `GET /api/exercises` is a future step.
+
 ### Admin auth (separate from app users)
 
 Admins live in their own `admins` table (`AdminRole` = `ADMIN`/`SUPERADMIN`), **not** on `User`. Completely separate auth: own JWT signed with `ADMIN_JWT_SECRET` (distinct from `JWT_SECRET`), own passport strategy (`admin-jwt`), own sign-in at `/api/admin/auth/signin`. `RolesGuard` + `@Roles()` gate routes by tier (SUPERADMIN ⊇ ADMIN); SUPERADMIN-only: delete users, manage admins. The `backend/src/admin/` module holds all of this. App `User` gained only a `disabled` flag (admins lock users out; login is refused while true). First admin: `cd backend && npm run admin:create -- email pass SUPERADMIN`.

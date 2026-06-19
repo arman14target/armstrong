@@ -60,6 +60,50 @@ model User {
   @@map("users")
 }
 
+enum MediaType {
+  IMAGE
+  VIDEO
+}
+
+/// Global exercise catalog, seeded from free-exercise-db and curated in admin.
+model Exercise {
+  id               String          @id @default(uuid())
+  slug             String          @unique // dataset id, e.g. "Barbell_Bench_Press"
+  name             String
+  category         String?
+  force            String?
+  level            String?
+  mechanic         String?
+  equipment        String?
+  primaryMuscles   String[]        @map("primary_muscles")
+  secondaryMuscles String[]        @map("secondary_muscles")
+  instructions     String[]
+  source           String          @default("free-exercise-db")
+  createdAt        DateTime        @default(now()) @map("created_at")
+  updatedAt        DateTime        @updatedAt @map("updated_at")
+  media            ExerciseMedia[]
+
+  @@index([name])
+  @@map("exercises")
+}
+
+/// Images/videos for an exercise. Seed rows reference free hosts; admin uploads
+/// go to Cloudinary (cloudinaryId set, used for deletion).
+model ExerciseMedia {
+  id           String    @id @default(uuid())
+  exerciseId   String    @map("exercise_id")
+  exercise     Exercise  @relation(fields: [exerciseId], references: [id], onDelete: Cascade)
+  type         MediaType @default(IMAGE)
+  url          String
+  cloudinaryId String?   @map("cloudinary_id")
+  position     Int       @default(0)
+  source       String    @default("upload") // "seed" | "upload"
+  createdAt    DateTime  @default(now()) @map("created_at")
+
+  @@index([exerciseId])
+  @@map("exercise_media")
+}
+
 /// 1:1 bag for plan-level settings that don't warrant their own tables.
 model PlanMeta {
   userId           String   @id @map("user_id")
