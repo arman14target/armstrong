@@ -1,0 +1,35 @@
+name: Semgrep
+
+# Free static analysis (no token, works on private repos). Replaces CodeQL,
+# which needs paid GitHub Advanced Security on private repos.
+on:
+  pull_request:
+    paths:
+      - "frontend/**"
+      - "backend/**"
+      - ".github/workflows/semgrep.yml"
+  push:
+    branches: [main]
+    paths:
+      - "frontend/**"
+      - "backend/**"
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  semgrep:
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - uses: actions/checkout@v4
+      # Informational scan: reports findings in the logs but does not fail the
+      # build (the app's existing findings are benign — Capacitor boilerplate,
+      # blog markdown rendering, etc.). To turn it into a gate later, append
+      # `--error` (fail on any finding) or `--severity=ERROR --error` (fail only
+      # on high-severity). SARIF upload to the Security tab is intentionally
+      # omitted — it needs paid GitHub Advanced Security on private repos.
+      - run: semgrep scan --config=p/default --config=p/typescript

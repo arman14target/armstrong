@@ -9,7 +9,19 @@ Monorepo with two independently-deployed apps:
 - `frontend/` — Next.js static-export PWA + Capacitor config. Deployed to **Vercel** (project root = `frontend/`). Run frontend + all `cap` commands from here.
 - `backend/` — NestJS + Prisma + PostgreSQL API. Deployed to **Vercel serverless** (project root = `backend/`); DB is **Neon**.
 - `android/`, `ios/` — Capacitor native shells at repo root (pointed to via `android.path`/`ios.path` in `frontend/capacitor.config.ts`). Generated/synced by `cap sync`, which runs from `frontend/` and copies `frontend/out` into them; their gradle/pods resolve back to `../frontend/node_modules`.
-- Root — `docker-compose.yml` (full local stack), `.github/workflows/` (backend migrations), this file.
+- Root — `docker-compose.yml` (full local stack), `.github/workflows/`, this file.
+
+## CI/CD
+
+GitHub Actions (all free on Linux runners; private-safe):
+- `test.yml` — frontend (lint + `tsc --noEmit` + Vitest) and backend (`tsc --noEmit` + Jest) on PR/push.
+- `mobile-android.yml` — builds web, `cap sync`, assembles a debug APK artifact.
+- `backend-deploy.yml` — applies Prisma migrations to Neon on backend push; optionally fires a Vercel deploy hook after (ordered release, gated on `VERCEL_BACKEND_DEPLOY_HOOK`).
+- `semgrep.yml` — free SAST (replaces CodeQL, which needs paid GHAS on private repos).
+- `release.yml` — release-please (Conventional Commits → CHANGELOG, tags, GitHub Releases).
+- `dependabot.yml` — weekly npm (frontend/backend) + github-actions update PRs.
+
+Frontend (Vercel) and backend (Vercel serverless) auto-deploy on push to `main`. Backend health: `GET /api/health` (DB ping) for uptime monitors.
 
 ## Commands
 

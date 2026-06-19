@@ -46,6 +46,19 @@ The same Nest app runs serverless on Vercel via `src/serverless.ts` (boots once 
 
 Point the frontend at the deployed function with `NEXT_PUBLIC_API_URL=https://<backend>.vercel.app`.
 
+## Health check
+
+`GET /api/health` → `{ "status": "ok", "db": "up", "uptime": <seconds> }`, or `503` with `db: "down"` if Postgres is unreachable. No auth. Point an uptime monitor (UptimeRobot / BetterStack free tier) at `https://api.armstrong-fitness.com/api/health`.
+
+## Ordered release (optional, recommended)
+
+By default Vercel auto-deploys the backend on push and the migration runs in parallel — a brief window where new code can hit the old schema. To make it ordered (migrate → then deploy):
+
+1. Vercel backend project → create a **Deploy Hook** (Settings → Git). Add its URL as the GitHub Actions secret `VERCEL_BACKEND_DEPLOY_HOOK`.
+2. Same project → turn **off** automatic git deploys (Settings → Git → "Ignored Build Step" returning exit 0, or disconnect auto-deploy).
+
+Now `.github/workflows/backend-deploy.yml` migrates Neon first, then fires the deploy hook. Until the secret exists, that step is skipped and Vercel keeps auto-deploying (current behavior).
+
 ## Environment
 
 | Var              | Default                  | Notes                              |
