@@ -29,6 +29,26 @@ export async function apiSignIn(
   return result.user;
 }
 
+export async function apiSignInWithGoogle(idToken: string): Promise<AppUser> {
+  const result = await apiFetch<AuthResponse>("/auth/google", {
+    method: "POST",
+    body: { idToken },
+  });
+  setAuthToken(result.token);
+  return result.user;
+}
+
+export async function apiSignInWithApple(
+  identityToken: string,
+): Promise<AppUser> {
+  const result = await apiFetch<AuthResponse>("/auth/apple", {
+    method: "POST",
+    body: { identityToken },
+  });
+  setAuthToken(result.token);
+  return result.user;
+}
+
 export async function apiGetCurrentUser(): Promise<AppUser | null> {
   try {
     const result = await apiFetch<{ user: AppUser }>("/auth/me", {

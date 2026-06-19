@@ -1,12 +1,18 @@
 import { ConflictException, UnauthorizedException } from "@nestjs/common";
 import * as bcrypt from "bcryptjs";
 import { AuthService } from "./auth.service";
+import * as social from "./social-verify";
+
+jest.mock("./social-verify");
+const mockedSocial = social as jest.Mocked<typeof social>;
 
 function makeService() {
   const prisma = {
     user: {
       findUnique: jest.fn(),
+      findFirst: jest.fn(),
       create: jest.fn(),
+      update: jest.fn(),
     },
   };
   const jwt = { sign: jest.fn().mockReturnValue("signed-token") };
@@ -81,5 +87,121 @@ describe("AuthService.signIn", () => {
     await expect(
       service.signIn("nobody@b.com", "secret1"),
     ).rejects.toBeInstanceOf(UnauthorizedException);
+  });
+
+  it("rejects an SSO-only account (no password hash) on password sign-in", async () => {
+    const { service, prisma } = makeService();
+    prisma.user.findUnique.mockResolvedValue({
+      id: "u1",
+      email: "a@b.com",
+      passwordHash: null,
+    });
+
+    await expect(service.signIn("a@b.com", "secret1")).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
+  });
+});
+
+describe("AuthService.signInWithGoogle (linking)", () => {
+  it("returns the existing user matched by provider sub", async () => {
+    const { service, prisma } = makeService();
+    mockedSocial.verifyGoogleToken.mockResolvedValue({
+      sub: "g-123",
+      email: "a@b.com",
+      emailVerified: true,
+    });
+    prisma.user.findFirst.mockResolvedValue({
+      id: "u1",
+      email: "a@b.com",
+      disabled: false,
+    });
+
+    const result = await service.signInWithGoogle("tok");
+    expect(result.user).toEqual({ id: "u1", email: "a@b.com" });
+    expect(prisma.user.create).not.toHaveBeenCalled();
+  });
+
+  it("links the provider to an existing verified-email account", async () => {
+    const { service, prisma } = makeService();
+    mockedSocial.verifyGoogleToken.mockResolvedValue({
+      sub: "g-123",
+      email: "a@b.com",
+      emailVerified: true,
+    });
+    prisma.user.findFirst.mockResolvedValue(null); // no sub match
+    prisma.user.findUnique.mockResolvedValue({
+      id: "u1",
+      email: "a@b.com",
+      disabled: false,
+    });
+    prisma.user.update.mockResolvedValue({
+      id: "u1",
+      email: "a@b.com",
+      disabled: false,
+    });
+
+    await service.signInWithGoogle("tok");
+    expect(prisma.user.update).toHaveBeenCalledWith(
+      expect.objectContaining({ data: { googleSub: "g-123" } }),
+    );
+    expect(prisma.user.create).not.toHaveBeenCalled();
+  });
+
+  it("creates a new account when nothing matches", async () => {
+    const { service, prisma } = makeService();
+    mockedSocial.verifyGoogleToken.mockResolvedValue({
+      sub: "g-999",
+      email: "new@b.com",
+      emailVerified: true,
+    });
+    prisma.user.findFirst.mockResolvedValue(null);
+    prisma.user.findUnique.mockResolvedValue(null);
+    prisma.user.create.mockResolvedValue({
+      id: "u2",
+      email: "new@b.com",
+      disabled: false,
+    });
+
+    const result = await service.signInWithGoogle("tok");
+    expect(prisma.user.create).toHaveBeenCalledWith(
+      expect.objectContaining({
+        data: { email: "new@b.com", googleSub: "g-999" },
+      }),
+    );
+    expect(result.user.email).toBe("new@b.com");
+  });
+});
+
+describe("AuthService.signInWithApple", () => {
+  it("matches a returning user by apple sub even without an email", async () => {
+    const { service, prisma } = makeService();
+    mockedSocial.verifyAppleToken.mockResolvedValue({
+      sub: "a-123",
+      email: undefined,
+      emailVerified: false,
+    });
+    prisma.user.findFirst.mockResolvedValue({
+      id: "u1",
+      email: "a@b.com",
+      disabled: false,
+    });
+
+    const result = await service.signInWithApple("tok");
+    expect(result.user.id).toBe("u1");
+  });
+
+  it("rejects a first-time Apple sign-in with no email", async () => {
+    const { service, prisma } = makeService();
+    mockedSocial.verifyAppleToken.mockResolvedValue({
+      sub: "a-new",
+      email: undefined,
+      emailVerified: false,
+    });
+    prisma.user.findFirst.mockResolvedValue(null);
+
+    await expect(service.signInWithApple("tok")).rejects.toBeInstanceOf(
+      UnauthorizedException,
+    );
   });
 });
