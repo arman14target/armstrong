@@ -17,6 +17,7 @@ import {
   notifyRestComplete,
   scheduleRestNotification,
 } from "@/lib/restNotifications";
+import { APP_ROUTE } from "@/lib/routes";
 import { BatchExercisePreset } from "@/lib/workoutBatches";
 import { consumeWorkoutSetupIntent } from "@/lib/workoutSetupIntent";
 import {
@@ -176,7 +177,7 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
   const handleSetupCancel = useCallback(() => {
     cancelRestNotification();
     cancelSession(workoutId);
-    router.push("/");
+    router.push(APP_ROUTE);
   }, [cancelSession, router, workoutId]);
 
   const handleLeaveRequest = useCallback(() => {
@@ -188,7 +189,7 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
       setShowLeaveModal(true);
       return;
     }
-    router.push("/");
+    router.push(APP_ROUTE);
   }, [handleSetupCancel, router, session, showEntryChoice, showSetupModal]);
 
   const handleSaveAndLeave = useCallback(() => {
@@ -206,14 +207,14 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
     cancelRestNotification();
     finishDay(workoutId);
     setShowLeaveModal(false);
-    router.push("/");
+    router.push(APP_ROUTE);
   }, [finishDay, router, session?.completedSetIds.length, workoutId]);
 
   const handleCancelSessionAndLeave = useCallback(() => {
     cancelRestNotification();
     cancelSession(workoutId);
     setShowLeaveModal(false);
-    router.push("/");
+    router.push(APP_ROUTE);
   }, [cancelSession, router, workoutId]);
 
   const label = getWorkoutLabel(data, workoutId);
@@ -313,7 +314,7 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
         <p className="text-sm text-magenta">Workout not found.</p>
         <button
           type="button"
-          onClick={() => router.push("/")}
+          onClick={() => router.push(APP_ROUTE)}
           className="text-sm text-cyan transition-colors hover:text-magenta"
         >
           ← Back home

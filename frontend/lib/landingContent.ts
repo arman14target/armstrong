@@ -119,3 +119,22 @@ export const landingFooterCta = {
   headline: "Your Free AI Fitness Coach Is Ready",
   copy: "Generate your custom bodybuilding plan in one sentence. Start tracking macros and crushing PRs today.",
 } as const;
+
+export const landingTools = [
+  {
+    title: "Free Diet Planner",
+    href: "/diet-planner/",
+    tag: "Macro calculator",
+    description:
+      "Enter your stats and goal to get daily calories, protein, carbs, fats, and a full four-meal day — no signup.",
+    accent: "green" as const,
+  },
+  {
+    title: "Free Gym Planner",
+    href: "/gym-planner/",
+    tag: "Split builder",
+    description:
+      "Pick days per week, equipment, and experience level. Get a complete workout split with sets, reps, and rest.",
+    accent: "cyan" as const,
+  },
+] as const;

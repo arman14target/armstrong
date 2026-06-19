@@ -47,6 +47,12 @@ import {
   type CoachWorkoutChange,
 } from "@/lib/coachWorkout";
 import { createFoodEntry, createPlannedFoodEntry, FoodEntry, NutritionProfile, PlannedMealInput } from "@/lib/nutrition";
+import {
+  applyDietPlannerImport,
+  applyGymPlannerImport,
+} from "@/lib/planner/plannerImport";
+import type { DietPlanInputs, DietPlanResult } from "@/lib/planner/dietPlan";
+import type { GymPlanResult } from "@/lib/planner/gymPlan";
 
 type GymStoreValue = ReturnType<typeof useGymStoreState>;
 
@@ -741,6 +747,20 @@ function useGymStoreState() {
     [persist],
   );
 
+  const importDietPlanner = useCallback(
+    (inputs: DietPlanInputs, plan: DietPlanResult) => {
+      persist((prev) => applyDietPlannerImport(prev, inputs, plan));
+    },
+    [persist],
+  );
+
+  const importGymPlanner = useCallback(
+    (plan: GymPlanResult) => {
+      persist((prev) => applyGymPlannerImport(prev, plan));
+    },
+    [persist],
+  );
+
   const togglePlannedMealComplete = useCallback(
     (dateKey: string, entryId: string, completed: boolean) => {
       persist((prev) => {
@@ -827,6 +847,8 @@ function useGymStoreState() {
     applyCoachWorkoutChange,
     applyCoachGymPlan,
     applyCoachDietPlan,
+    importDietPlanner,
+    importGymPlanner,
     togglePlannedMealComplete,
   };
 }

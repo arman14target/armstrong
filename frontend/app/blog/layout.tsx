@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { StaticPageRoot } from "@/components/landing/StaticPageRoot";
 import { BlogNav } from "@/components/blog/BlogNav";
 import { blogSeo } from "@/lib/blogContent";
 import { absoluteUrl } from "@/lib/siteUrl";
@@ -34,9 +35,9 @@ export default function BlogLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <>
+    <StaticPageRoot>
       <BlogNav />
       {children}
-    </>
+    </StaticPageRoot>
   );
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 import type { PostListItem } from "@/lib/posts";
 import { withBasePath } from "@/lib/basePath";
@@ -31,7 +32,7 @@ function BlogPostCard({ post }: { post: PostListItem }) {
             tabIndex={-1}
             aria-hidden
           >
-            <img
+            <Image
               src={withBasePath(post.image)}
               alt=""
               className="blog-card__image"

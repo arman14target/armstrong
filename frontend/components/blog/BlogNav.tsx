@@ -13,7 +13,7 @@ export function BlogNav() {
         <Link href="/blog/" className="blog-nav__link">
           All posts
         </Link>
-        <Link href="/landing/" className="blog-nav__link">
+        <Link href="/app/" className="blog-nav__link">
           App
         </Link>
       </nav>

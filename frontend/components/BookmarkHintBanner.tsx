@@ -3,20 +3,10 @@
 import { Capacitor } from "@capacitor/core";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
+import { isStandaloneDisplay } from "@/lib/pwa";
+import { APP_ROUTE } from "@/lib/routes";
 
 const DISMISS_KEY = "armstrong-bookmark-hint-dismissed";
-
-function isStandalone(): boolean {
-  if (typeof window === "undefined") {
-    return false;
-  }
-
-  return (
-    window.matchMedia("(display-mode: standalone)").matches ||
-    (window.navigator as Navigator & { standalone?: boolean }).standalone ===
-      true
-  );
-}
 
 function isMobileBrowser(): boolean {
   if (typeof window === "undefined") {
@@ -28,7 +18,7 @@ function isMobileBrowser(): boolean {
 
 function isMainAppRoute(pathname: string): boolean {
   const normalized = pathname.replace(/\/$/, "") || "/";
-  return normalized === "/";
+  return normalized === APP_ROUTE.replace(/\/$/, "");
 }
 
 export function BookmarkHintBanner() {
@@ -39,7 +29,7 @@ export function BookmarkHintBanner() {
     if (
       !isMainAppRoute(pathname) ||
       !isMobileBrowser() ||
-      isStandalone() ||
+      isStandaloneDisplay() ||
       Capacitor.isNativePlatform() ||
       localStorage.getItem(DISMISS_KEY) === "1"
     ) {

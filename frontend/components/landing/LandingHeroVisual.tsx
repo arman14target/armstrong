@@ -1,3 +1,4 @@
+import Image from "next/image";
 import { LandingCalloutCalendar } from "@/components/landing/LandingCalloutCalendar";
 import { LandingCalloutPlan } from "@/components/landing/LandingCalloutPlan";
 import { withBasePath } from "@/lib/basePath";
@@ -28,7 +29,7 @@ export function LandingHeroVisual({
       <div className="landing-hero-figure">
         <div className="landing-hero-figure__warm-glow" />
         <div className="landing-hero-figure__ground-glow" aria-hidden />
-        <img
+        <Image
           src={withBasePath("/images/landing/theposingguy.png")}
           alt=""
           className="landing-hero-figure__image"

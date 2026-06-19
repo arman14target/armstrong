@@ -3,6 +3,11 @@
 import { useMemo, useState } from "react";
 import { AddFoodModal } from "@/components/AddFoodModal";
 import { PencilIcon, TrashIcon } from "@/components/icons/ActionIcons";
+import {
+  NutritionBodyStatsSliders,
+  type NutritionBodyStatsValues,
+} from "@/components/nutrition/NutritionBodyStatsSliders";
+import { MacroBars } from "@/components/planner/MacroBars";
 import { PlannedFoodModal } from "@/components/PlannedFoodModal";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { IconButton } from "@/components/ui/IconButton";
@@ -23,6 +28,13 @@ import {
   type PlannedMealInput,
 } from "@/lib/nutrition";
 import { toLocalDateKey } from "@/lib/workoutCalendar";
+
+const DEFAULT_BODY_STATS: NutritionBodyStatsValues = {
+  weightKg: 80,
+  heightCm: 178,
+  age: 28,
+  sex: "male",
+};
 
 type SetupStep = "body" | "goal" | "review";
 
@@ -212,7 +224,18 @@ function NutritionSetup({
   onCancel?: () => void;
   requiredFirst?: boolean;
 }) {
+  const useSliderSetup = !initialProfile;
   const [step, setStep] = useState<SetupStep>("body");
+  const [bodyStats, setBodyStats] = useState<NutritionBodyStatsValues>(
+    initialProfile
+      ? {
+          weightKg: initialProfile.weightKg,
+          heightCm: initialProfile.heightCm,
+          age: initialProfile.age,
+          sex: initialProfile.sex,
+        }
+      : DEFAULT_BODY_STATS,
+  );
   const [weight, setWeight] = useState(
     initialProfile ? String(initialProfile.weightKg) : "",
   );
@@ -230,13 +253,20 @@ function NutritionSetup({
   );
   const [errors, setErrors] = useState<Record<string, boolean>>({});
 
-  const weightKg = parseNumber(weight);
-  const heightCm = parseNumber(height);
-  const ageYears = parseNumber(age);
+  const weightKg = useSliderSetup ? bodyStats.weightKg : parseNumber(weight);
+  const heightCm = useSliderSetup ? bodyStats.heightCm : parseNumber(height);
+  const ageYears = useSliderSetup ? bodyStats.age : parseNumber(age);
+  const selectedSex = useSliderSetup ? bodyStats.sex : sex;
 
   const draftInputs: NutritionInputs | null =
-    weightKg && heightCm && ageYears && sex && goal
-      ? { weightKg, heightCm, age: ageYears, sex, goal }
+    weightKg && heightCm && ageYears && selectedSex && goal
+      ? {
+          weightKg,
+          heightCm,
+          age: ageYears,
+          sex: selectedSex,
+          goal,
+        }
       : null;
 
   const previewTargets = draftInputs
@@ -244,6 +274,10 @@ function NutritionSetup({
     : null;
 
   const validateBody = () => {
+    if (useSliderSetup) {
+      return true;
+    }
+
     const nextErrors: Record<string, boolean> = {};
     if (!weightKg || weightKg < 30 || weightKg > 300) {
       nextErrors.weight = true;
@@ -303,84 +337,94 @@ function NutritionSetup({
           </p>
         </div>
 
-        <div className="grid grid-cols-2 gap-[var(--space-gap)]">
-          <label className="block">
-            <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
-              Weight (kg)
-            </span>
-            <input
-              type="number"
-              inputMode="decimal"
-              value={weight}
-              onChange={(event) => {
-                setWeight(event.target.value);
-                if (errors.weight) {
-                  setErrors((prev) => ({ ...prev, weight: false }));
-                }
-              }}
-              placeholder="75"
-              className={cn("cyber-input", errors.weight && "border-magenta/60")}
-            />
-          </label>
-
-          <label className="block">
-            <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
-              Height (cm)
-            </span>
-            <input
-              type="number"
-              inputMode="decimal"
-              value={height}
-              onChange={(event) => {
-                setHeight(event.target.value);
-                if (errors.height) {
-                  setErrors((prev) => ({ ...prev, height: false }));
-                }
-              }}
-              placeholder="175"
-              className={cn("cyber-input", errors.height && "border-magenta/60")}
-            />
-          </label>
-        </div>
-
-        <label className="block">
-          <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
-            Age
-          </span>
-          <input
-            type="number"
-            inputMode="numeric"
-            value={age}
-            onChange={(event) => {
-              setAge(event.target.value);
-              if (errors.age) {
-                setErrors((prev) => ({ ...prev, age: false }));
-              }
-            }}
-            placeholder="25"
-            className={cn("cyber-input", errors.age && "border-magenta/60")}
+        {useSliderSetup ? (
+          <NutritionBodyStatsSliders
+            values={bodyStats}
+            onChange={setBodyStats}
+            idPrefix="food-tracker"
           />
-        </label>
+        ) : (
+          <>
+            <div className="grid grid-cols-2 gap-[var(--space-gap)]">
+              <label className="block">
+                <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
+                  Weight (kg)
+                </span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  value={weight}
+                  onChange={(event) => {
+                    setWeight(event.target.value);
+                    if (errors.weight) {
+                      setErrors((prev) => ({ ...prev, weight: false }));
+                    }
+                  }}
+                  placeholder="75"
+                  className={cn("cyber-input", errors.weight && "border-magenta/60")}
+                />
+              </label>
 
-        <div>
-          <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
-            Sex
-          </span>
-          <SexChoice
-            selected={sex}
-            onSelect={(value) => {
-              setSex(value);
-              if (errors.sex) {
-                setErrors((prev) => ({ ...prev, sex: false }));
-              }
-            }}
-          />
-          {errors.sex ? (
-            <p className="mt-1 text-xs text-magenta" role="alert">
-              Select male or female for an accurate estimate.
-            </p>
-          ) : null}
-        </div>
+              <label className="block">
+                <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
+                  Height (cm)
+                </span>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  value={height}
+                  onChange={(event) => {
+                    setHeight(event.target.value);
+                    if (errors.height) {
+                      setErrors((prev) => ({ ...prev, height: false }));
+                    }
+                  }}
+                  placeholder="175"
+                  className={cn("cyber-input", errors.height && "border-magenta/60")}
+                />
+              </label>
+            </div>
+
+            <label className="block">
+              <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
+                Age
+              </span>
+              <input
+                type="number"
+                inputMode="numeric"
+                value={age}
+                onChange={(event) => {
+                  setAge(event.target.value);
+                  if (errors.age) {
+                    setErrors((prev) => ({ ...prev, age: false }));
+                  }
+                }}
+                placeholder="25"
+                className={cn("cyber-input", errors.age && "border-magenta/60")}
+              />
+            </label>
+
+            <div>
+              <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
+                Sex
+              </span>
+              <SexChoice
+                selected={sex}
+                onSelect={(value) => {
+                  setSex(value);
+                  if (errors.sex) {
+                    setErrors((prev) => ({ ...prev, sex: false }));
+                  }
+                }}
+              />
+              {errors.sex ? (
+                <p className="mt-1 text-xs text-magenta" role="alert">
+                  Select male or female for an accurate estimate.
+                </p>
+              ) : null}
+            </div>
+          </>
+        )}
 
         <CyberButton variant="green" className="w-full" onClick={handleBodyNext}>
           Next: pick your goal
@@ -407,15 +451,94 @@ function NutritionSetup({
           </p>
         </div>
 
-        <GoalChoice
-          selected={goal}
-          onSelect={(value) => {
-            setGoal(value);
-            if (errors.goal) {
-              setErrors((prev) => ({ ...prev, goal: false }));
-            }
-          }}
-        />
+        {useSliderSetup ? (
+          <fieldset className="planner-segment">
+            <legend>Goal</legend>
+            <div className="planner-segment__options">
+              {(["bulk", "cut"] as const).map((option) => (
+                <button
+                  key={option}
+                  type="button"
+                  className={goal === option ? "is-active" : undefined}
+                  onClick={() => {
+                    setGoal(option);
+                    if (errors.goal) {
+                      setErrors((prev) => ({ ...prev, goal: false }));
+                    }
+                  }}
+                >
+                  {option === "bulk" ? "Lean bulk" : "Cut"}
+                </button>
+              ))}
+            </div>
+          </fieldset>
+        ) : (
+          <GoalChoice
+            selected={goal}
+            onSelect={(value) => {
+              setGoal(value);
+              if (errors.goal) {
+                setErrors((prev) => ({ ...prev, goal: false }));
+              }
+            }}
+          />
+        )}
+
+        {useSliderSetup && previewTargets ? (
+          <div className="rounded-cyber border border-line bg-bg/30 p-[var(--space-panel)]">
+            <p className="mb-3 text-[10px] tracking-wide text-dim uppercase">
+              Live macro preview
+            </p>
+            <p className="font-display text-2xl tracking-wide text-heading">
+              {previewTargets.dailyCalories}
+              <span className="ml-1 text-sm text-dim">kcal / day</span>
+            </p>
+            <MacroBars
+              className="mt-3"
+              items={[
+                {
+                  label: "Protein",
+                  value: previewTargets.proteinG,
+                  max: Math.max(
+                    previewTargets.proteinG,
+                    previewTargets.carbsG,
+                    previewTargets.fatG,
+                  ),
+                  unit: "g",
+                  accent: "cyan",
+                },
+                {
+                  label: "Carbs",
+                  value: previewTargets.carbsG,
+                  max: Math.max(
+                    previewTargets.proteinG,
+                    previewTargets.carbsG,
+                    previewTargets.fatG,
+                  ),
+                  unit: "g",
+                  accent: "green",
+                },
+                {
+                  label: "Fat",
+                  value: previewTargets.fatG,
+                  max: Math.max(
+                    previewTargets.proteinG,
+                    previewTargets.carbsG,
+                    previewTargets.fatG,
+                  ),
+                  unit: "g",
+                  accent: "magenta",
+                },
+              ]}
+            />
+          </div>
+        ) : null}
+
+        {errors.goal ? (
+          <p className="text-xs text-magenta" role="alert">
+            Pick bulk or cut to continue.
+          </p>
+        ) : null}
 
         <div className="stack-sm">
           <CyberButton variant="green" className="w-full" onClick={handleGoalNext}>
@@ -442,32 +565,81 @@ function NutritionSetup({
       </div>
 
       {previewTargets ? (
-        <div className="grid grid-cols-2 gap-[var(--space-gap)] sm:grid-cols-4">
-          <MacroStat
-            label="Calories"
-            value={previewTargets.dailyCalories}
-            unit="kcal"
-            accent="amber"
-          />
-          <MacroStat
-            label="Protein"
-            value={previewTargets.proteinG}
-            unit="g"
-            accent="cyan"
-          />
-          <MacroStat
-            label="Carbs"
-            value={previewTargets.carbsG}
-            unit="g"
-            accent="green"
-          />
-          <MacroStat
-            label="Fat"
-            value={previewTargets.fatG}
-            unit="g"
-            accent="magenta"
-          />
-        </div>
+        useSliderSetup ? (
+          <div className="rounded-cyber border border-line bg-bg/30 p-[var(--space-panel)]">
+            <MacroBars
+              items={[
+                {
+                  label: "Calories",
+                  value: previewTargets.dailyCalories,
+                  max: previewTargets.dailyCalories,
+                  unit: "kcal",
+                  accent: "cyan",
+                },
+                {
+                  label: "Protein",
+                  value: previewTargets.proteinG,
+                  max: Math.max(
+                    previewTargets.proteinG,
+                    previewTargets.carbsG,
+                    previewTargets.fatG,
+                  ),
+                  unit: "g",
+                  accent: "cyan",
+                },
+                {
+                  label: "Carbs",
+                  value: previewTargets.carbsG,
+                  max: Math.max(
+                    previewTargets.proteinG,
+                    previewTargets.carbsG,
+                    previewTargets.fatG,
+                  ),
+                  unit: "g",
+                  accent: "green",
+                },
+                {
+                  label: "Fat",
+                  value: previewTargets.fatG,
+                  max: Math.max(
+                    previewTargets.proteinG,
+                    previewTargets.carbsG,
+                    previewTargets.fatG,
+                  ),
+                  unit: "g",
+                  accent: "magenta",
+                },
+              ]}
+            />
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-[var(--space-gap)] sm:grid-cols-4">
+            <MacroStat
+              label="Calories"
+              value={previewTargets.dailyCalories}
+              unit="kcal"
+              accent="amber"
+            />
+            <MacroStat
+              label="Protein"
+              value={previewTargets.proteinG}
+              unit="g"
+              accent="cyan"
+            />
+            <MacroStat
+              label="Carbs"
+              value={previewTargets.carbsG}
+              unit="g"
+              accent="green"
+            />
+            <MacroStat
+              label="Fat"
+              value={previewTargets.fatG}
+              unit="g"
+              accent="magenta"
+            />
+          </div>
+        )
       ) : null}
 
       <p className="text-xs leading-relaxed text-dim">

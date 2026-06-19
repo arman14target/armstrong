@@ -135,3 +135,5 @@ When you want more volume per muscle group and recovery keeps up — usually aft
 ## Key Takeaway
 
 Protect three 45-minute blocks weekly. Compound lifts, log every set, meal prep once, walk daily. Busy is not an excuse — it is a design constraint. This plan is built for it.
+
+**Try it free:** Generate a 3-day full-body program tailored to your stats with Armstrong’s [free gym planner](/gym-planner/).

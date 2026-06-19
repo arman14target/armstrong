@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { CyberButton } from "@/components/ui/CyberButton";
+import { APP_ROUTE } from "@/lib/routes";
 
 interface FinishDayButtonProps {
   onFinish: () => void;
@@ -24,7 +25,7 @@ export function FinishDayButton({
       }
     }
     onFinish();
-    router.push("/");
+    router.push(APP_ROUTE);
   };
 
   return (
