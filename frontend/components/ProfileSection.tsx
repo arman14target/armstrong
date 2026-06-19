@@ -214,64 +214,26 @@ export function ProfileSection({
           workouts, diet, and plans saved and synced for later.
         </p>
 
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => {
-              setMode("sign-in");
-              setError(null);
-            }}
-            className={cn(
-              "rounded-cyber border px-3 py-2 text-xs tracking-wide transition-colors",
-              mode === "sign-in"
-                ? "border-primary/60 text-primary"
-                : "border-line text-dim hover:text-heading",
-            )}
-          >
-            Sign in
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setMode("sign-up");
-              setError(null);
-            }}
-            className={cn(
-              "rounded-cyber border px-3 py-2 text-xs tracking-wide transition-colors",
-              mode === "sign-up"
-                ? "border-primary/60 text-primary"
-                : "border-line text-dim hover:text-heading",
-            )}
-          >
-            Sign up
-          </button>
+        <div className="grid grid-cols-2 gap-1 rounded-cyber border border-line p-1">
+          {(["sign-in", "sign-up"] as const).map((m) => (
+            <button
+              key={m}
+              type="button"
+              onClick={() => {
+                setMode(m);
+                setError(null);
+              }}
+              className={cn(
+                "rounded-[4px] px-3 py-2 text-xs font-medium uppercase tracking-wide transition-colors",
+                mode === m
+                  ? "bg-primary/15 text-primary"
+                  : "text-dim hover:text-heading",
+              )}
+            >
+              {m === "sign-in" ? "Sign in" : "Sign up"}
+            </button>
+          ))}
         </div>
-
-        {(googleConfigured || appleConfigured) && (
-          <div className="stack-md">
-            {googleConfigured && (
-              <GoogleSignInButton
-                onCredential={handleGoogleCredential}
-                onError={setError}
-                disabled={submitting}
-              />
-            )}
-            {appleConfigured && (
-              <AppleSignInButton
-                onToken={handleAppleToken}
-                onError={setError}
-                disabled={submitting}
-              />
-            )}
-            <div className="flex items-center gap-3">
-              <div className="h-px flex-1 bg-line" />
-              <span className="text-xs uppercase tracking-wide text-dim">
-                or
-              </span>
-              <div className="h-px flex-1 bg-line" />
-            </div>
-          </div>
-        )}
 
         <form className="stack-md" onSubmit={handleSubmit}>
           <label className="block">
@@ -326,6 +288,32 @@ export function ProfileSection({
                 : "Create account & sync"}
           </CyberButton>
         </form>
+
+        {(googleConfigured || appleConfigured) && (
+          <div className="stack-md">
+            <div className="flex items-center gap-3">
+              <div className="h-px flex-1 bg-line" />
+              <span className="text-[11px] uppercase tracking-wide text-dim">
+                or continue with
+              </span>
+              <div className="h-px flex-1 bg-line" />
+            </div>
+            {googleConfigured && (
+              <GoogleSignInButton
+                onCredential={handleGoogleCredential}
+                onError={setError}
+                disabled={submitting}
+              />
+            )}
+            {appleConfigured && (
+              <AppleSignInButton
+                onToken={handleAppleToken}
+                onError={setError}
+                disabled={submitting}
+              />
+            )}
+          </div>
+        )}
       </div>
     </TerminalWindow>
   );
