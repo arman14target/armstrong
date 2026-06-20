@@ -7,6 +7,7 @@ import {
   type InputHTMLAttributes,
 } from "react";
 import { useNumericKeyboard } from "@/contexts/NumericKeyboardContext";
+import { cn } from "@/lib/cn";
 
 export interface NumericKeyboardInputProps
   extends Omit<InputHTMLAttributes<HTMLInputElement>, "readOnly" | "onChange"> {
@@ -29,6 +30,7 @@ export const NumericKeyboardInput = forwardRef<
     onDecrement,
     onKeyboardDone,
     allowDecimal = false,
+    className,
     onFocus,
     onBlur,
     onPointerDown,
@@ -40,22 +42,25 @@ export const NumericKeyboardInput = forwardRef<
 ) {
   const {
     isTouchDevice,
-    preferNativeKeyboard,
+    isOpen,
+    activeInputRef,
     open,
     updateSession,
-    enableNativeKeyboard,
     close,
   } = useNumericKeyboard();
   const localRef = useRef<HTMLInputElement>(null);
   const focusedRef = useRef(false);
-  const blurTimeoutRef = useRef<number | null>(null);
-  const useCustomKeyboard = isTouchDevice && !preferNativeKeyboard;
+  const useCustomKeyboard = isTouchDevice;
+  const isKeyboardTarget = isOpen && activeInputRef === localRef;
 
-  const clearBlurTimeout = () => {
-    if (blurTimeoutRef.current !== null) {
-      window.clearTimeout(blurTimeoutRef.current);
-      blurTimeoutRef.current = null;
+  const suppressNativeKeyboard = () => {
+    if (!useCustomKeyboard) {
+      return;
     }
+
+    requestAnimationFrame(() => {
+      localRef.current?.blur();
+    });
   };
 
   const setRefs = (node: HTMLInputElement | null) => {
@@ -67,38 +72,31 @@ export const NumericKeyboardInput = forwardRef<
     }
   };
 
-  const switchToNativeKeyboard = () => {
-    enableNativeKeyboard();
-    focusedRef.current = true;
-    requestAnimationFrame(() => {
-      const input = localRef.current;
-      if (!input) {
-        return;
-      }
-      input.focus();
-      input.select();
-    });
-  };
-
   const buildSession = () => ({
     value,
     onChange: onValueChange,
     onIncrement,
     onDecrement,
     onDone: onKeyboardDone,
-    onUseNativeKeyboard: switchToNativeKeyboard,
     inputRef: localRef,
     allowDecimal,
   });
 
   useEffect(() => {
     return () => {
-      clearBlurTimeout();
       if (focusedRef.current) {
         close(localRef);
       }
     };
   }, [close]);
+
+  useEffect(() => {
+    if (isOpen) {
+      return;
+    }
+
+    focusedRef.current = false;
+  }, [isOpen]);
 
   useEffect(() => {
     if (!useCustomKeyboard || !focusedRef.current) {
@@ -111,7 +109,6 @@ export const NumericKeyboardInput = forwardRef<
       onIncrement,
       onDecrement,
       onDone: onKeyboardDone,
-      onUseNativeKeyboard: switchToNativeKeyboard,
       inputRef: localRef,
       allowDecimal,
     });
@@ -133,9 +130,9 @@ export const NumericKeyboardInput = forwardRef<
       return;
     }
 
-    clearBlurTimeout();
     focusedRef.current = true;
     open(buildSession());
+    suppressNativeKeyboard();
   };
 
   const handlePointerDown = (event: React.PointerEvent<HTMLInputElement>) => {
@@ -146,7 +143,6 @@ export const NumericKeyboardInput = forwardRef<
     }
 
     event.preventDefault();
-    clearBlurTimeout();
     focusedRef.current = true;
 
     const input = localRef.current;
@@ -156,6 +152,7 @@ export const NumericKeyboardInput = forwardRef<
     }
 
     open(buildSession());
+    suppressNativeKeyboard();
   };
 
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
@@ -163,23 +160,7 @@ export const NumericKeyboardInput = forwardRef<
 
     if (!useCustomKeyboard) {
       focusedRef.current = false;
-      return;
     }
-
-    clearBlurTimeout();
-    blurTimeoutRef.current = window.setTimeout(() => {
-      blurTimeoutRef.current = null;
-      const active = document.activeElement;
-      if (
-        active?.closest(".numeric-keyboard") ||
-        active?.hasAttribute("data-numeric-keyboard-input")
-      ) {
-        return;
-      }
-
-      focusedRef.current = false;
-      close(localRef);
-    }, 120);
   };
 
   return (
@@ -187,9 +168,11 @@ export const NumericKeyboardInput = forwardRef<
       {...props}
       ref={setRefs}
       data-numeric-keyboard-input=""
+      data-numeric-keyboard-active={isKeyboardTarget ? "" : undefined}
       type={useCustomKeyboard ? "text" : type}
       inputMode={useCustomKeyboard ? "none" : inputMode}
       readOnly={useCustomKeyboard || undefined}
+      className={cn(className, isKeyboardTarget && "numeric-keyboard-input--active")}
       autoComplete="off"
       autoCorrect="off"
       spellCheck={false}

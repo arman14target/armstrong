@@ -923,7 +923,8 @@
     }
   }
 
-  .set-table-row__input:focus {
+  .set-table-row__input:focus,
+  .numeric-keyboard-input--active {
     border-color: color-mix(in srgb, var(--color-cyan) 50%, transparent);
   }
 
@@ -1081,6 +1082,11 @@
     outline: none;
   }
 
+  .set-rest-divider__input:focus,
+  .set-rest-divider__input.numeric-keyboard-input--active {
+    border-color: color-mix(in srgb, var(--color-cyan) 60%, transparent);
+  }
+
   .set-rest-divider--active {
     padding-block: 0.125rem;
   }
@@ -1153,12 +1159,12 @@
     transform: scale(0.97);
   }
 
-  .numeric-keyboard__side-key--native {
+  .numeric-keyboard__side-key--dismiss {
     color: var(--color-dim);
     border-color: color-mix(in srgb, var(--color-line) 80%, transparent);
   }
 
-  .numeric-keyboard__native-icon {
+  .numeric-keyboard__dismiss-icon {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -1167,7 +1173,7 @@
     line-height: 1;
   }
 
-  .numeric-keyboard__native-chevron {
+  .numeric-keyboard__dismiss-chevron {
     opacity: 0.75;
   }
 

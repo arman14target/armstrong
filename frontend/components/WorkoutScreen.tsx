@@ -241,7 +241,6 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
         return;
       }
 
-      cancelRestNotification();
       if (session.restEndsAt) {
         notifyRestComplete(session.restEndsAt, restNotificationBody);
       }
@@ -291,12 +290,11 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
       return;
     }
 
-    if (session?.restEndsAt) {
-      scheduleRestNotification(session.restEndsAt, restNotificationBody);
-      return () => cancelRestNotification();
+    if (!session?.restEndsAt) {
+      return;
     }
 
-    cancelRestNotification();
+    scheduleRestNotification(session.restEndsAt, restNotificationBody);
   }, [hydrated, session?.restEndsAt, restNotificationBody]);
 
   useEffect(() => {
