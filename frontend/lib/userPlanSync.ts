@@ -26,6 +26,8 @@ export interface UserPlanPayload {
   onboardingChat: CoachChatMessage[];
 }
 
+export type SyncAuthMode = "sign-in" | "sign-up";
+
 function parseUserPlanPayload(raw: unknown): UserPlanPayload | null {
   if (!raw || typeof raw !== "object") {
     return null;
@@ -137,6 +139,20 @@ function mergeWorkoutDayLogs(
   return merged;
 }
 
+export function applyRemotePlanPreservingSession(
+  remote: UserPlanPayload,
+  local: UserPlanPayload,
+): UserPlanPayload {
+  return {
+    ...remote,
+    appData: {
+      ...remote.appData,
+      activeSession:
+        local.appData.activeSession ?? remote.appData.activeSession,
+    },
+  };
+}
+
 export function mergeAppDataOnSync(remote: AppData, local: AppData): AppData {
   const workouts = { ...remote.workouts };
   for (const type of WORKOUT_TYPES) {
@@ -183,14 +199,35 @@ export function mergeAppDataOnSync(remote: AppData, local: AppData): AppData {
   };
 }
 
-export async function syncUserPlanOnLogin(userId: string): Promise<AppData> {
+export async function syncUserPlanOnLogin(
+  userId: string,
+  mode: SyncAuthMode = "sign-in",
+): Promise<AppData> {
   const localPayload = buildLocalUserPlanPayload();
   const remotePayload = await fetchUserPlan(userId);
+
+  if (mode === "sign-in") {
+    if (remotePayload) {
+      const payload = applyRemotePlanPreservingSession(remotePayload, localPayload);
+      return applyUserPlanPayload(payload);
+    }
+
+    await saveUserPlan(userId, localPayload);
+    return localPayload.appData;
+  }
 
   if (remotePayload) {
     const mergedPayload: UserPlanPayload = {
       ...remotePayload,
       appData: mergeAppDataOnSync(remotePayload.appData, localPayload.appData),
+      coachChat:
+        localPayload.coachChat.length > 0
+          ? localPayload.coachChat
+          : remotePayload.coachChat,
+      onboardingChat:
+        localPayload.onboardingChat.length > 0
+          ? localPayload.onboardingChat
+          : remotePayload.onboardingChat,
     };
     const appData = applyUserPlanPayload(mergedPayload);
     await saveUserPlan(userId, mergedPayload);

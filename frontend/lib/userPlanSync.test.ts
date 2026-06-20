@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { mergeAppDataOnSync } from "@/lib/userPlanSync";
+import {
+  applyRemotePlanPreservingSession,
+  mergeAppDataOnSync,
+} from "@/lib/userPlanSync";
 import { createDefaultAppData, type ActiveSession, type AppData } from "@/lib/types";
 
 function withDefaults(partial: Partial<AppData>): AppData {
@@ -59,5 +62,67 @@ describe("mergeAppDataOnSync", () => {
       "2026-06-18",
       "2026-06-19",
     ]);
+  });
+});
+
+describe("applyRemotePlanPreservingSession", () => {
+  it("uses remote account data over local guest data", () => {
+    const remote = {
+      appData: withDefaults({
+        nutritionProfile: {
+          weightKg: 80,
+          heightCm: 180,
+          age: 30,
+          sex: "male" as const,
+          goal: "cut" as const,
+          dailyCalories: 2200,
+          proteinG: 180,
+          carbsG: 200,
+          fatG: 60,
+        },
+        customWorkouts: [{ id: "remote-day", name: "Remote", moves: [] }],
+      }),
+      coachChat: [],
+      onboardingChat: [],
+    };
+    const local = {
+      appData: withDefaults({
+        nutritionProfile: {
+          weightKg: 70,
+          heightCm: 170,
+          age: 25,
+          sex: "female" as const,
+          goal: "bulk" as const,
+          dailyCalories: 2800,
+          proteinG: 150,
+          carbsG: 300,
+          fatG: 80,
+        },
+        customWorkouts: [{ id: "local-day", name: "Local", moves: [] }],
+      }),
+      coachChat: [],
+      onboardingChat: [],
+    };
+
+    const applied = applyRemotePlanPreservingSession(remote, local);
+    expect(applied.appData.nutritionProfile?.weightKg).toBe(80);
+    expect(applied.appData.customWorkouts[0]?.name).toBe("Remote");
+  });
+
+  it("keeps the local in-progress session over remote", () => {
+    const remote = {
+      appData: withDefaults({ activeSession: null }),
+      coachChat: [],
+      onboardingChat: [],
+    };
+    const local = {
+      appData: withDefaults({ activeSession: session }),
+      coachChat: [],
+      onboardingChat: [],
+    };
+
+    expect(
+      applyRemotePlanPreservingSession(remote, local).appData.activeSession,
+    ).toBe(session);
   });
 });

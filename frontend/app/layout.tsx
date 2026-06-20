@@ -1,11 +1,10 @@
 import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed, DM_Sans } from "next/font/google";
-import { Analytics } from "@vercel/analytics/next";
-import { SpeedInsights } from "@vercel/speed-insights/next";
 import { AppShell } from "@/components/AppShell";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { NumericKeyboardProvider } from "@/contexts/NumericKeyboardContext";
+import { WebOnlyClientExtras } from "@/components/WebOnlyClientExtras";
 import { GymStoreProvider } from "@/hooks/useGymStore";
-import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { getSiteUrl } from "@/lib/siteUrl";
 import { theme } from "@/lib/theme";
 import "./globals.css";
@@ -72,12 +71,12 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <GymStoreProvider>
-            <AppShell>{children}</AppShell>
+            <NumericKeyboardProvider>
+              <AppShell>{children}</AppShell>
+            </NumericKeyboardProvider>
           </GymStoreProvider>
         </AuthProvider>
-        <ServiceWorkerRegister />
-        <Analytics />
-        <SpeedInsights />
+        <WebOnlyClientExtras />
       </body>
     </html>
   );

@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { CheckIcon } from "@/components/icons/ActionIcons";
+import { NumericKeyboardInput } from "@/components/NumericKeyboardInput";
 import { IconButton } from "@/components/ui/IconButton";
 import { formatPreviousSet } from "@/lib/formatSetDisplay";
 import { tryVibrate } from "@/lib/vibration";
@@ -216,13 +217,16 @@ export function SetRow({
       ) : (
         <label className="set-table-row__field">
           <span className="sr-only">Weight in kg for set {index + 1}</span>
-          <input
+          <NumericKeyboardInput
             type="number"
             inputMode="decimal"
             min="0"
             step="0.5"
             value={weight}
-            onChange={(event) => handleWeightChange(event.target.value)}
+            onValueChange={handleWeightChange}
+            onIncrement={() => adjustWeight(WEIGHT_STEP)}
+            onDecrement={() => adjustWeight(-WEIGHT_STEP)}
+            allowDecimal
             onFocus={selectInputValue}
             onKeyDown={handleWeightKeyDown}
             placeholder="0"
@@ -239,13 +243,15 @@ export function SetRow({
         <span className="sr-only">
           {isTimeBased ? `Hold time in seconds for set ${index + 1}` : `Reps for set ${index + 1}`}
         </span>
-        <input
+        <NumericKeyboardInput
           type="number"
           inputMode="numeric"
           min="1"
           step={isTimeBased ? TIME_STEP : 1}
           value={reps}
-          onChange={(event) => handleRepsChange(event.target.value)}
+          onValueChange={handleRepsChange}
+          onIncrement={() => adjustReps(1)}
+          onDecrement={() => adjustReps(-1)}
           onFocus={selectInputValue}
           onKeyDown={handleRepsKeyDown}
           placeholder={isTimeBased ? "45" : "0"}

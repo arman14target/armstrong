@@ -1,13 +1,31 @@
+import { Capacitor } from "@capacitor/core";
+import { LocalNotifications } from "@capacitor/local-notifications";
 import { withBasePath } from "@/lib/basePath";
+
+const REST_NOTIFICATION_ID = 9001;
 
 let restNotificationTimeout: ReturnType<typeof setTimeout> | null = null;
 let lastNotifiedRestEnd: string | null = null;
 
+export type NotificationPermissionState = "default" | "granted" | "denied";
+
+function isNativeNotifications(): boolean {
+  return Capacitor.isNativePlatform();
+}
+
 export function isNotificationSupported(): boolean {
-  return typeof window !== "undefined" && "Notification" in window;
+  if (typeof window === "undefined") {
+    return false;
+  }
+
+  return isNativeNotifications() || "Notification" in window;
 }
 
 export function shouldShowRestNotification(): boolean {
+  if (isNativeNotifications()) {
+    return false;
+  }
+
   if (typeof window === "undefined") {
     return false;
   }
@@ -16,7 +34,37 @@ export function shouldShowRestNotification(): boolean {
   return isMobile || document.hidden;
 }
 
-export async function requestNotificationPermission(): Promise<NotificationPermission> {
+export async function getNotificationPermission(): Promise<NotificationPermissionState> {
+  if (isNativeNotifications()) {
+    const status = await LocalNotifications.checkPermissions();
+    if (status.display === "granted") {
+      return "granted";
+    }
+    if (status.display === "denied") {
+      return "denied";
+    }
+    return "default";
+  }
+
+  if (!isNotificationSupported()) {
+    return "denied";
+  }
+
+  return Notification.permission;
+}
+
+export async function requestNotificationPermission(): Promise<NotificationPermissionState> {
+  if (isNativeNotifications()) {
+    const status = await LocalNotifications.requestPermissions();
+    if (status.display === "granted") {
+      return "granted";
+    }
+    if (status.display === "denied") {
+      return "denied";
+    }
+    return "default";
+  }
+
   if (!isNotificationSupported()) {
     return "denied";
   }
@@ -28,8 +76,68 @@ export async function requestNotificationPermission(): Promise<NotificationPermi
   return Notification.requestPermission();
 }
 
+async function cancelNativeRestNotification(): Promise<void> {
+  try {
+    await LocalNotifications.cancel({
+      notifications: [{ id: REST_NOTIFICATION_ID }],
+    });
+  } catch {
+    // Native plugin unavailable or notification already delivered.
+  }
+}
+
+async function scheduleNativeRestNotification(
+  endsAt: string,
+  body: string,
+): Promise<void> {
+  const permission = await LocalNotifications.checkPermissions();
+  if (permission.display !== "granted") {
+    return;
+  }
+
+  const at = new Date(endsAt);
+  if (at.getTime() <= Date.now()) {
+    return;
+  }
+
+  await cancelNativeRestNotification();
+
+  await LocalNotifications.schedule({
+    notifications: [
+      {
+        id: REST_NOTIFICATION_ID,
+        title: "Rest complete!",
+        body,
+        schedule: { at, allowWhileIdle: true },
+      },
+    ],
+  });
+}
+
 export async function showRestNotification(body: string): Promise<void> {
-  if (!isNotificationSupported() || Notification.permission !== "granted") {
+  if (!isNotificationSupported()) {
+    return;
+  }
+
+  if (isNativeNotifications()) {
+    const permission = await LocalNotifications.checkPermissions();
+    if (permission.display !== "granted") {
+      return;
+    }
+
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          id: REST_NOTIFICATION_ID,
+          title: "Rest complete!",
+          body,
+        },
+      ],
+    });
+    return;
+  }
+
+  if (Notification.permission !== "granted") {
     return;
   }
 
@@ -73,6 +181,11 @@ export function scheduleRestNotification(endsAt: string, body: string): void {
     return;
   }
 
+  if (isNativeNotifications()) {
+    void scheduleNativeRestNotification(endsAt, body);
+    return;
+  }
+
   restNotificationTimeout = setTimeout(() => {
     restNotificationTimeout = null;
     notifyRestComplete(endsAt, body);
@@ -83,5 +196,9 @@ export function cancelRestNotification(): void {
   if (restNotificationTimeout) {
     clearTimeout(restNotificationTimeout);
     restNotificationTimeout = null;
+  }
+
+  if (isNativeNotifications()) {
+    void cancelNativeRestNotification();
   }
 }

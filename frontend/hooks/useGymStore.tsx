@@ -10,16 +10,19 @@ import {
 } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { scheduleCloudSync, setCloudSyncUserId } from "@/lib/cloudSyncScheduler";
+import { clearLocalOnlyChanges } from "@/lib/localSaveReminder";
 import { loadAppData, saveAppData, clearAllAppData } from "@/lib/storage";
 import {
   clearUserPlanEverywhere,
   syncUserPlanOnLogin,
+  type SyncAuthMode,
 } from "@/lib/userPlanSync";
 import {
   BatchExercisePreset,
   createMoveFromPreset,
   getWorkoutBatch,
 } from "@/lib/workoutBatches";
+import { shouldReuseActiveSession } from "@/lib/activeSession";
 import {
   applyWorkoutTemplate,
   addCompletionDate,
@@ -74,8 +77,8 @@ function useGymStoreState() {
     setCloudSyncUserId(user?.id ?? null);
   }, [user?.id]);
 
-  const syncForUser = useCallback(async (userId: string) => {
-    const synced = await syncUserPlanOnLogin(userId);
+  const syncForUser = useCallback(async (userId: string, mode: SyncAuthMode = "sign-in") => {
+    const synced = await syncUserPlanOnLogin(userId, mode);
     setData((prev) => {
       const localSession =
         prev.activeSession ?? loadAppData().activeSession;
@@ -91,6 +94,7 @@ function useGymStoreState() {
       saveAppData(merged);
       return merged;
     });
+    clearLocalOnlyChanges();
     syncedUserId = userId;
   }, []);
 
@@ -128,8 +132,7 @@ function useGymStoreState() {
         }
 
         if (
-          prev.activeSession?.workoutType === workoutId &&
-          prev.activeSession.startedAt
+          shouldReuseActiveSession(prev.activeSession, workoutId, template)
         ) {
           return prev;
         }
@@ -643,12 +646,13 @@ function useGymStoreState() {
     } else {
       await clearAllAppData();
     }
+    clearLocalOnlyChanges();
     setData(createDefaultAppData());
   }, [user?.id]);
 
-  const syncAfterAuth = useCallback(async (userId: string) => {
+  const syncAfterAuth = useCallback(async (userId: string, mode: SyncAuthMode) => {
     syncedUserId = null;
-    await syncForUser(userId);
+    await syncForUser(userId, mode);
   }, [syncForUser]);
 
   const saveNutritionProfile = useCallback(
