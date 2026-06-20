@@ -31,6 +31,7 @@ export const NumericKeyboardInput = forwardRef<
     allowDecimal = false,
     onFocus,
     onBlur,
+    onPointerDown,
     inputMode,
     type = "text",
     ...props
@@ -137,6 +138,26 @@ export const NumericKeyboardInput = forwardRef<
     open(buildSession());
   };
 
+  const handlePointerDown = (event: React.PointerEvent<HTMLInputElement>) => {
+    onPointerDown?.(event);
+
+    if (!useCustomKeyboard || event.defaultPrevented) {
+      return;
+    }
+
+    event.preventDefault();
+    clearBlurTimeout();
+    focusedRef.current = true;
+
+    const input = localRef.current;
+    if (input) {
+      input.focus({ preventScroll: true });
+      input.select();
+    }
+
+    open(buildSession());
+  };
+
   const handleBlur = (event: React.FocusEvent<HTMLInputElement>) => {
     onBlur?.(event);
 
@@ -179,6 +200,7 @@ export const NumericKeyboardInput = forwardRef<
         }
       }}
       onFocus={handleFocus}
+      onPointerDown={handlePointerDown}
       onBlur={handleBlur}
     />
   );
