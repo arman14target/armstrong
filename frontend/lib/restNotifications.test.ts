@@ -70,6 +70,8 @@ describe("restNotifications", () => {
             id: 9001,
             title: "Rest complete!",
             body: "Leg day — time for your next set",
+            sound: "rest-alert.wav",
+            interruptionLevel: "active",
             schedule: expect.objectContaining({
               at: new Date(endsAt),
               allowWhileIdle: true,
