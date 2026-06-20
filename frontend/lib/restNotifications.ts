@@ -3,6 +3,12 @@ import { LocalNotifications } from "@capacitor/local-notifications";
 import { withBasePath } from "@/lib/basePath";
 
 const REST_NOTIFICATION_ID = 9001;
+const REST_NOTIFICATION_SOUND = "rest-alert.wav";
+
+const NATIVE_REST_NOTIFICATION_ALERT = {
+  sound: REST_NOTIFICATION_SOUND,
+  interruptionLevel: "active" as const,
+};
 
 let restNotificationTimeout: ReturnType<typeof setTimeout> | null = null;
 let lastNotifiedRestEnd: string | null = null;
@@ -102,16 +108,21 @@ async function scheduleNativeRestNotification(
 
   await cancelNativeRestNotification();
 
-  await LocalNotifications.schedule({
-    notifications: [
-      {
-        id: REST_NOTIFICATION_ID,
-        title: "Rest complete!",
-        body,
-        schedule: { at, allowWhileIdle: true },
-      },
-    ],
-  });
+  try {
+    await LocalNotifications.schedule({
+      notifications: [
+        {
+          id: REST_NOTIFICATION_ID,
+          title: "Rest complete!",
+          body,
+          ...NATIVE_REST_NOTIFICATION_ALERT,
+          schedule: { at, allowWhileIdle: true },
+        },
+      ],
+    });
+  } catch (error) {
+    console.warn("[restNotifications] Failed to schedule native notification:", error);
+  }
 }
 
 export async function showRestNotification(body: string): Promise<void> {
@@ -131,6 +142,7 @@ export async function showRestNotification(body: string): Promise<void> {
           id: REST_NOTIFICATION_ID,
           title: "Rest complete!",
           body,
+          ...NATIVE_REST_NOTIFICATION_ALERT,
         },
       ],
     });
