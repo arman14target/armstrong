@@ -1,18 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AddDayButton } from "@/components/AddDayButton";
 import { AddDayModal } from "@/components/AddDayModal";
 import { RevealOnScroll } from "@/components/effects/RevealOnScroll";
 import { DayButton } from "@/components/DayButton";
 import { WorkoutEntryChoiceModal } from "@/components/WorkoutEntryChoiceModal";
-import { WorkoutMonthCalendar } from "@/components/WorkoutMonthCalendar";
+import { HistorySection } from "@/components/HistorySection";
 import { CoachChatSection } from "@/components/CoachChatSection";
 import { HomeBottomNav, type HomeTab } from "@/components/HomeBottomNav";
 import {
-  CalendarIcon,
   CoachIcon,
+  HistoryIcon,
   DumbbellIcon,
   FoodIcon,
   ProfileIcon,
@@ -31,6 +31,7 @@ import {
   getWorkoutLabel,
   getWorkoutTemplate,
 } from "@/lib/workouts";
+import { OPEN_PROFILE_SIGNUP_EVENT } from "@/lib/localSaveReminder";
 import { setWorkoutSetupIntent } from "@/lib/workoutSetupIntent";
 
 const homeTabs: Array<{
@@ -40,7 +41,7 @@ const homeTabs: Array<{
 }> = [
   { id: "workout", label: "Workout", icon: DumbbellIcon },
   { id: "food-tracker", label: "Food tracker", icon: FoodIcon },
-  { id: "calendar", label: "Calendar", icon: CalendarIcon },
+  { id: "history", label: "History", icon: HistoryIcon },
   { id: "coach", label: "Coach", icon: CoachIcon },
   { id: "profile", label: "Profile", icon: ProfileIcon },
 ];
@@ -53,6 +54,19 @@ export function HomeScreen() {
   const [activeTab, setActiveTab] = useState<HomeTab>("workout");
   const [entryChoiceId, setEntryChoiceId] = useState<string | null>(null);
   const [removeDayId, setRemoveDayId] = useState<string | null>(null);
+  const [profileSignupRequestId, setProfileSignupRequestId] = useState(0);
+
+  useEffect(() => {
+    const openProfileSignup = () => {
+      setActiveTab("profile");
+      setProfileSignupRequestId((current) => current + 1);
+    };
+
+    window.addEventListener(OPEN_PROFILE_SIGNUP_EVENT, openProfileSignup);
+    return () => {
+      window.removeEventListener(OPEN_PROFILE_SIGNUP_EVENT, openProfileSignup);
+    };
+  }, []);
 
   const needsSetup = (workoutId: string) => {
     const template = getWorkoutTemplate(data, workoutId);
@@ -103,8 +117,8 @@ export function HomeScreen() {
     ? getWorkoutLabel(data, removeDayId)
     : "";
 
-  const handleAuthSuccess = async (userId: string) => {
-    await syncAfterAuth(userId);
+  const handleAuthSuccess = async (userId: string, mode: "sign-in" | "sign-up") => {
+    await syncAfterAuth(userId, mode);
   };
 
   const handleClearData = async () => {
@@ -171,15 +185,10 @@ export function HomeScreen() {
         </RevealOnScroll>
       ) : null}
 
-      {activeTab === "calendar" ? (
+      {activeTab === "history" ? (
         <RevealOnScroll>
-          <SectionHead index="02." title="Activity calendar" />
-          <WorkoutMonthCalendar
-            data={data}
-            nutritionProfile={data.nutritionProfile}
-            foodLog={data.foodLog}
-            workoutDayLog={data.workoutDayLog}
-          />
+          <SectionHead index="02." title="History" />
+          <HistorySection data={data} />
         </RevealOnScroll>
       ) : null}
 
@@ -217,6 +226,7 @@ export function HomeScreen() {
           <ProfileSection
             onAuthSuccess={handleAuthSuccess}
             onClearData={handleClearData}
+            openSignupRequestId={profileSignupRequestId}
           />
         </RevealOnScroll>
       ) : null}

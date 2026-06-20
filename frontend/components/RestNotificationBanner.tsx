@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import {
+  getNotificationPermission,
   isNotificationSupported,
   requestNotificationPermission,
 } from "@/lib/restNotifications";
@@ -9,9 +10,14 @@ import {
 interface RestNotificationBannerProps {
   /** Show prompt when opening a workout day (until permission is granted). */
   active?: boolean;
+  /** Re-schedule any active rest timer after the user grants permission. */
+  onPermissionGranted?: () => void;
 }
 
-export function RestNotificationBanner({ active = true }: RestNotificationBannerProps) {
+export function RestNotificationBanner({
+  active = true,
+  onPermissionGranted,
+}: RestNotificationBannerProps) {
   const [visible, setVisible] = useState(false);
   const [requesting, setRequesting] = useState(false);
   const [dismissedForSession, setDismissedForSession] = useState(false);
@@ -26,18 +32,28 @@ export function RestNotificationBanner({ active = true }: RestNotificationBanner
       return;
     }
 
-    if (Notification.permission !== "default") {
-      setVisible(false);
-      return;
-    }
+    let cancelled = false;
 
-    setVisible(true);
+    void getNotificationPermission().then((permission) => {
+      if (cancelled) {
+        return;
+      }
+
+      setVisible(permission === "default");
+    });
+
+    return () => {
+      cancelled = true;
+    };
   }, [active, dismissedForSession]);
 
   const handleEnable = async () => {
     setRequesting(true);
     try {
-      await requestNotificationPermission();
+      const permission = await requestNotificationPermission();
+      if (permission === "granted") {
+        onPermissionGranted?.();
+      }
     } finally {
       setRequesting(false);
       setVisible(false);

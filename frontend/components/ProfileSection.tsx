@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { AppleSignInButton } from "@/components/AppleSignInButton";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
@@ -8,10 +8,12 @@ import { CyberButton } from "@/components/ui/CyberButton";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/cn";
+import type { SyncAuthMode } from "@/lib/userPlanSync";
 
 interface ProfileSectionProps {
-  onAuthSuccess: (userId: string) => Promise<void>;
+  onAuthSuccess: (userId: string, mode: SyncAuthMode) => Promise<void>;
   onClearData: () => Promise<void>;
+  openSignupRequestId?: number;
 }
 
 type AuthMode = "sign-in" | "sign-up";
@@ -19,6 +21,7 @@ type AuthMode = "sign-in" | "sign-up";
 export function ProfileSection({
   onAuthSuccess,
   onClearData,
+  openSignupRequestId = 0,
 }: ProfileSectionProps) {
   const {
     configured,
@@ -41,6 +44,13 @@ export function ProfileSection({
   const [showClearModal, setShowClearModal] = useState(false);
   const [clearing, setClearing] = useState(false);
 
+  useEffect(() => {
+    if (openSignupRequestId > 0) {
+      setMode("sign-up");
+      setError(null);
+    }
+  }, [openSignupRequestId]);
+
   const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     setError(null);
@@ -62,7 +72,7 @@ export function ProfileSection({
         return;
       }
 
-      await onAuthSuccess(userId);
+      await onAuthSuccess(userId, mode);
       setPassword("");
     } catch {
       setError("Something went wrong. Please try again.");
@@ -83,7 +93,7 @@ export function ProfileSection({
       setError("Could not start your session. Please try again.");
       return;
     }
-    await onAuthSuccess(result.userId);
+    await onAuthSuccess(result.userId, "sign-in");
   };
 
   const handleGoogleCredential = async (idToken: string) => {

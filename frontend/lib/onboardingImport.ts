@@ -3,6 +3,8 @@ import type { CoachChatMessage } from "@/lib/gemini";
 import { sendCoachMessage } from "@/lib/gemini";
 import { createNutritionProfile, type NutritionGoal, type NutritionSex, type PlannedMealInput } from "@/lib/nutrition";
 import { loadAppData, saveAppData } from "@/lib/storage";
+import { markLocalOnlySave } from "@/lib/localSaveReminder";
+import { isApiConfigured, getAuthToken } from "@/lib/api/client";
 import {
   AppData,
   createDefaultAppData,
@@ -373,5 +375,8 @@ export async function importOnboardingFromChat(
   const current = loadAppData();
   const next = applyOnboardingImport(current, payload);
   saveAppData(next);
+  if (isApiConfigured() && !getAuthToken()) {
+    markLocalOnlySave();
+  }
   return payload;
 }

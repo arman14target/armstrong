@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { REVEAL_THRESHOLD } from "@/lib/revealAnimation";
+import { isNativeApp } from "@/lib/nativeApp";
 import { cn } from "@/lib/cn";
 
 interface RevealOnScrollProps {
@@ -15,6 +16,11 @@ export function RevealOnScroll({ children, className }: RevealOnScrollProps) {
   useEffect(() => {
     const element = ref.current;
     if (!element) return;
+
+    if (isNativeApp()) {
+      element.classList.add("reveal-visible");
+      return;
+    }
 
     document.documentElement.classList.add("reveal-js");
 

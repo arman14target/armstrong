@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { cn } from "@/lib/cn";
 
-type CyberButtonVariant = "cyan" | "magenta" | "green";
+type CyberButtonVariant = "cyan" | "magenta" | "green" | "red";
 
-/** cyan = primary gold, magenta = secondary orange, green = success */
+/** cyan = primary gold, magenta = secondary orange, green = success, red = danger */
 const variantStyles: Record<CyberButtonVariant, string> = {
   cyan: "cyber-btn--cyan",
   magenta: "cyber-btn--magenta",
   green: "cyber-btn--green",
+  red: "cyber-btn--red",
 };
 
 interface CyberButtonBaseProps {

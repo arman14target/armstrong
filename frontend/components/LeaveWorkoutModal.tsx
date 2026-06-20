@@ -97,8 +97,8 @@ export function LeaveWorkoutModal({
               Save workout &amp; go home
             </CyberButton>
             <CyberButton
-              variant="magenta"
-              className="w-full"
+              variant="red"
+              className="w-full min-h-12 border-red-500/40 bg-red-500/10"
               onClick={onCancelSession}
             >
               Cancel this session

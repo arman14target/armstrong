@@ -1,8 +1,12 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { NumericKeyboardInput } from "@/components/NumericKeyboardInput";
 import { RestTimer } from "@/components/RestTimer";
 import { formatTime } from "@/hooks/useCountdown";
+import { useTouchDevice } from "@/lib/useTouchDevice";
+
+const REST_STEP = 15;
 
 interface SetRestDividerProps {
   restSeconds: number;
@@ -19,9 +23,21 @@ export function SetRestDivider({
   onRestSecondsChange,
   onRestComplete,
 }: SetRestDividerProps) {
+  const isTouchDevice = useTouchDevice();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(formatTime(restSeconds));
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const startEditing = () => {
+    setDraft(isTouchDevice ? String(restSeconds) : formatTime(restSeconds));
+    setEditing(true);
+  };
+
+  const adjustDraft = (delta: number) => {
+    const current = parseDraft(draft) ?? restSeconds;
+    const next = Math.max(0, Math.min(3600, current + delta));
+    setDraft(isTouchDevice ? String(next) : formatTime(next));
+  };
 
   useEffect(() => {
     if (!editing) {
@@ -84,12 +100,15 @@ export function SetRestDivider({
     <div className="set-rest-divider">
       <span className="set-rest-divider__line" aria-hidden />
       {editing ? (
-        <input
+        <NumericKeyboardInput
           ref={inputRef}
           type="text"
           inputMode="numeric"
           value={draft}
-          onChange={(event) => setDraft(event.target.value)}
+          onValueChange={setDraft}
+          onIncrement={() => adjustDraft(REST_STEP)}
+          onDecrement={() => adjustDraft(-REST_STEP)}
+          onKeyboardDone={commitDraft}
           onBlur={commitDraft}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
@@ -107,7 +126,7 @@ export function SetRestDivider({
         <button
           type="button"
           className="set-rest-divider__time"
-          onClick={() => setEditing(true)}
+          onClick={startEditing}
           aria-label={`Rest ${formatTime(restSeconds)}. Click to edit.`}
         >
           {formatTime(restSeconds)}

@@ -12,12 +12,9 @@ export function SessionTimer({ startedAt, compact = false }: SessionTimerProps) 
 
   if (compact) {
     return (
-      <div className="inline-flex shrink-0 items-center gap-1.5 whitespace-nowrap">
-        <span className="text-[10px] tracking-wide text-dim uppercase">session</span>
-        <span className="font-display text-sm tabular-nums text-cyan">
-          {formatTime(elapsed)}
-        </span>
-      </div>
+      <span className="font-display text-base tabular-nums text-cyan sm:text-lg">
+        {formatTime(elapsed)}
+      </span>
     );
   }
 

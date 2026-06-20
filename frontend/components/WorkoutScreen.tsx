@@ -4,7 +4,10 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { AddMoveForm } from "@/components/AddMoveForm";
 import { ExerciseReorderList } from "@/components/ExerciseReorderList";
-import { FinishDayButton } from "@/components/FinishDayButton";
+import {
+  CancelWorkoutButton,
+  FinishWorkoutButton,
+} from "@/components/FinishDayButton";
 import { LeaveWorkoutModal } from "@/components/LeaveWorkoutModal";
 import { RestNotificationBanner } from "@/components/RestNotificationBanner";
 import { SessionTimer } from "@/components/SessionTimer";
@@ -17,6 +20,7 @@ import {
   notifyRestComplete,
   scheduleRestNotification,
 } from "@/lib/restNotifications";
+import { shouldReuseActiveSession } from "@/lib/activeSession";
 import { APP_ROUTE } from "@/lib/routes";
 import { BatchExercisePreset } from "@/lib/workoutBatches";
 import { consumeWorkoutSetupIntent } from "@/lib/workoutSetupIntent";
@@ -72,15 +76,16 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
       return;
     }
 
-    const active = data.activeSession;
     if (
-      !active ||
-      active.workoutType !== workoutId ||
-      !active.startedAt
+      !shouldReuseActiveSession(
+        data.activeSession,
+        workoutId,
+        getWorkoutTemplate(data, workoutId),
+      )
     ) {
       startSession(workoutId);
     }
-  }, [hydrated, workoutId, data.activeSession, startSession]);
+  }, [hydrated, workoutId, data, startSession]);
 
   useEffect(() => {
     const sentinel = headerSentinelRef.current;
@@ -217,6 +222,16 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
     router.push(APP_ROUTE);
   }, [cancelSession, router, workoutId]);
 
+  const handleFinishWorkout = useCallback(() => {
+    cancelRestNotification();
+    finishDay(workoutId);
+  }, [finishDay, workoutId]);
+
+  const handleCancelWorkout = useCallback(() => {
+    cancelRestNotification();
+    cancelSession(workoutId);
+  }, [cancelSession, workoutId]);
+
   const label = getWorkoutLabel(data, workoutId);
   const restNotificationBody = `${label} — time for your next set`;
 
@@ -329,13 +344,21 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
 
   return (
     <main className="page-shell">
-      <button
-        type="button"
-        onClick={handleLeaveRequest}
-        className="mb-2 inline-flex min-h-9 items-center text-xs text-cyan transition-colors hover:text-magenta"
-      >
-        ← Back home
-      </button>
+      <div className="mb-2 flex items-center justify-between gap-2">
+        <button
+          type="button"
+          onClick={handleLeaveRequest}
+          className="min-h-9 px-3 text-xs text-white transition-colors hover:text-dim"
+        >
+          ← Back home
+        </button>
+        {!headerStuck ? (
+          <FinishWorkoutButton
+            onFinish={handleFinishWorkout}
+            hasCompletedSets={completedSetIds.length > 0}
+          />
+        ) : null}
+      </div>
       <div ref={headerSentinelRef} className="h-px" aria-hidden />
       {headerStuck ? (
         <div
@@ -349,16 +372,32 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
         className={`workout-sticky-bar${headerStuck ? " workout-sticky-bar--stuck" : ""}`}
       >
         <div className="workout-sticky-bar__inner">
-          <h1 className="min-w-0 truncate font-display text-sm tracking-[1px] text-heading uppercase">
+          <h1 className="workout-sticky-bar__label truncate font-display text-sm tracking-[1px] text-heading uppercase">
             {label}
           </h1>
-          <SessionTimer startedAt={session?.startedAt} compact />
+          <div className="workout-sticky-bar__timer">
+            <SessionTimer startedAt={session?.startedAt} compact />
+          </div>
+          {headerStuck ? (
+            <div className="workout-sticky-bar__finish">
+              <FinishWorkoutButton
+                compact
+                onFinish={handleFinishWorkout}
+                hasCompletedSets={completedSetIds.length > 0}
+              />
+            </div>
+          ) : null}
         </div>
       </div>
 
       <RestNotificationBanner
         key={workoutId}
         active={Boolean(session) && !showSetupModal && !showEntryChoice}
+        onPermissionGranted={() => {
+          if (session?.restEndsAt) {
+            scheduleRestNotification(session.restEndsAt, restNotificationBody);
+          }
+        }}
       />
 
       <section className="stack-lg">
@@ -403,8 +442,8 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
           />
         )}
         <AddMoveForm onAdd={(name) => addMove(workoutId, name)} />
-        <FinishDayButton
-          onFinish={() => finishDay(workoutId)}
+        <CancelWorkoutButton
+          onCancel={handleCancelWorkout}
           hasCompletedSets={completedSetIds.length > 0}
         />
       </section>
