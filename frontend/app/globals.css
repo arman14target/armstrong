@@ -4273,3 +4273,38 @@ html[data-page="landing"] .crt-shell::after {
 .legal-prose strong {
   color: var(--color-heading);
 }
+
+/* Auth inputs (sign-in / sign-up) */
+.auth-field {
+  --auth-field: #2a2a2a;
+  display: flex;
+  align-items: center;
+  gap: 0.875rem;
+  min-height: 3.75rem;
+  padding: 0 1rem;
+  border-radius: 16px;
+  background: var(--auth-field);
+}
+
+.auth-field__icon {
+  display: inline-flex;
+  flex-shrink: 0;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.auth-field__input {
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #fff;
+  font-size: 0.95rem;
+  outline: none;
+}
+
+.auth-field__input::placeholder {
+  color: rgba(255, 255, 255, 0.35);
+}
+
+.auth-field:focus-within {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent);
+}

@@ -18,6 +18,40 @@ interface ProfileSectionProps {
 
 type AuthMode = "sign-in" | "sign-up";
 
+function MailIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      aria-hidden
+    >
+      <rect x="3" y="5" width="18" height="14" rx="2" />
+      <path d="m3 7 9 6 9-6" />
+    </svg>
+  );
+}
+
+function LockIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      aria-hidden
+    >
+      <rect x="5" y="11" width="14" height="10" rx="2" />
+      <path d="M8 11V8a4 4 0 0 1 8 0v3" />
+    </svg>
+  );
+}
+
 export function ProfileSection({
   onAuthSuccess,
   onClearData,
@@ -246,22 +280,24 @@ export function ProfileSection({
         </div>
 
         <form className="stack-md" onSubmit={handleSubmit}>
-          <label className="block">
-            <span className="mb-1 block text-xs tracking-wide text-dim">Email</span>
+          <label className="auth-field">
+            <span className="auth-field__icon">
+              <MailIcon />
+            </span>
             <input
               type="email"
               autoComplete="email"
               required
               value={email}
               onChange={(event) => setEmail(event.target.value)}
-              className="cyber-input"
+              className="auth-field__input"
               placeholder="you@example.com"
             />
           </label>
 
-          <label className="block">
-            <span className="mb-1 block text-xs tracking-wide text-dim">
-              Password
+          <label className="auth-field">
+            <span className="auth-field__icon">
+              <LockIcon />
             </span>
             <input
               type="password"
@@ -272,7 +308,7 @@ export function ProfileSection({
               minLength={6}
               value={password}
               onChange={(event) => setPassword(event.target.value)}
-              className="cyber-input"
+              className="auth-field__input"
               placeholder="At least 6 characters"
             />
           </label>

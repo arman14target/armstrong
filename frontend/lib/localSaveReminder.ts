@@ -35,6 +35,9 @@ export function requestProfileSignup(): void {
     return;
   }
 
+  // User acted on reminder, hide it for this session.
+  sessionStorage.setItem(LOCAL_SAVE_REMINDER_DISMISS_KEY, "1");
+  window.dispatchEvent(new Event(LOCAL_SAVE_REMINDER_EVENT));
   window.dispatchEvent(new Event(OPEN_PROFILE_SIGNUP_EVENT));
 }
 
