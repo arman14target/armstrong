@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { AddFoodModal } from "@/components/AddFoodModal";
-import { PencilIcon, TrashIcon } from "@/components/icons/ActionIcons";
+import { CheckIcon, PencilIcon, TrashIcon } from "@/components/icons/ActionIcons";
 import {
   NutritionBodyStatsSliders,
   type NutritionBodyStatsValues,
@@ -771,16 +771,27 @@ function PlannedFoodList({
                 : "border-cyan/25 bg-cyan/5",
             )}
           >
-            <label className="mt-0.5 flex shrink-0 items-start gap-2">
+            <label className="mt-0.5 flex shrink-0 cursor-pointer items-start">
               <input
                 type="checkbox"
                 checked={entry.completed === true}
                 onChange={(event) =>
                   onTogglePlannedMeal(entry.id, event.target.checked)
                 }
-                className="mt-0.5 size-4 shrink-0 accent-green"
+                className="peer sr-only"
                 aria-label={`Mark ${entry.name} as eaten`}
               />
+              <span
+                aria-hidden
+                className={cn(
+                  "mt-0.5 flex size-4 shrink-0 items-center justify-center rounded border border-dim/60 bg-surface transition-colors",
+                  "peer-checked:border-dim peer-checked:bg-dim",
+                  "peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-cyan/50",
+                  "peer-checked:[&>svg]:opacity-100",
+                )}
+              >
+                <CheckIcon className="size-2.5 text-bg opacity-0 transition-opacity" />
+              </span>
             </label>
             <div className="min-w-0 flex-1">
               <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5">

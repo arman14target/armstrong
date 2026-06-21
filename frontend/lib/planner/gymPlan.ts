@@ -279,9 +279,9 @@ function splitForDays(
     return {
       splitName: "Full Body × 3",
       days: [
-        buildDay("Day 1", "Full Body A", "Squat + push + pull", FULL_BODY_A, experience, focus, equipment),
-        buildDay("Day 2", "Full Body B", "Hinge + press + row", FULL_BODY_B, experience, focus, equipment),
-        buildDay("Day 3", "Full Body A+", "Repeat A with +1 set on compounds", FULL_BODY_A, experience, focus, equipment),
+        buildDay("Day 1", "Squat, Push & Pull", "Squat + push + pull", FULL_BODY_A, experience, focus, equipment),
+        buildDay("Day 2", "Hinge, Press & Row", "Hinge + press + row", FULL_BODY_B, experience, focus, equipment),
+        buildDay("Day 3", "Full Body Volume", "Repeat day 1 with +1 set on compounds", FULL_BODY_A, experience, focus, equipment),
       ],
     };
   }
@@ -290,10 +290,10 @@ function splitForDays(
     return {
       splitName: "Upper / Lower × 2",
       days: [
-        buildDay("Day 1", "Upper A", "Horizontal push + pull", [...PUSH_EXERCISES.slice(0, 2), ...PULL_EXERCISES.slice(0, 2)], experience, focus, equipment),
-        buildDay("Day 2", "Lower A", "Squat pattern + hinge", LEG_EXERCISES, experience, focus, equipment),
-        buildDay("Day 3", "Upper B", "Vertical press + back", [...PUSH_EXERCISES.slice(2), ...PULL_EXERCISES.slice(1, 3)], experience, focus, equipment),
-        buildDay("Day 4", "Lower B", "Quad + posterior chain", LEG_EXERCISES, experience, focus, equipment),
+        buildDay("Day 1", "Push & Pull", "Horizontal push + pull", [...PUSH_EXERCISES.slice(0, 2), ...PULL_EXERCISES.slice(0, 2)], experience, focus, equipment),
+        buildDay("Day 2", "Squats & Hinges", "Squat pattern + hinge", LEG_EXERCISES, experience, focus, equipment),
+        buildDay("Day 3", "Shoulders & Back", "Vertical press + back", [...PUSH_EXERCISES.slice(2), ...PULL_EXERCISES.slice(1, 3)], experience, focus, equipment),
+        buildDay("Day 4", "Quads & Glutes", "Quad + posterior chain", LEG_EXERCISES, experience, focus, equipment),
       ],
     };
   }
@@ -302,11 +302,11 @@ function splitForDays(
     return {
       splitName: "Push / Pull / Legs + Upper / Lower",
       days: [
-        buildDay("Day 1", "Push", "Chest, shoulders, triceps", PUSH_EXERCISES, experience, focus, equipment),
-        buildDay("Day 2", "Pull", "Back, rear delts, biceps", PULL_EXERCISES, experience, focus, equipment),
-        buildDay("Day 3", "Legs", "Quads, hamstrings, glutes", LEG_EXERCISES, experience, focus, equipment),
-        buildDay("Day 4", "Upper", "Mixed pressing + pulling", [...PUSH_EXERCISES.slice(0, 2), ...PULL_EXERCISES.slice(0, 2)], experience, focus, equipment),
-        buildDay("Day 5", "Lower", "Strength lower", LEG_EXERCISES, experience, focus, equipment),
+        buildDay("Day 1", "Push Day", "Chest, shoulders, triceps", PUSH_EXERCISES, experience, focus, equipment),
+        buildDay("Day 2", "Pull Day", "Back, rear delts, biceps", PULL_EXERCISES, experience, focus, equipment),
+        buildDay("Day 3", "Leg Day", "Quads, hamstrings, glutes", LEG_EXERCISES, experience, focus, equipment),
+        buildDay("Day 4", "Push & Pull", "Mixed pressing + pulling", [...PUSH_EXERCISES.slice(0, 2), ...PULL_EXERCISES.slice(0, 2)], experience, focus, equipment),
+        buildDay("Day 5", "Squats & Hinges", "Strength lower", LEG_EXERCISES, experience, focus, equipment),
       ],
     };
   }
@@ -314,12 +314,12 @@ function splitForDays(
   return {
     splitName: "Push / Pull / Legs × 2",
     days: [
-      buildDay("Day 1", "Push A", "Heavy press focus", PUSH_EXERCISES, experience, focus, equipment),
-      buildDay("Day 2", "Pull A", "Row + vertical pull", PULL_EXERCISES, experience, focus, equipment),
-      buildDay("Day 3", "Legs A", "Squat emphasis", LEG_EXERCISES, experience, focus, equipment),
-      buildDay("Day 4", "Push B", "Volume press", PUSH_EXERCISES, experience, focus, equipment),
-      buildDay("Day 5", "Pull B", "Back thickness", PULL_EXERCISES, experience, focus, equipment),
-      buildDay("Day 6", "Legs B", "Hinge emphasis", LEG_EXERCISES, experience, focus, equipment),
+      buildDay("Day 1", "Push — Heavy", "Heavy press focus", PUSH_EXERCISES, experience, focus, equipment),
+      buildDay("Day 2", "Pull — Rows", "Row + vertical pull", PULL_EXERCISES, experience, focus, equipment),
+      buildDay("Day 3", "Legs — Squats", "Squat emphasis", LEG_EXERCISES, experience, focus, equipment),
+      buildDay("Day 4", "Push — Volume", "Volume press", PUSH_EXERCISES, experience, focus, equipment),
+      buildDay("Day 5", "Pull — Back", "Back thickness", PULL_EXERCISES, experience, focus, equipment),
+      buildDay("Day 6", "Legs — Hinges", "Hinge emphasis", LEG_EXERCISES, experience, focus, equipment),
     ],
   };
 }

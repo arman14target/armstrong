@@ -1,5 +1,6 @@
 import { applyDietPlan, type CoachDietPlan } from "@/lib/coachDiet";
 import { applyGymPlan, type CoachGymPlan } from "@/lib/coachWorkout";
+import { refineImportedDays } from "@/lib/onboardingDayNames";
 import { createNutritionProfile, type PlannedMealInput } from "@/lib/nutrition";
 import type { DietPlanInputs, DietPlanResult } from "@/lib/planner/dietPlan";
 import type { GymPlanResult } from "@/lib/planner/gymPlan";
@@ -31,13 +32,27 @@ export function dietPlannerToCoachDietPlan(plan: DietPlanResult): CoachDietPlan 
 }
 
 export function gymPlannerToCoachGymPlan(plan: GymPlanResult): CoachGymPlan {
-  return {
-    days: plan.days.map((day) => ({
+  const refinedDays = refineImportedDays(
+    plan.days.map((day) => ({
+      slot: "custom" as const,
       name: day.name,
       exercises: day.exercises.map((exercise) => ({
         name: exercise.name,
         sets: exercise.sets,
         reps: parsePlannerReps(exercise.reps),
+        restSeconds: exercise.restSeconds,
+        weightKg: 0,
+      })),
+    })),
+  );
+
+  return {
+    days: refinedDays.map((day) => ({
+      name: day.name,
+      exercises: day.exercises.map((exercise) => ({
+        name: exercise.name,
+        sets: exercise.sets,
+        reps: exercise.reps,
         restSeconds: exercise.restSeconds,
       })),
     })),

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { HomeScreen } from "@/components/HomeScreen";
+import { AppGate } from "@/components/welcome/AppGate";
 
 export const metadata: Metadata = {
   title: "Armstrong App",
@@ -10,5 +10,5 @@ export const metadata: Metadata = {
 };
 
 export default function AppPage() {
-  return <HomeScreen />;
+  return <AppGate />;
 }

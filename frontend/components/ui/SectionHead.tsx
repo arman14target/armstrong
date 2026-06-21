@@ -1,12 +1,14 @@
 interface SectionHeadProps {
-  index: string;
+  index?: string;
   title: string;
 }
 
 export function SectionHead({ index, title }: SectionHeadProps) {
   return (
     <div className="section-head">
-      <span className="text-[15px] text-magenta">{index}</span>
+      {index ? (
+        <span className="text-[15px] text-magenta">{index}</span>
+      ) : null}
       <h2 className="font-display text-xl tracking-[2px] text-heading uppercase sm:text-3xl">
         {title}
       </h2>
