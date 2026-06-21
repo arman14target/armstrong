@@ -21,6 +21,7 @@ import { ProfileSection } from "@/components/ProfileSection";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { FoodTrackerSection } from "@/components/FoodTrackerSection";
 import { GlitchText } from "@/components/ui/GlitchText";
+import { WorkoutCompleteToast } from "@/components/share/WorkoutCompleteToast";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { useGymStore } from "@/hooks/useGymStore";
@@ -140,6 +141,7 @@ export function HomeScreen() {
         activeTab === "coach" && "page-shell--home-coach",
       )}
     >
+      <WorkoutCompleteToast />
       <div className="home-screen__content">
       <div className="home-screen__tab-content">
       {activeTab === "workout" ? (

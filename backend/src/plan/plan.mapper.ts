@@ -5,6 +5,7 @@ import {
   Move,
   UserPlanPayload,
   WORKOUT_TYPES,
+  WorkoutSessionSnapshot,
   WorkoutTemplate,
   WorkoutType,
 } from "./plan.types";
@@ -149,6 +150,9 @@ export async function writePayload(
         workoutId: entry.workoutId,
         completedAt: toDate(entry.completedAt) ?? new Date(),
         durationSeconds: entry.durationSeconds ?? null,
+        snapshot: entry.snapshot
+          ? (entry.snapshot as unknown as Prisma.InputJsonValue)
+          : Prisma.DbNull,
       });
     }
   }
@@ -301,6 +305,11 @@ export function toPayload(user: UserWithPlan): UserPlanPayload {
       completedAt: entry.completedAt.toISOString(),
       ...(entry.durationSeconds != null
         ? { durationSeconds: entry.durationSeconds }
+        : {}),
+      ...(entry.snapshot != null
+        ? {
+            snapshot: entry.snapshot as unknown as WorkoutSessionSnapshot,
+          }
         : {}),
     });
     workoutDayLog[entry.dateKey] = list;

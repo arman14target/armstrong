@@ -11,6 +11,8 @@ import {
   buildActivityHistory,
   type ActivityHistoryItem,
 } from "@/lib/activityHistory";
+import { ShareWorkoutButton } from "@/components/share/ShareWorkoutButton";
+import { buildHistoryShareSummary } from "@/lib/share/workoutShareSummary";
 import { cn } from "@/lib/cn";
 import { formatDuration } from "@/lib/formatRelativeTime";
 import type { AppData } from "@/lib/types";
@@ -126,14 +128,39 @@ export function HistorySection({ data }: HistorySectionProps) {
             </p>
           ) : (
             <ul className="activity-history__list">
-              {historyItems.map((item) => (
-                <li key={item.kind === "workout" ? `w-${item.timestamp}-${item.workoutId}` : `f-${item.entryId}`}>
-                  <ActivityHistoryRow
-                    item={item}
-                    onSelectDate={setSelectedDateKey}
-                  />
-                </li>
-              ))}
+              {historyItems.map((item) => {
+                const shareSummary =
+                  item.kind === "workout"
+                    ? buildHistoryShareSummary(data, {
+                        workoutId: item.workoutId,
+                        completedAt: item.timestamp,
+                        durationSeconds: item.durationSeconds,
+                      })
+                    : null;
+                return (
+                  <li
+                    key={
+                      item.kind === "workout"
+                        ? `w-${item.timestamp}-${item.workoutId}`
+                        : `f-${item.entryId}`
+                    }
+                    className="activity-history__item"
+                  >
+                    <ActivityHistoryRow
+                      item={item}
+                      onSelectDate={setSelectedDateKey}
+                    />
+                    {shareSummary && (
+                      <ShareWorkoutButton
+                        summary={shareSummary}
+                        className="activity-history__share"
+                      >
+                        ↗
+                      </ShareWorkoutButton>
+                    )}
+                  </li>
+                );
+              })}
             </ul>
           )}
         </TerminalWindow>

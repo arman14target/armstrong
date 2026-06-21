@@ -227,6 +227,8 @@ model WorkoutDayEntry {
   workoutId       String   @map("workout_id")
   completedAt     DateTime @map("completed_at")
   durationSeconds Int?     @map("duration_seconds")
+  /// Real per-session snapshot { exercises: [{ name, sets: [{ weight, reps }] }] }.
+  snapshot        Json?
 
   @@index([userId, dateKey])
   @@map("workout_day_entries")

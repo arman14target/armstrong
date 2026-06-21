@@ -18,8 +18,10 @@
     "@capacitor/android": "^8.4.0",
     "@capacitor/cli": "^8.4.0",
     "@capacitor/core": "^8.4.0",
+    "@capacitor/filesystem": "^8.1.2",
     "@capacitor/ios": "^8.4.0",
     "@capacitor/local-notifications": "^8.2.0",
+    "@capacitor/share": "^8.0.1",
     "@capgo/capacitor-social-login": "^8.3.29",
     "@google/genai": "^2.8.0",
     "@tailwindcss/postcss": "^4.3.1",
@@ -38,6 +40,7 @@
     "tailwindcss": "^4.3.1"
   },
   "devDependencies": {
+    "@napi-rs/canvas": "^1.0.0",
     "@types/node": "^22.15.21",
     "@types/react": "^19.1.6",
     "@types/react-dom": "^19.1.5",

@@ -27,11 +27,18 @@ import {
   applyWorkoutTemplate,
   addCompletionDate,
   createCustomWorkoutDay,
+  getWorkoutLabel,
   getWorkoutTemplate,
   isBuiltinWorkoutType,
   logWorkoutDayEntry,
   updateWorkoutMoves,
 } from "@/lib/workouts";
+import {
+  buildSessionSnapshot,
+  buildWorkoutShareSummary,
+  type WorkoutShareSummary,
+} from "@/lib/share/workoutShareSummary";
+import type { WorkoutSessionSnapshot } from "@/lib/types";
 import {
   AppData,
   SetConfig,
@@ -67,6 +74,14 @@ function useGymStoreState() {
   const { user } = useAuth();
   const [data, setData] = useState<AppData>(createDefaultAppData);
   const [hydrated, setHydrated] = useState(false);
+  // Transient: the just-finished workout, surfaced as a share prompt on home.
+  // Not persisted — cleared once the user shares or dismisses.
+  const [lastFinishedSummary, setLastFinishedSummary] =
+    useState<WorkoutShareSummary | null>(null);
+  const clearFinishedSummary = useCallback(
+    () => setLastFinishedSummary(null),
+    [],
+  );
 
   useEffect(() => {
     setData(loadAppData());
@@ -537,6 +552,35 @@ function useGymStoreState() {
 
   const finishDay = useCallback(
     (workoutId: string) => {
+      const completedAt = new Date().toISOString();
+
+      // Build the share summary from the live session before persist clears it.
+      // Only when at least one set was completed — nothing worth sharing else.
+      const finishingSession = data.activeSession;
+      const finishingTemplate = getWorkoutTemplate(data, workoutId);
+      let sessionSnapshot: WorkoutSessionSnapshot | undefined;
+      if (
+        finishingSession &&
+        finishingTemplate &&
+        finishingSession.completedSetIds.length > 0
+      ) {
+        sessionSnapshot = buildSessionSnapshot(
+          finishingTemplate.moves,
+          finishingSession,
+        );
+        setLastFinishedSummary(
+          buildWorkoutShareSummary({
+            workoutName: getWorkoutLabel(data, workoutId),
+            moves: finishingTemplate.moves,
+            session: finishingSession,
+            completedAt,
+            completionDates: data.workoutCompletionDates,
+          }),
+        );
+      } else {
+        setLastFinishedSummary(null);
+      }
+
       persist((prev) => {
         const session = prev.activeSession;
         const template = getWorkoutTemplate(prev, workoutId);
@@ -562,7 +606,6 @@ function useGymStoreState() {
           }),
         }));
 
-        const completedAt = new Date().toISOString();
         const lastSessionDurationSeconds = session?.startedAt
           ? Math.max(
               0,
@@ -587,12 +630,13 @@ function useGymStoreState() {
             workoutId,
             completedAt,
             durationSeconds: lastSessionDurationSeconds,
+            ...(sessionSnapshot ? { snapshot: sessionSnapshot } : {}),
           }),
           activeSession: null,
         };
       });
     },
-    [persist],
+    [data, persist],
   );
 
   const addCustomDay = useCallback(
@@ -837,6 +881,8 @@ function useGymStoreState() {
     clearSession,
     cancelSession,
     finishDay,
+    lastFinishedSummary,
+    clearFinishedSummary,
     addCustomDay,
     removeCustomDay,
     getWorkout,
