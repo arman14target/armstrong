@@ -109,7 +109,6 @@ export function SetRestDivider({
           onIncrement={() => adjustDraft(REST_STEP)}
           onDecrement={() => adjustDraft(-REST_STEP)}
           onKeyboardDone={commitDraft}
-          onBlur={commitDraft}
           onKeyDown={(event) => {
             if (event.key === "Enter") {
               commitDraft();

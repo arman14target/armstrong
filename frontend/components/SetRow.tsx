@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { CheckIcon } from "@/components/icons/ActionIcons";
 import { NumericKeyboardInput } from "@/components/NumericKeyboardInput";
 import { IconButton } from "@/components/ui/IconButton";
@@ -63,7 +63,6 @@ export function SetRow({
   );
   const [weightError, setWeightError] = useState(false);
   const [repsError, setRepsError] = useState(false);
-  const lastClickTimeRef = useRef(0);
 
   useEffect(() => {
     if (sessionWeight !== undefined) {
@@ -171,20 +170,12 @@ export function SetRow({
   };
 
   const handleCompleteClick = () => {
-    const now = Date.now();
-    const isDoubleClick = now - lastClickTimeRef.current < 350;
-
-    if (isCompleted && isDoubleClick && onUncomplete) {
-      onUncomplete();
-      lastClickTimeRef.current = 0;
+    if (isCompleted) {
+      onUncomplete?.();
       return;
     }
 
-    lastClickTimeRef.current = now;
-
-    if (!isCompleted) {
-      handleComplete();
-    }
+    handleComplete();
   };
 
   const previous = formatPreviousSet(lastWeight, lastReps, isTimeBased);
@@ -267,7 +258,7 @@ export function SetRow({
         <IconButton
           label={
             isCompleted
-              ? `Set ${index + 1} completed — double-click to undo`
+              ? `Undo set ${index + 1}`
               : `Complete set ${index + 1}`
           }
           variant={isCompleted ? "green" : "cyan"}

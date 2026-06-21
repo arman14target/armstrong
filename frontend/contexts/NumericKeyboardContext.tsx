@@ -13,10 +13,6 @@ import {
 } from "react";
 import { ChevronDownIcon, KeyboardIcon } from "@/components/icons/ActionIcons";
 import { useTouchDevice } from "@/lib/useTouchDevice";
-import {
-  readNativeKeyboardPreference,
-  writeNativeKeyboardPreference,
-} from "@/lib/nativeKeyboardPreference";
 import { cn } from "@/lib/cn";
 
 export interface NumericKeyboardSession {
@@ -25,18 +21,16 @@ export interface NumericKeyboardSession {
   onIncrement?: () => void;
   onDecrement?: () => void;
   onDone?: () => void;
-  onUseNativeKeyboard?: () => void;
   inputRef: RefObject<HTMLInputElement | null>;
   allowDecimal?: boolean;
 }
 
 interface NumericKeyboardContextValue {
   isTouchDevice: boolean;
-  preferNativeKeyboard: boolean;
   isOpen: boolean;
+  activeInputRef: RefObject<HTMLInputElement | null> | null;
   open: (session: NumericKeyboardSession) => void;
   updateSession: (session: NumericKeyboardSession) => void;
-  enableNativeKeyboard: () => void;
   close: (forInput?: RefObject<HTMLInputElement | null>) => void;
 }
 
@@ -195,13 +189,14 @@ function NumericKeyboardPanel({
     finishInput();
   };
 
-  const handleUseNativeKeyboard = () => {
-    session.onUseNativeKeyboard?.();
-    onClose();
-  };
-
   const preventFocusSteal = (event: React.PointerEvent) => {
     event.preventDefault();
+  };
+
+  const runKeyAction = (action: () => void) => (event: React.PointerEvent<HTMLButtonElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    action();
   };
 
   const digitKeys = ["7", "8", "9", "4", "5", "6", "1", "2", "3"] as const;
@@ -221,7 +216,7 @@ function NumericKeyboardPanel({
               key={digit}
               type="button"
               className="numeric-keyboard__key"
-              onClick={() => handleDigit(digit)}
+              onPointerDown={runKeyAction(() => handleDigit(digit))}
             >
               {digit}
             </button>
@@ -230,7 +225,7 @@ function NumericKeyboardPanel({
             <button
               type="button"
               className="numeric-keyboard__key"
-              onClick={handleDecimal}
+              onPointerDown={runKeyAction(handleDecimal)}
             >
               .
             </button>
@@ -240,14 +235,14 @@ function NumericKeyboardPanel({
           <button
             type="button"
             className="numeric-keyboard__key"
-            onClick={() => handleDigit("0")}
+            onPointerDown={runKeyAction(() => handleDigit("0"))}
           >
             0
           </button>
           <button
             type="button"
             className="numeric-keyboard__key"
-            onClick={handleBackspace}
+            onPointerDown={runKeyAction(handleBackspace)}
             aria-label="Backspace"
           >
             ⌫
@@ -257,20 +252,20 @@ function NumericKeyboardPanel({
         <div className="numeric-keyboard__side">
           <button
             type="button"
-            className="numeric-keyboard__side-key numeric-keyboard__side-key--native"
-            aria-label="Hide custom keyboard and use device keyboard"
-            onClick={handleUseNativeKeyboard}
+            className="numeric-keyboard__side-key numeric-keyboard__side-key--dismiss"
+            aria-label="Close keyboard"
+            onPointerDown={runKeyAction(finishInput)}
           >
-            <span className="numeric-keyboard__native-icon">
+            <span className="numeric-keyboard__dismiss-icon">
               <KeyboardIcon className="size-4" />
-              <ChevronDownIcon className="numeric-keyboard__native-chevron size-3" />
+              <ChevronDownIcon className="numeric-keyboard__dismiss-chevron size-3" />
             </span>
           </button>
           <button
             type="button"
             className="numeric-keyboard__side-key numeric-keyboard__side-key--plus"
             aria-label="Increase value"
-            onClick={() => session.onIncrement?.()}
+            onPointerDown={runKeyAction(() => session.onIncrement?.())}
           >
             +
           </button>
@@ -278,7 +273,7 @@ function NumericKeyboardPanel({
             type="button"
             className="numeric-keyboard__side-key numeric-keyboard__side-key--minus"
             aria-label="Decrease value"
-            onClick={() => session.onDecrement?.()}
+            onPointerDown={runKeyAction(() => session.onDecrement?.())}
           >
             −
           </button>
@@ -288,7 +283,7 @@ function NumericKeyboardPanel({
               "numeric-keyboard__side-key",
               "numeric-keyboard__side-key--next",
             )}
-            onClick={handleNext}
+            onPointerDown={runKeyAction(handleNext)}
           >
             Next
           </button>
@@ -301,11 +296,36 @@ function NumericKeyboardPanel({
 export function NumericKeyboardProvider({ children }: { children: ReactNode }) {
   const isTouchDevice = useTouchDevice();
   const [session, setSession] = useState<NumericKeyboardSession | null>(null);
-  const [preferNativeKeyboard, setPreferNativeKeyboard] = useState(false);
 
   useEffect(() => {
-    setPreferNativeKeyboard(readNativeKeyboardPreference());
-  }, []);
+    if (!session) {
+      return;
+    }
+
+    const handleOutsidePointerDown = (event: PointerEvent) => {
+      const target = event.target;
+      if (!(target instanceof Element)) {
+        return;
+      }
+
+      if (target.closest(".numeric-keyboard")) {
+        return;
+      }
+
+      if (target.closest(NUMERIC_INPUT_SELECTOR)) {
+        return;
+      }
+
+      session.onDone?.();
+      session.inputRef.current?.blur();
+      setSession(null);
+    };
+
+    document.addEventListener("pointerdown", handleOutsidePointerDown, true);
+    return () => {
+      document.removeEventListener("pointerdown", handleOutsidePointerDown, true);
+    };
+  }, [session]);
 
   const close = useCallback((forInput?: RefObject<HTMLInputElement | null>) => {
     setSession((current) => {
@@ -329,36 +349,22 @@ export function NumericKeyboardProvider({ children }: { children: ReactNode }) {
     });
   }, []);
 
-  const enableNativeKeyboard = useCallback(() => {
-    writeNativeKeyboardPreference(true);
-    setPreferNativeKeyboard(true);
-  }, []);
-
   const value = useMemo(
     () => ({
       isTouchDevice,
-      preferNativeKeyboard,
       isOpen: session !== null,
+      activeInputRef: session?.inputRef ?? null,
       open,
       updateSession,
-      enableNativeKeyboard,
       close,
     }),
-    [
-      close,
-      enableNativeKeyboard,
-      isTouchDevice,
-      open,
-      preferNativeKeyboard,
-      session,
-      updateSession,
-    ],
+    [close, isTouchDevice, open, session, updateSession],
   );
 
   return (
     <NumericKeyboardContext.Provider value={value}>
       {children}
-      {isTouchDevice && session && !preferNativeKeyboard ? (
+      {isTouchDevice && session ? (
         <NumericKeyboardPanel session={session} onClose={close} />
       ) : null}
     </NumericKeyboardContext.Provider>
