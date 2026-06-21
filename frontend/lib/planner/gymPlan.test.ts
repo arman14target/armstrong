@@ -16,6 +16,12 @@ describe("generateGymPlan", () => {
 
     expect(plan.days).toHaveLength(4);
     expect(plan.splitName).toContain("Upper");
+    expect(plan.days.map((day) => day.name)).toEqual([
+      "Push & Pull",
+      "Squats & Hinges",
+      "Shoulders & Back",
+      "Quads & Glutes",
+    ]);
   });
 
   it("swaps to home alternatives", () => {

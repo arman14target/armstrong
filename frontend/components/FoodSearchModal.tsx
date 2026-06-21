@@ -266,7 +266,7 @@ export function FoodSearchModal({
             className="w-full min-h-12"
             disabled={!trimmedQuery}
           >
-            Use food
+            Add my food
           </CyberButton>
         </div>
       </form>

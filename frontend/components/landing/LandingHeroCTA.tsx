@@ -1,37 +1,25 @@
-"use client";
-
-import { useState } from "react";
 import { DownloadButtons } from "@/components/landing/DownloadButtons";
-import { OnboardingCoachModal } from "@/components/landing/OnboardingCoachModal";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { cn } from "@/lib/cn";
 import { landingHero } from "@/lib/landingContent";
+import { APP_ROUTE } from "@/lib/routes";
 
 interface LandingHeroCTAProps {
   className?: string;
 }
 
 export function LandingHeroCTA({ className }: LandingHeroCTAProps) {
-  const [coachOpen, setCoachOpen] = useState(false);
-
   return (
-    <>
-      <div className={cn("stack-md max-w-xl", className)}>
-        <CyberButton
-          variant="magenta"
-          className="min-h-[3.25rem] px-6 text-base"
-          onClick={() => setCoachOpen(true)}
-        >
-          {landingHero.cta}
-        </CyberButton>
-        <p className="text-xs text-dim">{landingHero.ctaHint}</p>
-        <DownloadButtons />
-      </div>
-
-      <OnboardingCoachModal
-        open={coachOpen}
-        onClose={() => setCoachOpen(false)}
-      />
-    </>
+    <div className={cn("stack-md max-w-xl", className)}>
+      <CyberButton
+        href={`${APP_ROUTE}/`}
+        variant="magenta"
+        className="min-h-[3.25rem] px-6 text-base"
+      >
+        {landingHero.cta}
+      </CyberButton>
+      <p className="text-xs text-dim">{landingHero.ctaHint}</p>
+      <DownloadButtons />
+    </div>
   );
 }

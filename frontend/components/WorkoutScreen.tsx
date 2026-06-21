@@ -27,6 +27,7 @@ import { consumeWorkoutSetupIntent } from "@/lib/workoutSetupIntent";
 import {
   getWorkoutLabel,
   getWorkoutTemplate,
+  isBuiltinWorkoutType,
   isValidWorkoutId,
 } from "@/lib/workouts";
 
@@ -43,6 +44,7 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
     addMove,
     importWorkoutPresets,
     markWorkoutSetupSeen,
+    renameCustomDay,
     updateMoveName,
     deleteMove,
     addSet,
@@ -70,6 +72,8 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
   const headerBarRef = useRef<HTMLDivElement>(null);
   const moveRefs = useRef<Map<string, HTMLDivElement>>(new Map());
   const [setupIntentHandled, setSetupIntentHandled] = useState(false);
+  const [editingDayName, setEditingDayName] = useState(false);
+  const [dayNameDraft, setDayNameDraft] = useState("");
 
   useEffect(() => {
     if (!hydrated) {
@@ -233,7 +237,22 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
   }, [cancelSession, workoutId]);
 
   const label = getWorkoutLabel(data, workoutId);
+  const isCustomDay = !isBuiltinWorkoutType(workoutId);
   const restNotificationBody = `${label} — time for your next set`;
+
+  useEffect(() => {
+    if (!editingDayName) {
+      setDayNameDraft(label);
+    }
+  }, [editingDayName, label]);
+
+  const commitDayName = useCallback(() => {
+    const trimmed = dayNameDraft.trim();
+    if (trimmed && isCustomDay) {
+      renameCustomDay(workoutId, trimmed);
+    }
+    setEditingDayName(false);
+  }, [dayNameDraft, isCustomDay, renameCustomDay, workoutId]);
 
   const handleRestComplete = useCallback(
     (setId: string) => {
@@ -372,9 +391,42 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
         className={`workout-sticky-bar${headerStuck ? " workout-sticky-bar--stuck" : ""}`}
       >
         <div className="workout-sticky-bar__inner">
-          <h1 className="workout-sticky-bar__label truncate font-display text-sm tracking-[1px] text-heading uppercase">
-            {label}
-          </h1>
+          {editingDayName && isCustomDay ? (
+            <input
+              value={dayNameDraft}
+              onChange={(event) => setDayNameDraft(event.target.value)}
+              onBlur={commitDayName}
+              onKeyDown={(event) => {
+                if (event.key === "Enter") {
+                  event.preventDefault();
+                  commitDayName();
+                }
+                if (event.key === "Escape") {
+                  event.preventDefault();
+                  setDayNameDraft(label);
+                  setEditingDayName(false);
+                }
+              }}
+              aria-label="Workout day name"
+              className="workout-sticky-bar__label min-w-0 flex-1 truncate rounded border border-cyan/35 bg-bg/80 px-2 py-1 font-display text-sm tracking-[1px] text-heading uppercase outline-none focus:border-cyan"
+              autoFocus
+            />
+          ) : isCustomDay ? (
+            <button
+              type="button"
+              onClick={() => {
+                setDayNameDraft(label);
+                setEditingDayName(true);
+              }}
+              className="workout-sticky-bar__label min-w-0 flex-1 truncate text-left font-display text-sm tracking-[1px] text-heading uppercase transition-colors hover:text-cyan"
+            >
+              {label}
+            </button>
+          ) : (
+            <h1 className="workout-sticky-bar__label truncate font-display text-sm tracking-[1px] text-heading uppercase">
+              {label}
+            </h1>
+          )}
           <div className="workout-sticky-bar__timer">
             <SessionTimer startedAt={session?.startedAt} compact />
           </div>

@@ -4308,3 +4308,588 @@ html[data-page="landing"] .crt-shell::after {
 .auth-field:focus-within {
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--color-primary) 25%, transparent);
 }
+
+/* ── App welcome flow ── */
+
+.app-loading {
+  display: grid;
+  min-height: 100dvh;
+  place-items: center;
+  padding: var(--space-stack-lg);
+  isolation: isolate;
+}
+
+.app-loading__stack {
+  display: grid;
+  gap: 1.35rem;
+  justify-items: center;
+  text-align: center;
+}
+
+.welcome-flow {
+  position: relative;
+  isolation: isolate;
+  margin: 0 auto;
+  max-width: 42rem;
+  padding: var(--space-stack-lg) var(--space-inline) var(--space-stack-lg);
+}
+
+.welcome-flow--with-brand {
+  padding-bottom: 6.75rem;
+}
+
+.welcome-flow__content {
+  position: relative;
+  z-index: 1;
+}
+
+.welcome-flow__brand {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 1.15rem);
+  left: 50%;
+  z-index: 2;
+  width: min(100%, 42rem);
+  padding-inline: var(--space-inline);
+  transform: translateX(-50%);
+  text-align: center;
+  pointer-events: none;
+}
+
+.welcome-strength-bg {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.welcome-strength-bg__anchor {
+  display: none;
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 2.85rem);
+  left: 50%;
+  z-index: 0;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+}
+
+.welcome-flow--with-brand .welcome-strength-bg__anchor {
+  display: block;
+}
+
+.welcome-strength-bg--below {
+  position: relative;
+  inset: auto;
+  overflow: visible;
+  width: 0;
+  height: 0;
+}
+
+.welcome-strength-bg--below .welcome-strength-bg__anchor {
+  display: block;
+  position: relative;
+  bottom: auto;
+  left: auto;
+  transform: none;
+}
+
+.welcome-strength-bg--below .welcome-strength-bg__glow {
+  width: 14rem;
+  height: 7rem;
+}
+
+.welcome-strength-bg--below .welcome-strength-bg__ring {
+  width: 6rem;
+  height: 6rem;
+}
+
+.welcome-strength-bg__glow {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 11rem;
+  height: 5.5rem;
+  transform: translate(-50%, -50%);
+  background: radial-gradient(
+    ellipse at center,
+    color-mix(in srgb, #e8a84a 16%, transparent),
+    color-mix(in srgb, var(--color-cyan) 8%, transparent) 48%,
+    transparent 72%
+  );
+  filter: blur(22px);
+  opacity: 0.5;
+  animation: welcome-strength-breathe 7s ease-in-out infinite;
+}
+
+.welcome-strength-bg__rings {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 0;
+  height: 0;
+}
+
+.welcome-strength-bg__ring {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 4.5rem;
+  height: 4.5rem;
+  border: 1px solid color-mix(in srgb, #e8a84a 38%, transparent);
+  border-radius: 50%;
+  transform: translate(-50%, -50%) scale(0.4);
+  opacity: 0;
+  animation: welcome-strength-ring 9s ease-out infinite;
+}
+
+.welcome-strength-bg__ring:nth-child(2) {
+  animation-delay: 3s;
+}
+
+.welcome-strength-bg__ring:nth-child(3) {
+  animation-delay: 6s;
+}
+
+@keyframes welcome-strength-breathe {
+  0%,
+  100% {
+    opacity: 0.38;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.58;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+@keyframes welcome-strength-ring {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.4);
+  }
+  18% {
+    opacity: 0.32;
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(2.6);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .welcome-strength-bg__glow,
+  .welcome-strength-bg__ring {
+    animation: none;
+  }
+
+  .welcome-strength-bg__ring {
+    opacity: 0.1;
+    transform: translate(-50%, -50%) scale(1.35);
+  }
+}
+
+.welcome-choice__header {
+  text-align: center;
+}
+
+.welcome-brand {
+  display: grid;
+  gap: 0.2rem;
+  justify-items: center;
+}
+
+.welcome-brand--compact {
+  justify-items: end;
+}
+
+.welcome-brand__name {
+  display: block;
+  font-size: 0.72rem !important;
+  letter-spacing: 0.22em !important;
+  line-height: 1;
+}
+
+.welcome-brand__name--hero {
+  font-size: clamp(0.95rem, 3vw, 1.15rem) !important;
+  letter-spacing: 0.28em !important;
+}
+
+.welcome-brand--loading .welcome-brand__name {
+  font-size: clamp(1.85rem, 12vw, 3.35rem) !important;
+  letter-spacing: 0.3em !important;
+}
+
+.welcome-brand--loading .welcome-brand__tagline {
+  font-size: clamp(0.72rem, 3.2vw, 0.88rem);
+  letter-spacing: 0.1em;
+}
+
+.welcome-brand__tagline {
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-dim);
+}
+
+.welcome-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.15rem 0;
+  border: 0;
+  background: transparent;
+  color: #fff;
+  font-size: 0.78rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: opacity 0.15s ease;
+}
+
+.welcome-back:hover {
+  opacity: 0.82;
+}
+
+.welcome-back__flash {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 1rem;
+  font-size: 1.05rem;
+  line-height: 1;
+  color: #fff;
+  text-shadow: 0 0 10px rgba(255, 255, 255, 0.55);
+  animation: welcome-back-flash 1.6s ease-in-out infinite;
+}
+
+@keyframes welcome-back-flash {
+  0%,
+  100% {
+    opacity: 0.55;
+    transform: translateX(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateX(-2px);
+  }
+}
+
+.welcome-onboarding__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.welcome-choice__title {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 6vw, 2.75rem);
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-heading);
+}
+
+.welcome-choice__subtitle {
+  margin-top: var(--space-gap);
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--color-dim);
+}
+
+.welcome-cards {
+  display: grid;
+  gap: var(--space-stack-md);
+}
+
+.welcome-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-stack-md);
+  width: 100%;
+  padding: 1.25rem 1.25rem 1.25rem 1.5rem;
+  text-align: left;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-cyber);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  color: var(--color-heading);
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.welcome-card:hover {
+  border-color: color-mix(in srgb, var(--color-cyan) 45%, var(--color-line));
+  box-shadow: 0 0 24px color-mix(in srgb, var(--color-cyan) 12%, transparent);
+  transform: translateY(-1px);
+}
+
+.welcome-card--primary {
+  border-color: color-mix(in srgb, var(--color-cyan) 35%, var(--color-line));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--color-cyan) 8%, var(--color-surface)),
+    color-mix(in srgb, var(--color-surface) 92%, transparent)
+  );
+}
+
+.welcome-card__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.welcome-card__eyebrow {
+  margin-bottom: 0.35rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--color-cyan);
+}
+
+.welcome-card__title {
+  font-family: var(--font-display);
+  font-size: clamp(1.05rem, 3.5vw, 1.35rem);
+  font-weight: 800;
+  line-height: 1.25;
+  letter-spacing: 0.04em;
+}
+
+.welcome-card__copy {
+  margin-top: 0.5rem;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  color: var(--color-dim);
+}
+
+.welcome-card__badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 0.875rem;
+}
+
+.welcome-card__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  border-radius: 999px;
+  padding: 0.25rem 0.625rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  border: 1px solid color-mix(in srgb, var(--color-dim) 22%, var(--color-line));
+  background: color-mix(in srgb, var(--color-dim) 6%, var(--color-surface));
+  color: color-mix(in srgb, var(--color-text) 75%, var(--color-dim));
+}
+
+.welcome-card__badge--instant {
+  border-color: color-mix(in srgb, var(--color-cyan) 16%, var(--color-line));
+  background: color-mix(in srgb, var(--color-cyan) 5%, var(--color-surface));
+  color: color-mix(in srgb, var(--color-cyan) 45%, var(--color-dim));
+}
+
+.welcome-card__badge--free {
+  border-color: color-mix(in srgb, var(--color-dim) 28%, var(--color-line));
+  background: color-mix(in srgb, var(--color-dim) 10%, var(--color-surface));
+  color: color-mix(in srgb, var(--color-dim) 85%, var(--color-text));
+}
+
+.welcome-card__badge--diet {
+  border-color: color-mix(in srgb, var(--color-green) 16%, var(--color-line));
+  background: color-mix(in srgb, var(--color-green) 5%, var(--color-surface));
+  color: color-mix(in srgb, var(--color-green) 45%, var(--color-dim));
+}
+
+.welcome-card__badge--exercise {
+  border-color: color-mix(in srgb, var(--color-magenta) 16%, var(--color-line));
+  background: color-mix(in srgb, var(--color-magenta) 5%, var(--color-surface));
+  color: color-mix(in srgb, var(--color-magenta) 45%, var(--color-dim));
+}
+
+.welcome-card__badge-icon {
+  width: 0.875rem;
+  height: 0.875rem;
+}
+
+.welcome-card__icon {
+  flex-shrink: 0;
+  width: 4.5rem;
+  height: 4.5rem;
+  object-fit: contain;
+}
+
+.welcome-choice__login {
+  text-align: center;
+}
+
+.welcome-choice__login-link {
+  font-size: 0.875rem;
+  color: var(--color-dim);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
+}
+
+.welcome-choice__login-link:hover {
+  color: var(--color-cyan);
+}
+
+.welcome-panel {
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-cyber);
+  background: color-mix(in srgb, var(--color-surface) 90%, transparent);
+  padding: 1.5rem;
+}
+
+.welcome-panel__title {
+  font-family: var(--font-display);
+  font-size: 1.35rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--color-heading);
+}
+
+.welcome-panel__copy {
+  margin-top: 0.5rem;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  color: var(--color-dim);
+}
+
+.welcome-input {
+  width: 100%;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-cyber);
+  background: var(--color-bg);
+  padding: 0.75rem 0.9rem;
+  font-size: 0.95rem;
+  color: var(--color-heading);
+}
+
+.welcome-input:focus {
+  outline: none;
+  border-color: color-mix(in srgb, var(--color-cyan) 50%, var(--color-line));
+}
+
+.welcome-onboarding__top {
+  display: grid;
+  gap: var(--space-stack-md);
+  margin-bottom: var(--space-stack-md);
+}
+
+.welcome-onboarding__panel {
+  min-height: 20rem;
+}
+
+.welcome-steps {
+  margin-top: 0.35rem;
+}
+
+.welcome-steps__track {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  padding: 0;
+  list-style: none;
+}
+
+.welcome-steps__segment {
+  display: flex;
+  flex: 1;
+  align-items: center;
+}
+
+.welcome-steps__segment:first-child {
+  flex: 0;
+}
+
+.welcome-steps__connector {
+  flex: 1;
+  height: 2px;
+  margin: 0 0.15rem;
+  background: color-mix(in srgb, var(--color-line) 85%, transparent);
+  transition: background-color 0.25s ease;
+}
+
+.welcome-steps__connector--done {
+  background: #e8a84a;
+}
+
+.welcome-steps__dot {
+  display: block;
+  flex-shrink: 0;
+  width: 0.85rem;
+  height: 0.85rem;
+  border: 1.5px solid color-mix(in srgb, var(--color-line) 90%, white 10%);
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  transition:
+    background-color 0.25s ease,
+    border-color 0.25s ease,
+    box-shadow 0.25s ease,
+    transform 0.25s ease;
+}
+
+.welcome-steps__dot--done {
+  border-color: #e8a84a;
+  background: #e8a84a;
+  box-shadow: 0 0 8px color-mix(in srgb, #e8a84a 45%, transparent);
+}
+
+.welcome-steps__dot--current {
+  border-color: color-mix(in srgb, var(--color-line) 90%, white 10%);
+  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
+  box-shadow: none;
+  transform: scale(1.08);
+}
+
+.welcome-timeline {
+  margin: 0.5rem 0 1rem;
+  padding: 1rem;
+  border: 1px solid var(--color-line);
+  border-radius: var(--radius-cyber);
+  background: color-mix(in srgb, var(--color-bg) 70%, transparent);
+  overflow: hidden;
+}
+
+.welcome-timeline__chart {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+.welcome-timeline__axis {
+  stroke: color-mix(in srgb, var(--color-line) 80%, transparent);
+  stroke-width: 1;
+}
+
+.welcome-timeline__fill {
+  fill: url(#welcome-timeline-gradient);
+}
+
+.welcome-timeline__line {
+  fill: none;
+  stroke: var(--color-cyan);
+  stroke-width: 3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-dasharray: 420;
+}
+
+.welcome-timeline__dot {
+  fill: var(--color-cyan);
+  filter: drop-shadow(0 0 6px color-mix(in srgb, var(--color-cyan) 60%, transparent));
+}
+
+.welcome-timeline__label {
+  fill: var(--color-dim);
+  font-size: 9px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}

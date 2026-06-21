@@ -76,7 +76,7 @@ export function RestNotificationBanner({
         Enable notifications so Armstrong can alert you when your rest timer
         finishes — even if the app is in the background.
       </p>
-      <div className="mt-[var(--space-gap)] inline-gap">
+      <div className="mt-[var(--space-gap)] inline-gap flex-nowrap">
         <button
           type="button"
           onClick={handleEnable}

@@ -116,6 +116,24 @@ export function updateWorkoutMoves(
   });
 }
 
+export function updateCustomWorkoutName(
+  data: AppData,
+  workoutId: string,
+  name: string,
+): AppData {
+  const trimmed = name.trim();
+  if (!trimmed || !findCustomWorkout(data, workoutId)) {
+    return data;
+  }
+
+  return {
+    ...data,
+    customWorkouts: data.customWorkouts.map((workout) =>
+      workout.id === workoutId ? { ...workout, name: trimmed } : workout,
+    ),
+  };
+}
+
 export function createCustomWorkoutDay(
   name: string,
   options?: { theme?: WorkoutDayTheme; sticker?: string },

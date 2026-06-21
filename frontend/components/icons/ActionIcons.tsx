@@ -324,3 +324,40 @@ export function FoodIcon({ className }: IconProps) {
     </svg>
   );
 }
+
+export function FlashIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={cn("size-4", className)}
+      aria-hidden
+    >
+      <path d="M13 2L3 14h8l-1 8 10-12h-8l1-8z" />
+    </svg>
+  );
+}
+
+export function MoneyIcon({ className }: IconProps) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.75"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className={cn("size-4", className)}
+      aria-hidden
+    >
+      <circle cx="12" cy="12" r="9" />
+      <path d="M12 7v10" />
+      <path d="M9.5 10c0-1.25 1.25-2 2.5-2s2.5.75 2.5 2-1.25 2-2.5 2.5-2.5 2.5-1.25 2.5-2.5" />
+      <path d="M9.5 14c0 1.25 1.25 2 2.5 2s2.5-.75 2.5-2" />
+    </svg>
+  );
+}
