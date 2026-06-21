@@ -146,9 +146,9 @@ export function HomeScreen() {
       <div className="home-screen__tab-content">
       {activeTab === "workout" ? (
         <RevealOnScroll>
-          <SectionHead index="01." title="Pick Your Workout" />
+          <SectionHead title="Pick Your Workout" />
           <TerminalWindow title="Choose your workout">
-            <div className="grid grid-cols-1 gap-[var(--space-gap-md)] sm:grid-cols-2">
+            <div className="grid grid-cols-2 gap-[var(--space-gap-md)]">
               {!data.coachPlanActive
                 ? WORKOUT_TYPES.map((type) => (
                     <DayButton
@@ -175,7 +175,7 @@ export function HomeScreen() {
                   lastCompletedAt={workout.lastCompletedAt}
                   lastSessionDurationSeconds={workout.lastSessionDurationSeconds}
                   setupRequired={needsSetup(workout.id)}
-                  removable={!data.coachPlanActive}
+                  removable
                   onSetupClick={() => setEntryChoiceId(workout.id)}
                   onRemove={() => setRemoveDayId(workout.id)}
                 />
@@ -189,14 +189,14 @@ export function HomeScreen() {
 
       {activeTab === "history" ? (
         <RevealOnScroll>
-          <SectionHead index="02." title="History" />
+          <SectionHead title="History" />
           <HistorySection data={data} />
         </RevealOnScroll>
       ) : null}
 
       {activeTab === "food-tracker" ? (
         <RevealOnScroll>
-          <SectionHead index="03." title="Food tracker" />
+          <SectionHead title="Food tracker" />
           <FoodTrackerSection
             profile={data.nutritionProfile}
             foodLog={data.foodLog ?? {}}
@@ -224,7 +224,7 @@ export function HomeScreen() {
 
       {activeTab === "profile" ? (
         <RevealOnScroll>
-          <SectionHead index="05." title="Profile" />
+          <SectionHead title="Profile" />
           <ProfileSection
             onAuthSuccess={handleAuthSuccess}
             onClearData={handleClearData}

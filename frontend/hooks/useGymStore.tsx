@@ -31,6 +31,7 @@ import {
   getWorkoutTemplate,
   isBuiltinWorkoutType,
   logWorkoutDayEntry,
+  updateCustomWorkoutName,
   updateWorkoutMoves,
 } from "@/lib/workouts";
 import {
@@ -61,6 +62,8 @@ import {
   applyDietPlannerImport,
   applyGymPlannerImport,
 } from "@/lib/planner/plannerImport";
+import { applyWelcomePlanImport, applyDefaultManualExercisePlan } from "@/lib/planner/welcomePlan";
+import type { WelcomePlanInputs } from "@/lib/planner/welcomePlan";
 import type { DietPlanInputs, DietPlanResult } from "@/lib/planner/dietPlan";
 import type { GymPlanResult } from "@/lib/planner/gymPlan";
 
@@ -673,6 +676,13 @@ function useGymStoreState() {
     [persist],
   );
 
+  const renameCustomDay = useCallback(
+    (workoutId: string, name: string) => {
+      persist((prev) => updateCustomWorkoutName(prev, workoutId, name));
+    },
+    [persist],
+  );
+
   const getWorkout = useCallback(
     (workoutId: string) => getWorkoutTemplate(data, workoutId),
     [data],
@@ -809,6 +819,17 @@ function useGymStoreState() {
     [persist],
   );
 
+  const importWelcomePlan = useCallback(
+    (inputs: WelcomePlanInputs) => {
+      persist((prev) => applyWelcomePlanImport(prev, inputs));
+    },
+    [persist],
+  );
+
+  const importDefaultManualExercisePlan = useCallback(() => {
+    persist((prev) => applyDefaultManualExercisePlan(prev));
+  }, [persist]);
+
   const togglePlannedMealComplete = useCallback(
     (dateKey: string, entryId: string, completed: boolean) => {
       persist((prev) => {
@@ -885,6 +906,7 @@ function useGymStoreState() {
     clearFinishedSummary,
     addCustomDay,
     removeCustomDay,
+    renameCustomDay,
     getWorkout,
     getSession,
     resetAll,
@@ -899,6 +921,8 @@ function useGymStoreState() {
     applyCoachDietPlan,
     importDietPlanner,
     importGymPlanner,
+    importWelcomePlan,
+    importDefaultManualExercisePlan,
     togglePlannedMealComplete,
   };
 }

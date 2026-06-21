@@ -47,74 +47,74 @@ export function DayButton({
   const lastWorkoutAgo = useTimeAgo(lastCompletedAt);
 
   const className = cn(
-    "group relative block w-full overflow-hidden rounded-panel border bg-panel/90 p-[var(--space-card)] text-left shadow-[var(--shadow-panel)] transition-all duration-250",
+    "group relative flex aspect-square w-full flex-col items-center justify-center overflow-hidden rounded-panel border bg-panel/90 p-3 text-center shadow-[var(--shadow-panel)] transition-all duration-250",
     accent.border,
     accent.hover,
   );
 
-  const content = (
-    <>
-      {removable && onRemove ? (
-        <IconButton
-          label={`Remove ${label}`}
-          variant="danger"
-          className="absolute top-2 right-2 z-10 size-7 rounded-full"
-          onClick={(event) => {
-            event.preventDefault();
-            event.stopPropagation();
-            onRemove();
-          }}
-        >
-          <CloseIcon className="size-3.5" />
-        </IconButton>
-      ) : null}
-
-      <div className="flex items-center gap-[var(--space-gap-md)]">
-        <div className="shrink-0 transition-transform duration-250 group-hover:scale-110">
-          {isBuiltin ? (
-            <WorkoutDayIcon type={workoutId} />
-          ) : accentTheme && sticker ? (
-            <DaySticker theme={accentTheme} emoji={sticker} />
-          ) : (
-            <DaySticker theme="cyan" emoji="🏋️" />
-          )}
-        </div>
-        <div className="min-w-0 flex-1 pr-6">
-          <p
-            className={cn(
-              "mb-1 text-base font-semibold tracking-wide",
-              accent.labelColor,
-            )}
-          >
-            {label}
-          </p>
-          <div className="text-xs text-dim">
-            <p>
-              <span className="text-green">Last workout:</span> {lastWorkoutAgo}
-            </p>
-            {lastSessionDurationSeconds !== undefined ? (
-              <p>
-                <span className="text-green">Session:</span>{" "}
-                {formatDuration(lastSessionDurationSeconds)}
-              </p>
-            ) : null}
-          </div>
-        </div>
+  const cardContent = (
+    <div className="flex flex-col items-center gap-2 px-1">
+      <div className="shrink-0 transition-transform duration-250 group-hover:scale-110">
+        {isBuiltin ? (
+          <WorkoutDayIcon type={workoutId} className="size-14 text-3xl" />
+        ) : accentTheme && sticker ? (
+          <DaySticker theme={accentTheme} emoji={sticker} className="size-14 text-3xl" />
+        ) : (
+          <DaySticker theme="cyan" emoji="🏋️" className="size-14 text-3xl" />
+        )}
       </div>
-    </>
+      <p
+        className={cn(
+          "line-clamp-2 text-sm font-semibold leading-tight tracking-wide",
+          accent.labelColor,
+        )}
+      >
+        {label}
+      </p>
+      <div className="text-[10px] leading-tight text-dim">
+        <p>
+          <span className="text-green">Last:</span> {lastWorkoutAgo}
+        </p>
+        {lastSessionDurationSeconds !== undefined ? (
+          <p>
+            <span className="text-green">Session:</span>{" "}
+            {formatDuration(lastSessionDurationSeconds)}
+          </p>
+        ) : null}
+      </div>
+    </div>
   );
 
-  if (setupRequired && onSetupClick) {
-    return (
+  const card =
+    setupRequired && onSetupClick ? (
       <button type="button" onClick={onSetupClick} className={className}>
-        {content}
+        {cardContent}
       </button>
+    ) : (
+      <Link href={`/workout/?type=${workoutId}`} className={className}>
+        {cardContent}
+      </Link>
     );
+
+  if (!removable || !onRemove) {
+    return card;
   }
 
   return (
-    <Link href={`/workout/?type=${workoutId}`} className={className}>
-      {content}
-    </Link>
+    <div className="relative">
+      <IconButton
+        label={`Remove ${label}`}
+        variant="ghost"
+        className="absolute -top-2 -right-2 z-10 size-6 rounded-full border-white/35 bg-bg text-white shadow-[0_2px_8px_rgba(0,0,0,0.45)] hover:border-white hover:bg-bg hover:text-white"
+        onClick={(event) => {
+          event.preventDefault();
+          event.stopPropagation();
+          onRemove();
+        }}
+      >
+        <CloseIcon className="size-3" />
+      </IconButton>
+      {card}
+    </div>
   );
 }

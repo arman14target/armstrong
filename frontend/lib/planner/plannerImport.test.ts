@@ -59,6 +59,8 @@ describe("planner import", () => {
 
     expect(coachPlan.days).toHaveLength(4);
     expect(coachPlan.days[0]?.exercises[0]?.reps).toBeTypeOf("number");
+    expect(coachPlan.days.map((day) => day.name)).not.toContain("Upper A");
+    expect(coachPlan.days.map((day) => day.name)).not.toContain("Lower A");
 
     const next = applyGymPlannerImport(createDefaultAppData(), plan);
     expect(next.coachPlanActive).toBe(true);
