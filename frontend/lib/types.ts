@@ -50,10 +50,32 @@ export interface ActiveSession {
   baselineWorkout: WorkoutTemplate;
 }
 
+/** A single completed set's real logged values. */
+export interface LoggedSet {
+  weight: number;
+  reps: number;
+}
+
+/** One exercise as actually performed in a session (completed sets only). */
+export interface LoggedExercise {
+  name: string;
+  sets: LoggedSet[];
+}
+
+/**
+ * Real per-session record captured at finish, so history shows what actually
+ * happened rather than the template's latest numbers. Optional only for
+ * entries logged before this field existed.
+ */
+export interface WorkoutSessionSnapshot {
+  exercises: LoggedExercise[];
+}
+
 export interface WorkoutDayEntry {
   workoutId: string;
   completedAt: string;
   durationSeconds?: number;
+  snapshot?: WorkoutSessionSnapshot;
 }
 
 export interface AppData {

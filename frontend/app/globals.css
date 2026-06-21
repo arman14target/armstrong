@@ -1385,6 +1385,24 @@
     gap: 0.5rem;
   }
 
+  .activity-history__item {
+    display: flex;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .activity-history__item > .activity-history__row {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .activity-history__share {
+    flex-shrink: 0;
+    align-self: stretch;
+    padding-inline: 0.9rem;
+    font-size: 1.1rem;
+  }
+
   .activity-history__row {
     display: flex;
     width: 100%;

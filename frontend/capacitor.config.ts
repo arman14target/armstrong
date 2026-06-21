@@ -9,7 +9,9 @@ const config: CapacitorConfig = {
   webDir: "out",
   // Native projects live at the repo root (outside frontend/). Paths are
   // relative to this config file. `cap` is still run from frontend/.
-  android: { path: "../android" },
+  // allowMixedContent lets the https://localhost webview call the cleartext
+  // http://10.0.2.2:4000 local backend during dev (emulator → host loopback).
+  android: { path: "../android", allowMixedContent: true },
   ios: { path: "../ios" },
   server: {
     // Match Android: https://localhost loads assets more reliably in WKWebView.

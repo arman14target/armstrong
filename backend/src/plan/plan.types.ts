@@ -42,10 +42,25 @@ export interface ActiveSession {
   baselineWorkout: WorkoutTemplate;
 }
 
+export interface LoggedSet {
+  weight: number;
+  reps: number;
+}
+
+export interface LoggedExercise {
+  name: string;
+  sets: LoggedSet[];
+}
+
+export interface WorkoutSessionSnapshot {
+  exercises: LoggedExercise[];
+}
+
 export interface WorkoutDayEntry {
   workoutId: string;
   completedAt: string;
   durationSeconds?: number;
+  snapshot?: WorkoutSessionSnapshot;
 }
 
 export interface NutritionProfile {
