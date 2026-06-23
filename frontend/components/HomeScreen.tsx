@@ -18,6 +18,7 @@ import {
   ProfileIcon,
 } from "@/components/icons/ActionIcons";
 import { ProfileSection } from "@/components/ProfileSection";
+import { ProfileDashboard } from "@/components/profile/ProfileDashboard";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { FoodTrackerSection } from "@/components/FoodTrackerSection";
 import { GlitchText } from "@/components/ui/GlitchText";
@@ -225,11 +226,14 @@ export function HomeScreen() {
       {activeTab === "profile" ? (
         <RevealOnScroll>
           <SectionHead title="Profile" />
-          <ProfileSection
-            onAuthSuccess={handleAuthSuccess}
-            onClearData={handleClearData}
-            openSignupRequestId={profileSignupRequestId}
-          />
+          <div className="stack-md">
+            <ProfileDashboard />
+            <ProfileSection
+              onAuthSuccess={handleAuthSuccess}
+              onClearData={handleClearData}
+              openSignupRequestId={profileSignupRequestId}
+            />
+          </div>
         </RevealOnScroll>
       ) : null}
       </div>
