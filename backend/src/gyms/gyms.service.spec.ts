@@ -5,7 +5,7 @@ describe("normalizePlace", () => {
     const gym = normalizePlace({
       fsq_place_id: "abc",
       name: "Iron Temple",
-      location: { formatted_address: "1 Main St, Austin, TX" },
+      location: { formatted_address: "1 Main St, Austin, TX", country: "US" },
       latitude: 30.27,
       longitude: -97.74,
       distance: 540,
@@ -21,6 +21,7 @@ describe("normalizePlace", () => {
       id: "abc",
       name: "Iron Temple",
       address: "1 Main St, Austin, TX",
+      country: "US",
       latitude: 30.27,
       longitude: -97.74,
       distanceMeters: 540,

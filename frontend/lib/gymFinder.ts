@@ -2,6 +2,7 @@ export interface Gym {
   id: string;
   name: string;
   address: string | null;
+  country: string | null;
   latitude: number | null;
   longitude: number | null;
   distanceMeters: number | null;

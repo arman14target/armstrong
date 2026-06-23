@@ -33,6 +33,7 @@ export function compareGyms(gyms: Gym[]): Promise<CompareResult> {
         name: g.name,
         website: g.website,
         address: g.address,
+        country: g.country,
         latitude: g.latitude,
         longitude: g.longitude,
         rating: g.rating,

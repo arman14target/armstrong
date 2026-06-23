@@ -24,16 +24,21 @@ const GEMINI_MODEL = "gemini-2.5-flash";
 const MAX_PLANS = 8;
 const MAX_AMENITIES = 15;
 
-function buildPrompt(name: string, address: string | null): string {
+function buildPrompt(
+  name: string,
+  address: string | null,
+  country: string | null,
+): string {
   return `Using Google Search (and Google's popular-times data when available), find CURRENT, FACTUAL info for this specific gym:
-Name: ${name}${address ? `\nAddress: ${address}` : ""}
+Name: ${name}${address ? `\nAddress: ${address}` : ""}${country ? `\nCountry: ${country}` : ""}
 
 Return ONLY JSON of this exact shape (no prose, no markdown):
 {"pricePlans":[{"name":string,"priceText":string,"period":string|null}],"amenities":[string],"quietTimes":string|null}
 
 Rules:
-- Only include facts you actually find in search results for THIS gym at THIS location.
-- pricePlans: name = plan name (e.g. "Basic","Monthly"). priceText = price as written (e.g. "$29.99"). period = "month"|"year"|"week"|"day" if stated, else null.
+- Only include facts you actually find in search results for THIS EXACT gym at THIS address${country ? ` in ${country}` : ""}. Gyms with the same name in other cities/countries are NOT this gym — ignore them.
+- pricePlans: name = plan name (e.g. "Basic","Monthly"). priceText = price as published BY THIS gym, in the local currency of its own country, with its currency symbol/code exactly as shown (e.g. "$29.99", "£40", "₹2000"). period = "month"|"year"|"week"|"day" if stated, else null.
+- NEVER convert currencies, and never report a price in a currency that doesn't match the gym's country. If the only prices you find are in a different currency or clearly for a gym elsewhere, return "pricePlans": [].
 - If you cannot find published prices, return "pricePlans": []. NEVER guess, estimate, or invent prices.
 - amenities: facilities clearly mentioned (e.g. "Swimming Pool","Sauna","Steam Room","Group Classes","Personal Training","24/7 Access","Parking","Pool","Spa"). Title Case. Max 15.
 - quietTimes: ONE short phrase for when it is typically LEAST crowded (e.g. "Weekday mornings before 9am and after 8pm"). Use popular-times/reviews. If unknown, null. Never guess.
@@ -132,22 +137,30 @@ export class GymEnrichmentService {
 
   /**
    * Ask Gemini — grounded with live Google Search — for a gym's current price
-   * plans and amenities. Grounding keeps answers tied to real search results
-   * (not the model's memory), so it won't fabricate prices. Returns empty
-   * enrichment (never throws) when disabled or nothing is found.
+   * plans, amenities and quiet times. Grounding keeps answers tied to real
+   * search results (not the model's memory), so it won't fabricate prices.
+   *
+   * Returns the enrichment on success (which may be empty when nothing was
+   * found) or **null** when the call itself failed (quota/error). Callers must
+   * treat null differently from empty: null means "couldn't check — keep any
+   * existing cached data and try again later", not "this gym has no data".
    */
-  async enrich(name: string, address: string | null): Promise<GymEnrichment> {
+  async enrich(
+    name: string,
+    address: string | null,
+    country: string | null = null,
+  ): Promise<GymEnrichment | null> {
     const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      return EMPTY;
+      return null;
     }
     const ai = new GoogleGenAI({ apiKey });
-    // Grounded model calls occasionally 503/429 under load — retry briefly.
+    // Grounded model calls occasionally 503 under load — retry briefly.
     for (let attempt = 0; attempt < 3; attempt++) {
       try {
         const res = await ai.models.generateContent({
           model: GEMINI_MODEL,
-          contents: buildPrompt(name, address),
+          contents: buildPrompt(name, address, country),
           // Grounding can't combine with responseMimeType=json, so we ask for
           // JSON in the prompt and parse it defensively from the text reply.
           config: { tools: [{ googleSearch: {} }], temperature: 0 },
@@ -161,11 +174,11 @@ export class GymEnrichmentService {
         const retryable = /\b(503|UNAVAILABLE)\b/.test(msg);
         if (!retryable || attempt === 2) {
           this.logger.warn(`Gemini grounded enrich failed for ${name}: ${msg}`);
-          return EMPTY;
+          return null;
         }
         await new Promise((r) => setTimeout(r, 1500 * (attempt + 1)));
       }
     }
-    return EMPTY;
+    return null;
   }
 }

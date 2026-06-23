@@ -25,6 +25,10 @@ export class CompareGymDto {
   address?: string | null;
 
   @IsOptional()
+  @IsString()
+  country?: string | null;
+
+  @IsOptional()
   @IsNumber()
   latitude?: number | null;
 

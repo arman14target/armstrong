@@ -25,6 +25,8 @@ export interface GymResult {
   id: string;
   name: string;
   address: string | null;
+  /** ISO country code (e.g. "US", "UG"), used to pin price currency. */
+  country: string | null;
   latitude: number | null;
   longitude: number | null;
   /** Straight-line distance in metres, when the search was point-based. */
@@ -55,7 +57,13 @@ interface FsqPlace {
   fsq_place_id?: string;
   fsq_id?: string;
   name?: string;
-  location?: { formatted_address?: string; address?: string };
+  location?: {
+    formatted_address?: string;
+    address?: string;
+    country?: string;
+    locality?: string;
+    region?: string;
+  };
   latitude?: number;
   longitude?: number;
   geocodes?: { main?: { latitude?: number; longitude?: number } };
@@ -80,6 +88,7 @@ export interface CompareGymInput {
   name: string;
   website?: string | null;
   address?: string | null;
+  country?: string | null;
   latitude?: number | null;
   longitude?: number | null;
   rating?: number | null;
@@ -216,9 +225,17 @@ export class GymsService {
 
     if (stale && this.enrichment.isEnabled()) {
       try {
-        const { pricePlans, amenities, quietTimes } =
-          await this.enrichment.enrich(gym.name, gym.address);
-        await this.prisma.$transaction([
+        const enrichment = await this.enrichment.enrich(
+          gym.name,
+          gym.address,
+          input.country ?? null,
+        );
+        // Null = the lookup itself failed (quota/error). Leave any existing
+        // cached data and lastEnrichedAt untouched so we don't wipe good data
+        // and we retry next time. Only replace the cache on a real result.
+        if (enrichment) {
+          const { pricePlans, amenities, quietTimes } = enrichment;
+          await this.prisma.$transaction([
           this.prisma.gymPricePlan.deleteMany({
             where: { gymId: gym.id, source: "crawl" },
           }),
@@ -250,12 +267,13 @@ export class GymsService {
                 }),
               ]
             : []),
-          // Mark enriched even when empty, so we cache the "nothing found".
-          this.prisma.gym.update({
-            where: { id: gym.id },
-            data: { lastEnrichedAt: new Date(), quietTimes },
-          }),
-        ]);
+            // Mark enriched even when empty, so we cache the "nothing found".
+            this.prisma.gym.update({
+              where: { id: gym.id },
+              data: { lastEnrichedAt: new Date(), quietTimes },
+            }),
+          ]);
+        }
       } catch (error) {
         this.logger.warn(`Enrichment failed for ${gym.name}: ${String(error)}`);
       }
@@ -300,6 +318,7 @@ function normalizePlace(p: FsqPlace): GymResult {
     id: p.fsq_place_id ?? p.fsq_id ?? "",
     name: p.name ?? "Unknown gym",
     address: p.location?.formatted_address ?? p.location?.address ?? null,
+    country: p.location?.country ?? null,
     latitude: p.latitude ?? p.geocodes?.main?.latitude ?? null,
     longitude: p.longitude ?? p.geocodes?.main?.longitude ?? null,
     distanceMeters: typeof p.distance === "number" ? p.distance : null,
