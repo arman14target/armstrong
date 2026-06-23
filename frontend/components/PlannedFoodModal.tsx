@@ -190,11 +190,11 @@ export function PlannedFoodModal({
             <div className="inline-flex min-w-0 items-center">
               <PanelDot />
               <span className="ml-[var(--space-inline)] tracking-wide text-cyan">
-                {isEditing ? "Edit planned food" : "Add planned food"}
+                {isEditing ? "Edit planned meal" : "Add planned meal"}
               </span>
             </div>
             <IconButton
-              label="Close planned food"
+              label="Close planned meal"
               variant="ghost"
               className="size-8"
               onClick={onClose}

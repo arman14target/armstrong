@@ -960,14 +960,14 @@ function NutritionDashboard({
       <div className="stack-sm">
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-display text-sm tracking-wide text-heading">
-            Planned foods
+            Planned meals
           </h3>
           <CyberButton
             variant="cyan"
             className="px-3 py-1.5 text-xs"
             onClick={onAddPlannedFood}
           >
-            Add planned food
+            Add planned meal
           </CyberButton>
         </div>
         <PlannedFoodList
