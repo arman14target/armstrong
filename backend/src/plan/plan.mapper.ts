@@ -20,6 +20,18 @@ function nutritionProfileInput(
     : Prisma.JsonNull;
 }
 
+function planMetaScalars(appData: AppData) {
+  return {
+    coachPlanActive: appData.coachPlanActive ?? false,
+    workoutSetupSeen: (appData.workoutSetupSeen ??
+      {}) as Prisma.InputJsonValue,
+    nutritionProfile: nutritionProfileInput(appData),
+    weightLog: (appData.weightLog ?? []) as unknown as Prisma.InputJsonValue,
+    targetWeightKg: appData.targetWeightKg ?? null,
+    weightUnit: appData.weightUnit ?? null,
+  };
+}
+
 function toDate(value: string | undefined | null): Date | null {
   if (!value) {
     return null;
@@ -58,17 +70,8 @@ export async function writePayload(
 
   await tx.planMeta.upsert({
     where: { userId },
-    create: {
-      userId,
-      coachPlanActive: appData.coachPlanActive ?? false,
-      workoutSetupSeen: (appData.workoutSetupSeen ?? {}) as Prisma.InputJsonValue,
-      nutritionProfile: nutritionProfileInput(appData),
-    },
-    update: {
-      coachPlanActive: appData.coachPlanActive ?? false,
-      workoutSetupSeen: (appData.workoutSetupSeen ?? {}) as Prisma.InputJsonValue,
-      nutritionProfile: nutritionProfileInput(appData),
-    },
+    create: { userId, ...planMetaScalars(appData) },
+    update: planMetaScalars(appData),
   });
 
   // Builtin split days — cascade-delete then recreate the four rows.
@@ -342,8 +345,15 @@ export function toPayload(user: UserWithPlan): UserPlanPayload {
     workoutDayLog,
     foodLog,
     coachPlanActive: user.meta?.coachPlanActive ?? false,
+    weightLog: (user.meta?.weightLog as AppData["weightLog"]) ?? [],
     ...(user.meta?.nutritionProfile
       ? { nutritionProfile: user.meta.nutritionProfile as unknown as AppData["nutritionProfile"] }
+      : {}),
+    ...(user.meta?.targetWeightKg != null
+      ? { targetWeightKg: user.meta.targetWeightKg }
+      : {}),
+    ...(user.meta?.weightUnit
+      ? { weightUnit: user.meta.weightUnit as AppData["weightUnit"] }
       : {}),
   };
 

@@ -60,7 +60,10 @@ import {
   type CoachGymPlan,
   type CoachWorkoutChange,
 } from "@/lib/coachWorkout";
-import { createFoodEntry, createPlannedFoodEntry, FoodEntry, NutritionProfile, PlannedMealInput } from "@/lib/nutrition";
+import { createFoodEntry, createNutritionProfile, createPlannedFoodEntry, FoodEntry, NutritionGoal, NutritionProfile, PlannedMealInput } from "@/lib/nutrition";
+import { logWeight } from "@/lib/weight";
+import { toLocalDateKey } from "@/lib/workoutCalendar";
+import type { WeightUnit } from "@/lib/types";
 import {
   applyDietPlannerImport,
   applyGymPlannerImport,
@@ -780,10 +783,80 @@ function useGymStoreState() {
 
   const saveNutritionProfile = useCallback(
     (profile: NutritionProfile) => {
+      // Saving a plan also records the entered weight, so the body-weight chart
+      // starts tracking from setup ("manual + on plan edit").
       persist((prev) => ({
         ...prev,
         nutritionProfile: profile,
+        weightLog: logWeight(
+          prev.weightLog,
+          profile.weightKg,
+          toLocalDateKey(new Date()),
+        ),
       }));
+    },
+    [persist],
+  );
+
+  // Record a body-weight measurement (one per day) and, if a nutrition profile
+  // exists, recompute the plan's targets against the new weight so calories and
+  // macros track the user's progress.
+  const logBodyWeight = useCallback(
+    (weightKg: number) => {
+      if (!Number.isFinite(weightKg) || weightKg <= 0) {
+        return;
+      }
+      persist((prev) => {
+        const weightLog = logWeight(
+          prev.weightLog,
+          weightKg,
+          toLocalDateKey(new Date()),
+        );
+        const nutritionProfile = prev.nutritionProfile
+          ? createNutritionProfile({ ...prev.nutritionProfile, weightKg })
+          : prev.nutritionProfile;
+        return { ...prev, weightLog, nutritionProfile };
+      });
+    },
+    [persist],
+  );
+
+  const setTargetWeight = useCallback(
+    (targetWeightKg: number | null) => {
+      persist((prev) => {
+        const next = { ...prev };
+        if (targetWeightKg && targetWeightKg > 0) {
+          next.targetWeightKg = targetWeightKg;
+        } else {
+          delete next.targetWeightKg;
+        }
+        return next;
+      });
+    },
+    [persist],
+  );
+
+  const setNutritionGoal = useCallback(
+    (goal: NutritionGoal) => {
+      persist((prev) => {
+        if (!prev.nutritionProfile || prev.nutritionProfile.goal === goal) {
+          return prev;
+        }
+        return {
+          ...prev,
+          nutritionProfile: createNutritionProfile({
+            ...prev.nutritionProfile,
+            goal,
+          }),
+        };
+      });
+    },
+    [persist],
+  );
+
+  const setWeightUnit = useCallback(
+    (weightUnit: WeightUnit) => {
+      persist((prev) => ({ ...prev, weightUnit }));
     },
     [persist],
   );
@@ -984,6 +1057,10 @@ function useGymStoreState() {
     syncConflict,
     resolveDataConflict,
     saveNutritionProfile,
+    logBodyWeight,
+    setTargetWeight,
+    setNutritionGoal,
+    setWeightUnit,
     addFoodEntry,
     addPlannedFoodEntry,
     updatePlannedFoodEntry,

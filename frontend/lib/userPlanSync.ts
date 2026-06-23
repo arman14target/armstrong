@@ -16,6 +16,7 @@ import {
   AppData,
   CustomWorkoutDay,
   WORKOUT_TYPES,
+  WeightEntry,
   WorkoutDayEntry,
   WorkoutTemplate,
   createDefaultAppData,
@@ -154,6 +155,23 @@ export function applyRemotePlanPreservingSession(
   };
 }
 
+function mergeWeightLogs(
+  remote: WeightEntry[] | undefined,
+  local: WeightEntry[] | undefined,
+): WeightEntry[] {
+  // Union by day; on a same-day clash the local measurement wins.
+  const byDate = new Map<string, WeightEntry>();
+  for (const entry of remote ?? []) {
+    byDate.set(entry.date, entry);
+  }
+  for (const entry of local ?? []) {
+    byDate.set(entry.date, entry);
+  }
+  return [...byDate.values()].sort((a, b) =>
+    a.date < b.date ? -1 : a.date > b.date ? 1 : 0,
+  );
+}
+
 export function mergeAppDataOnSync(remote: AppData, local: AppData): AppData {
   const workouts = { ...remote.workouts };
   for (const type of WORKOUT_TYPES) {
@@ -196,6 +214,9 @@ export function mergeAppDataOnSync(remote: AppData, local: AppData): AppData {
       ...remote.foodLog,
       ...local.foodLog,
     },
+    weightLog: mergeWeightLogs(remote.weightLog, local.weightLog),
+    targetWeightKg: local.targetWeightKg ?? remote.targetWeightKg,
+    weightUnit: local.weightUnit ?? remote.weightUnit,
     coachPlanActive: remote.coachPlanActive ?? local.coachPlanActive,
   };
 }

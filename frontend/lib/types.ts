@@ -78,6 +78,15 @@ export interface WorkoutDayEntry {
   snapshot?: WorkoutSessionSnapshot;
 }
 
+/** Preferred display unit for body weight. Stored values are always kg. */
+export type WeightUnit = "kg" | "lb";
+
+/** A single body-weight measurement. `date` is a local YYYY-MM-DD key. */
+export interface WeightEntry {
+  date: string;
+  weightKg: number;
+}
+
 export interface AppData {
   workouts: Record<WorkoutType, WorkoutTemplate>;
   customWorkouts: CustomWorkoutDay[];
@@ -90,6 +99,12 @@ export interface AppData {
   nutritionProfile?: NutritionProfile;
   /** YYYY-MM-DD → foods logged that day. */
   foodLog?: Record<string, FoodEntry[]>;
+  /** Body-weight history, oldest → newest, at most one entry per day. */
+  weightLog?: WeightEntry[];
+  /** Optional goal weight (kg) the user is working toward. */
+  targetWeightKg?: number;
+  /** Display unit for weights; values are stored in kg regardless. */
+  weightUnit?: WeightUnit;
   /** When true, hide default split days — show coach-imported custom days only. */
   coachPlanActive?: boolean;
 }

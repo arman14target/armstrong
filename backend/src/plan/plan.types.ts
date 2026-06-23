@@ -89,6 +89,13 @@ export interface FoodEntry {
   mealSlot?: string;
 }
 
+export type WeightUnit = "kg" | "lb";
+
+export interface WeightEntry {
+  date: string;
+  weightKg: number;
+}
+
 export interface AppData {
   workouts: Record<WorkoutType, WorkoutTemplate>;
   customWorkouts: CustomWorkoutDay[];
@@ -98,6 +105,9 @@ export interface AppData {
   workoutDayLog?: Record<string, WorkoutDayEntry[]>;
   nutritionProfile?: NutritionProfile;
   foodLog?: Record<string, FoodEntry[]>;
+  weightLog?: WeightEntry[];
+  targetWeightKg?: number;
+  weightUnit?: WeightUnit;
   coachPlanActive?: boolean;
 }
 
