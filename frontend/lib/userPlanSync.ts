@@ -10,6 +10,7 @@ import {
   loadOnboardingMessages,
   saveOnboardingMessages,
 } from "@/lib/onboardingStorage";
+import { hasLocalOnlyChanges } from "@/lib/localSaveReminder";
 import { loadAppData, saveAppData } from "@/lib/storage";
 import {
   AppData,
@@ -197,6 +198,100 @@ export function mergeAppDataOnSync(remote: AppData, local: AppData): AppData {
     },
     coachPlanActive: remote.coachPlanActive ?? local.coachPlanActive,
   };
+}
+
+// How the user resolves a local-vs-account data conflict at sign-in.
+export type SyncConflictStrategy = "merge" | "use-remote" | "use-local";
+
+export interface SyncConflict {
+  userId: string;
+  remote: UserPlanPayload;
+  local: UserPlanPayload;
+}
+
+export type SyncResult =
+  | { kind: "resolved"; appData: AppData }
+  | { kind: "conflict"; conflict: SyncConflict };
+
+// True when the account plan holds real user data (not a freshly-seeded
+// default). Used to avoid prompting against an empty account.
+function appDataHasContent(d: AppData): boolean {
+  return (
+    d.customWorkouts.length > 0 ||
+    (d.workoutCompletionDates?.length ?? 0) > 0 ||
+    Object.keys(d.workoutDayLog ?? {}).length > 0 ||
+    Object.keys(d.foodLog ?? {}).length > 0 ||
+    d.nutritionProfile != null ||
+    WORKOUT_TYPES.some((type) => Boolean(d.workouts[type]?.lastCompletedAt))
+  );
+}
+
+function mergePayloads(
+  remote: UserPlanPayload,
+  local: UserPlanPayload,
+): UserPlanPayload {
+  return {
+    appData: mergeAppDataOnSync(remote.appData, local.appData),
+    coachChat:
+      local.coachChat.length > 0 ? local.coachChat : remote.coachChat,
+    onboardingChat:
+      local.onboardingChat.length > 0
+        ? local.onboardingChat
+        : remote.onboardingChat,
+  };
+}
+
+// Decides what to do when a user authenticates, without mutating anything the
+// user hasn't agreed to. Auto-resolves the unambiguous cases (empty account →
+// push local; clean device → pull account); only when BOTH the device has
+// unsaved local changes AND the account already holds data does it surface a
+// conflict for the user to resolve.
+export async function detectSyncConflict(userId: string): Promise<SyncResult> {
+  const local = buildLocalUserPlanPayload();
+  const remote = await fetchUserPlan(userId);
+
+  const remoteHasData = Boolean(remote && appDataHasContent(remote.appData));
+  const localHasData = hasLocalOnlyChanges();
+
+  // Account is empty → seed it from this device.
+  if (!remote || !remoteHasData) {
+    await saveUserPlan(userId, local);
+    return { kind: "resolved", appData: applyUserPlanPayload(local) };
+  }
+
+  // Account has data, device has nothing unsaved → adopt the account plan.
+  if (!localHasData) {
+    const payload = applyRemotePlanPreservingSession(remote, local);
+    return { kind: "resolved", appData: applyUserPlanPayload(payload) };
+  }
+
+  // Both sides have data → let the user choose.
+  return { kind: "conflict", conflict: { userId, remote, local } };
+}
+
+export async function resolveSyncConflict(
+  conflict: SyncConflict,
+  strategy: SyncConflictStrategy,
+): Promise<AppData> {
+  const { userId, remote, local } = conflict;
+
+  let payload: UserPlanPayload;
+  switch (strategy) {
+    case "merge":
+      payload = mergePayloads(remote, local);
+      break;
+    case "use-remote":
+      // Keep an in-progress workout from this device even when adopting account data.
+      payload = applyRemotePlanPreservingSession(remote, local);
+      break;
+    case "use-local":
+      payload = local;
+      break;
+  }
+
+  const appData = applyUserPlanPayload(payload);
+  await saveUserPlan(userId, payload);
+  return appData;
 }
 
 export async function syncUserPlanOnLogin(

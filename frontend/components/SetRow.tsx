@@ -23,6 +23,7 @@ interface SetRowProps {
   fallbackReps?: number;
   isCompleted: boolean;
   onComplete: (weight: number, reps: number) => void;
+  onDraft?: (weight?: number, reps?: number) => void;
   onUncomplete?: () => void;
 }
 
@@ -49,6 +50,7 @@ export function SetRow({
   fallbackReps,
   isCompleted,
   onComplete,
+  onDraft,
   onUncomplete,
 }: SetRowProps) {
   const defaultWeight =
@@ -154,6 +156,23 @@ export function SetRow({
     }
   };
 
+  // Persist whatever's typed so far (without completing the set) so the value
+  // isn't lost if the app closes mid-workout. No-op for already-completed sets.
+  const commitDraft = () => {
+    if (!onDraft || isCompleted) {
+      return;
+    }
+    const weightValue = isTimeBased
+      ? 0
+      : isValidWeight(weight)
+        ? parseFloat(weight.trim())
+        : undefined;
+    const repsValue = isValidReps(reps) ? parseInt(reps.trim(), 10) : undefined;
+    if (weightValue !== undefined || repsValue !== undefined) {
+      onDraft(weightValue, repsValue);
+    }
+  };
+
   const handleComplete = () => {
     const weightValue = isTimeBased ? 0 : parseFloat(weight.trim());
     const repsValid = isValidReps(reps);
@@ -228,6 +247,7 @@ export function SetRow({
             onDecrement={() => adjustWeight(-WEIGHT_STEP)}
             allowDecimal
             onFocus={selectInputValue}
+            onBlur={commitDraft}
             onKeyDown={handleWeightKeyDown}
             placeholder="0"
             className={cn(
@@ -253,6 +273,7 @@ export function SetRow({
           onIncrement={() => adjustReps(1)}
           onDecrement={() => adjustReps(-1)}
           onFocus={selectInputValue}
+          onBlur={commitDraft}
           onKeyDown={handleRepsKeyDown}
           placeholder={isTimeBased ? "45" : "0"}
           className={cn(
