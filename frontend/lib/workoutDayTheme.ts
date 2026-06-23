@@ -57,10 +57,14 @@ export const BUILTIN_DAY_STICKER: Record<WorkoutType, string> = {
   push: "dumbbell",
   leg: "kettlebell",
   abs: "medicine-ball",
-  pull: "barbell",
+  pull: "jump-rope",
 };
 
 export const ROTATING_STICKERS = DAY_EQUIPMENT_STICKERS;
+
+export function stickerForDayIndex(index: number): string {
+  return ROTATING_STICKERS[index % ROTATING_STICKERS.length];
+}
 
 export function themeForSlot(
   slot: string,
@@ -84,7 +88,7 @@ export function themeForSlot(
     normalized.includes("back") ||
     normalized.includes("lat")
   ) {
-    return { theme: "amber", sticker: "barbell" };
+    return { theme: "amber", sticker: "jump-rope" };
   }
 
   if (
@@ -107,12 +111,12 @@ export function themeForSlot(
   if (normalized.includes("upper")) {
     return {
       theme: WORKOUT_DAY_THEMES[index % WORKOUT_DAY_THEMES.length],
-      sticker: index % 2 === 0 ? "dumbbell" : "barbell",
+      sticker: index % 2 === 0 ? "dumbbell" : "jump-rope",
     };
   }
 
   if (normalized.includes("full")) {
-    return { theme: "cyan", sticker: "pull-up-bar" };
+    return { theme: "cyan", sticker: "weight-plate" };
   }
 
   return {

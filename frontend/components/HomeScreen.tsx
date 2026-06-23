@@ -152,11 +152,12 @@ export function HomeScreen() {
           <TerminalWindow title="Choose your workout">
             <div className="grid grid-cols-2 gap-[var(--space-gap-md)]">
               {!data.coachPlanActive
-                ? WORKOUT_TYPES.map((type) => (
+                ? WORKOUT_TYPES.map((type, index) => (
                     <DayButton
                       key={type}
                       workoutId={type}
                       label={WORKOUT_LABELS[type]}
+                      iconIndex={index}
                       lastCompletedAt={data.workouts[type].lastCompletedAt}
                       lastSessionDurationSeconds={
                         data.workouts[type].lastSessionDurationSeconds
@@ -167,13 +168,14 @@ export function HomeScreen() {
                   ))
                 : null}
 
-              {data.customWorkouts.map((workout) => (
+              {data.customWorkouts.map((workout, index) => (
                 <DayButton
                   key={workout.id}
                   workoutId={workout.id}
                   label={workout.name}
-                  theme={workout.theme}
-                  sticker={workout.sticker}
+                  iconIndex={
+                    data.coachPlanActive ? index : WORKOUT_TYPES.length + index
+                  }
                   lastCompletedAt={workout.lastCompletedAt}
                   lastSessionDurationSeconds={workout.lastSessionDurationSeconds}
                   setupRequired={needsSetup(workout.id)}

@@ -3,17 +3,11 @@
 import Link from "next/link";
 import { CloseIcon } from "@/components/icons/ActionIcons";
 import { DaySticker } from "@/components/icons/DaySticker";
-import { WorkoutDayIcon } from "@/components/icons/WorkoutDayIcon";
 import { IconButton } from "@/components/ui/IconButton";
 import { useTimeAgo } from "@/hooks/useTimeAgo";
 import { cn } from "@/lib/cn";
 import { formatDuration } from "@/lib/formatRelativeTime";
-import {
-  BUILTIN_DAY_THEME,
-  DAY_THEME_STYLES,
-  type WorkoutDayTheme,
-} from "@/lib/workoutDayTheme";
-import { isWorkoutType, WorkoutType } from "@/lib/types";
+import { stickerForDayIndex } from "@/lib/workoutDayTheme";
 
 interface DayButtonProps {
   workoutId: string;
@@ -22,8 +16,7 @@ interface DayButtonProps {
   lastSessionDurationSeconds?: number;
   setupRequired?: boolean;
   removable?: boolean;
-  theme?: WorkoutDayTheme;
-  sticker?: string;
+  iconIndex?: number;
   onSetupClick?: () => void;
   onRemove?: () => void;
 }
@@ -35,40 +28,27 @@ export function DayButton({
   lastSessionDurationSeconds,
   setupRequired = false,
   removable = false,
-  theme,
-  sticker,
+  iconIndex = 0,
   onSetupClick,
   onRemove,
 }: DayButtonProps) {
-  const isBuiltin = isWorkoutType(workoutId);
-  const accentTheme =
-    theme ?? (isBuiltin ? BUILTIN_DAY_THEME[workoutId as WorkoutType] : undefined);
-  const accent = accentTheme ? DAY_THEME_STYLES[accentTheme] : DAY_THEME_STYLES.cyan;
+  const displaySticker = stickerForDayIndex(iconIndex);
   const lastWorkoutAgo = useTimeAgo(lastCompletedAt);
 
   const className = cn(
-    "group relative flex aspect-square w-full flex-col items-center justify-center overflow-hidden rounded-panel border bg-panel/90 p-3 text-center shadow-[var(--shadow-panel)] transition-all duration-250",
-    accent.border,
-    accent.hover,
+    "group relative flex aspect-square w-full flex-col items-center justify-center overflow-hidden rounded-panel border border-magenta/35 bg-panel/90 p-3 text-center shadow-[var(--shadow-panel)] transition-all duration-250 hover:border-magenta hover:-translate-y-1",
   );
 
   const cardContent = (
     <div className="flex flex-col items-center gap-2 px-1">
       <div className="shrink-0 transition-transform duration-250 group-hover:scale-110">
-        {isBuiltin ? (
-          <WorkoutDayIcon type={workoutId} className="size-14 text-3xl" />
-        ) : accentTheme && sticker ? (
-          <DaySticker theme={accentTheme} sticker={sticker} className="size-14 text-3xl" />
-        ) : (
-          <DaySticker theme="cyan" sticker="dumbbell" className="size-14 text-3xl" />
-        )}
+        <DaySticker
+          theme="cyan"
+          sticker={displaySticker}
+          className="size-14 text-3xl"
+        />
       </div>
-      <p
-        className={cn(
-          "line-clamp-2 text-sm font-semibold leading-tight tracking-wide",
-          accent.labelColor,
-        )}
-      >
+      <p className="line-clamp-2 text-sm font-semibold leading-tight tracking-wide text-white">
         {label}
       </p>
       <div className="text-[10px] leading-tight text-dim">
