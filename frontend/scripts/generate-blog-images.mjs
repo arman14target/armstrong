@@ -15,6 +15,14 @@ const ENV_FILE = path.join(ROOT, ".env.local");
 const DEFAULT_MODEL = "@cf/black-forest-labs/flux-1-schnell";
 const IMAGE_WIDTH = 1280;
 const IMAGE_HEIGHT = 720;
+const WEBP_QUALITY = 82;
+
+let sharp;
+try {
+  sharp = require("sharp");
+} catch {
+  sharp = null;
+}
 
 function loadEnvFile(filePath) {
   if (!fs.existsSync(filePath)) return;
@@ -84,6 +92,36 @@ const SLUG_SCENES = {
     "single dumbbell on gym bench, mirror reflection blurred in background",
   "session-density-vs-total-volume":
     "stopwatch and water bottle beside barbell on gym floor, training session still life",
+  "top-20-gyms-new-york-city":
+    "modern high-rise gym interior with floor-to-ceiling windows overlooking dense urban skyline at dusk",
+  "top-20-gyms-los-angeles":
+    "bright open-air fitness terrace with palm trees and golden California sunlight, weight rack in foreground",
+  "top-20-gyms-chicago":
+    "industrial loft-style gym with exposed brick, squat racks, and cool blue city light through large windows",
+  "top-20-gyms-houston":
+    "spacious air-conditioned commercial gym with rows of cardio machines and free weights, clean modern interior",
+  "top-20-gyms-london":
+    "boutique gym in historic brick building with kettlebells and rowing machines, moody British overcast light",
+  "top-20-gyms-toronto":
+    "sleek urban fitness studio with maple wood accents and city condo skyline visible through glass walls",
+  "top-20-gyms-sydney":
+    "harbor-side gym balcony with cardio equipment, blue water and opera house silhouette in soft background blur",
+  "top-20-gyms-melbourne":
+    "laneway-style boutique gym with exposed concrete, graffiti art walls, and specialty barbells",
+  "top-20-gyms-phoenix":
+    "desert-modern gym with sandstone tones, natural light, and drought-tolerant landscaping visible through windows",
+  "top-20-gyms-philadelphia":
+    "classic American iron gym with vintage plate-loaded machines and worn leather benches, gritty atmosphere",
+  "top-20-gyms-dallas":
+    "large Texas-style fitness center with wide open floor plan, turf zone, and power racks under bright lights",
+  "top-20-gyms-vancouver":
+    "mountain-view gym with snow-capped peaks through panoramic windows, yoga mats and dumbbells in foreground",
+  "top-20-gyms-brisbane":
+    "subtropical riverside gym with open ventilation, tropical plants, and river cityscape in background",
+  "top-20-gyms-san-diego":
+    "coastal California gym with ocean breeze feel, functional training rig and kettlebells near sunny windows",
+  "top-20-gyms-dublin":
+    "compact European city gym with green accent walls, rowing ergs, and rainy street visible through window",
 };
 
 const DEFAULT_SCENE =
@@ -194,6 +232,21 @@ async function generateImage({ accountId, apiToken, model }, prompt) {
   };
 }
 
+async function optimizeImage(jpegBuffer) {
+  if (!sharp) {
+    return { buffer: jpegBuffer, extension: ".jpg" };
+  }
+
+  try {
+    const webpBuffer = await sharp(jpegBuffer)
+      .webp({ quality: WEBP_QUALITY, effort: 4 })
+      .toBuffer();
+    return { buffer: webpBuffer, extension: ".webp" };
+  } catch {
+    return { buffer: jpegBuffer, extension: ".jpg" };
+  }
+}
+
 function updateFrontmatterImage(filePath, imagePath) {
   const source = fs.readFileSync(filePath, "utf8");
   const parsed = matter(source);
@@ -260,7 +313,8 @@ async function main() {
     console.log(`generate ${slugId}...`);
 
     try {
-      const { buffer, extension } = await generateImage(cloudflare, prompt);
+      const { buffer: jpegBuffer } = await generateImage(cloudflare, prompt);
+      const { buffer, extension } = await optimizeImage(jpegBuffer);
       const imageRelPath = `/images/blog/${slugId}${extension}`;
       const imageAbsPath = path.join(IMAGES_DIR, `${slugId}${extension}`);
 
