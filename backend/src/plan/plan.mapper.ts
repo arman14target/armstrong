@@ -29,6 +29,7 @@ function planMetaScalars(appData: AppData) {
     weightLog: (appData.weightLog ?? []) as unknown as Prisma.InputJsonValue,
     targetWeightKg: appData.targetWeightKg ?? null,
     weightUnit: appData.weightUnit ?? null,
+    advancedNutrition: appData.advancedNutrition ?? false,
   };
 }
 
@@ -355,6 +356,7 @@ export function toPayload(user: UserWithPlan): UserPlanPayload {
     ...(user.meta?.weightUnit
       ? { weightUnit: user.meta.weightUnit as AppData["weightUnit"] }
       : {}),
+    advancedNutrition: user.meta?.advancedNutrition ?? false,
   };
 
   return {

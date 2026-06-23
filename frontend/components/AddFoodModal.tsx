@@ -20,6 +20,7 @@ export type FoodEntryInput = Pick<
 
 interface AddFoodModalProps {
   open: boolean;
+  advancedNutrition?: boolean;
   onAdd: (entry: FoodEntryInput) => void;
   onClose: () => void;
 }
@@ -63,7 +64,12 @@ function isFoodSearchResult(
   return "calories" in selection;
 }
 
-export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
+export function AddFoodModal({
+  open,
+  advancedNutrition = false,
+  onAdd,
+  onClose,
+}: AddFoodModalProps) {
   const [name, setName] = useState("");
   const [calories, setCalories] = useState("");
   const [proteinG, setProteinG] = useState("");
@@ -209,7 +215,7 @@ export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
               ) : null}
             </div>
 
-            <label className="mt-[var(--space-gap)] block">
+            <label className={cn("mt-[var(--space-gap)] block", !advancedNutrition && "sr-only")}>
               <FieldLabel>Calories (kcal)</FieldLabel>
               <input
                 type="number"
@@ -219,10 +225,16 @@ export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
                 onChange={(event) => setCalories(event.target.value)}
                 placeholder="450"
                 className="cyber-input"
+                tabIndex={advancedNutrition ? 0 : -1}
               />
             </label>
 
-            <div className="mt-[var(--space-gap)] grid grid-cols-3 gap-[var(--space-gap)]">
+            <div
+              className={cn(
+                "mt-[var(--space-gap)] grid gap-[var(--space-gap)]",
+                advancedNutrition ? "grid-cols-3" : "grid-cols-2",
+              )}
+            >
               <label className="block">
                 <FieldLabel required>Protein (g)</FieldLabel>
                 <input
@@ -262,18 +274,20 @@ export function AddFoodModal({ open, onAdd, onClose }: AddFoodModalProps) {
                   className="cyber-input"
                 />
               </label>
-              <label className="block">
-                <FieldLabel>Fat (g)</FieldLabel>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  min={0}
-                  value={fatG}
-                  onChange={(event) => setFatG(event.target.value)}
-                  placeholder="0"
-                  className="cyber-input"
-                />
-              </label>
+              {advancedNutrition ? (
+                <label className="block">
+                  <FieldLabel>Fat (g)</FieldLabel>
+                  <input
+                    type="number"
+                    inputMode="decimal"
+                    min={0}
+                    value={fatG}
+                    onChange={(event) => setFatG(event.target.value)}
+                    placeholder="0"
+                    className="cyber-input"
+                  />
+                </label>
+              ) : null}
             </div>
 
             <div className="mt-[var(--space-section)] stack-sm">

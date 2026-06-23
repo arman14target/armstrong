@@ -19,6 +19,7 @@ import {
 } from "@/components/icons/ActionIcons";
 import { ProfileSection } from "@/components/ProfileSection";
 import { ProfileDashboard } from "@/components/profile/ProfileDashboard";
+import { ProfilePreferences } from "@/components/profile/ProfilePreferences";
 import { ConfirmModal } from "@/components/ui/ConfirmModal";
 import { FoodTrackerSection } from "@/components/FoodTrackerSection";
 import { GlitchText } from "@/components/ui/GlitchText";
@@ -227,6 +228,7 @@ export function HomeScreen() {
         <RevealOnScroll>
           <SectionHead title="Profile" />
           <div className="stack-md">
+            <ProfilePreferences />
             <ProfileDashboard />
             <ProfileSection
               onAuthSuccess={handleAuthSuccess}

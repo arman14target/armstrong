@@ -71,7 +71,7 @@ export function applyDietPlannerImport(
       heightCm: inputs.heightCm,
       age: inputs.age,
       sex: inputs.sex,
-      goal: inputs.goal,
+      targetWeightKg: inputs.targetWeightKg,
     }),
   };
 

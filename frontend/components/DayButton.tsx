@@ -58,9 +58,9 @@ export function DayButton({
         {isBuiltin ? (
           <WorkoutDayIcon type={workoutId} className="size-14 text-3xl" />
         ) : accentTheme && sticker ? (
-          <DaySticker theme={accentTheme} emoji={sticker} className="size-14 text-3xl" />
+          <DaySticker theme={accentTheme} sticker={sticker} className="size-14 text-3xl" />
         ) : (
-          <DaySticker theme="cyan" emoji="🏋️" className="size-14 text-3xl" />
+          <DaySticker theme="cyan" sticker="dumbbell" className="size-14 text-3xl" />
         )}
       </div>
       <p

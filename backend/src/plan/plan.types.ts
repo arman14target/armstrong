@@ -68,7 +68,8 @@ export interface NutritionProfile {
   heightCm: number;
   age: number;
   sex: "male" | "female";
-  goal: "bulk" | "cut";
+  goal: "bulk" | "cut" | "maintain";
+  targetWeightKg?: number;
   dailyCalories: number;
   proteinG: number;
   carbsG: number;
@@ -108,6 +109,7 @@ export interface AppData {
   weightLog?: WeightEntry[];
   targetWeightKg?: number;
   weightUnit?: WeightUnit;
+  advancedNutrition?: boolean;
   coachPlanActive?: boolean;
 }
 

@@ -3,30 +3,36 @@
 import { useMemo, useState } from "react";
 import { AddFoodModal } from "@/components/AddFoodModal";
 import { CheckIcon, PencilIcon, TrashIcon } from "@/components/icons/ActionIcons";
+import { GoalWeightSlider } from "@/components/nutrition/GoalWeightSlider";
+import { NutritionBodyWeightPanel } from "@/components/nutrition/NutritionBodyWeightPanel";
 import {
   NutritionBodyStatsSliders,
   type NutritionBodyStatsValues,
 } from "@/components/nutrition/NutritionBodyStatsSliders";
+import { WeightUnitPicker } from "@/components/nutrition/WeightUnitPicker";
 import { MacroBars } from "@/components/planner/MacroBars";
 import { PlannedFoodModal } from "@/components/PlannedFoodModal";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { IconButton } from "@/components/ui/IconButton";
-import { TerminalWindow } from "@/components/ui/TerminalWindow";
+import { useGymStore } from "@/hooks/useGymStore";
 import { cn } from "@/lib/cn";
 import {
   FoodEntry,
-  NutritionGoal,
   NutritionInputs,
   NutritionProfile,
   NutritionSex,
   calculateNutritionTargets,
   createNutritionProfile,
+  formatFoodEntryMacros,
   formatGoalLabel,
   formatMealSlotLabel,
+  inferNutritionGoal,
+  resolveTargetWeightKg,
   sumDailyNutrition,
   type MealSlot,
   type PlannedMealInput,
 } from "@/lib/nutrition";
+import type { WeightUnit } from "@/lib/types";
 import { toLocalDateKey } from "@/lib/workoutCalendar";
 
 const DEFAULT_BODY_STATS: NutritionBodyStatsValues = {
@@ -134,57 +140,6 @@ function MacroStat({
   );
 }
 
-function GoalChoice({
-  selected,
-  onSelect,
-}: {
-  selected: NutritionGoal | null;
-  onSelect: (goal: NutritionGoal) => void;
-}) {
-  const options: Array<{ id: NutritionGoal; title: string; description: string }> =
-    [
-      {
-        id: "bulk",
-        title: "Bulk",
-        description: "Build muscle with a ~400 kcal daily surplus.",
-      },
-      {
-        id: "cut",
-        title: "Cut",
-        description: "Lose fat with a ~500 kcal daily deficit.",
-      },
-    ];
-
-  return (
-    <div className="stack-md">
-      {options.map((option) => {
-        const isSelected = selected === option.id;
-
-        return (
-          <button
-            key={option.id}
-            type="button"
-            onClick={() => onSelect(option.id)}
-            className={cn(
-              "w-full rounded-cyber border p-[var(--space-panel)] text-left transition-colors",
-              isSelected
-                ? "border-cyan/50 bg-cyan/10"
-                : "border-line bg-bg/40 hover:border-cyan/30",
-            )}
-          >
-            <p className="font-display text-sm tracking-wide text-heading uppercase">
-              {option.title}
-            </p>
-            <p className="mt-1 text-xs leading-relaxed text-dim">
-              {option.description}
-            </p>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 function SexChoice({
   selected,
   onSelect,
@@ -224,8 +179,14 @@ function NutritionSetup({
   onCancel?: () => void;
   requiredFirst?: boolean;
 }) {
+  const { data, setWeightUnit } = useGymStore();
+  const savedWeightUnit = data.weightUnit;
   const useSliderSetup = !initialProfile;
   const [step, setStep] = useState<SetupStep>("body");
+  const [setupWeightUnit, setSetupWeightUnit] = useState<WeightUnit>(
+    savedWeightUnit ?? "kg",
+  );
+  const activeWeightUnit = savedWeightUnit ?? setupWeightUnit;
   const [bodyStats, setBodyStats] = useState<NutritionBodyStatsValues>(
     initialProfile
       ? {
@@ -248,8 +209,10 @@ function NutritionSetup({
   const [sex, setSex] = useState<NutritionSex | null>(
     initialProfile?.sex ?? null,
   );
-  const [goal, setGoal] = useState<NutritionGoal | null>(
-    initialProfile?.goal ?? null,
+  const [targetWeightKg, setTargetWeightKg] = useState<number | null>(
+    initialProfile
+      ? resolveTargetWeightKg(initialProfile)
+      : DEFAULT_BODY_STATS.weightKg - 5,
   );
   const [errors, setErrors] = useState<Record<string, boolean>>({});
 
@@ -259,18 +222,25 @@ function NutritionSetup({
   const selectedSex = useSliderSetup ? bodyStats.sex : sex;
 
   const draftInputs: NutritionInputs | null =
-    weightKg && heightCm && ageYears && selectedSex && goal
+    weightKg && heightCm && ageYears && selectedSex && targetWeightKg
       ? {
           weightKg,
           heightCm,
           age: ageYears,
           sex: selectedSex,
-          goal,
+          targetWeightKg,
         }
       : null;
 
+  const previewGoal = draftInputs
+    ? inferNutritionGoal(draftInputs.weightKg, draftInputs.targetWeightKg)
+    : null;
+
   const previewTargets = draftInputs
-    ? calculateNutritionTargets(draftInputs)
+    ? calculateNutritionTargets({
+        ...draftInputs,
+        goal: inferNutritionGoal(draftInputs.weightKg, draftInputs.targetWeightKg),
+      })
     : null;
 
   const validateBody = () => {
@@ -297,12 +267,23 @@ function NutritionSetup({
 
   const handleBodyNext = () => {
     if (validateBody()) {
+      if (!savedWeightUnit) {
+        setWeightUnit(setupWeightUnit);
+      }
+      if (weightKg) {
+        setTargetWeightKg((prev) => {
+          if (!prev || Math.abs(prev - weightKg) > 35) {
+            return Math.max(40, weightKg - 5);
+          }
+          return prev;
+        });
+      }
       setStep("goal");
     }
   };
 
   const handleGoalNext = () => {
-    if (!goal) {
+    if (!targetWeightKg || targetWeightKg <= 0) {
       setErrors({ goal: true });
       return;
     }
@@ -338,11 +319,20 @@ function NutritionSetup({
         </div>
 
         {useSliderSetup ? (
-          <NutritionBodyStatsSliders
-            values={bodyStats}
-            onChange={setBodyStats}
-            idPrefix="food-tracker"
-          />
+          <>
+            <NutritionBodyStatsSliders
+              values={bodyStats}
+              weightUnit={activeWeightUnit}
+              onChange={setBodyStats}
+              idPrefix="food-tracker"
+            />
+            {!savedWeightUnit ? (
+              <WeightUnitPicker
+                value={setupWeightUnit}
+                onChange={setSetupWeightUnit}
+              />
+            ) : null}
+          </>
         ) : (
           <>
             <div className="grid grid-cols-2 gap-[var(--space-gap)]">
@@ -427,7 +417,7 @@ function NutritionSetup({
         )}
 
         <CyberButton variant="green" className="w-full" onClick={handleBodyNext}>
-          Next: pick your goal
+          Next: goal weight
         </CyberButton>
         {onCancel ? (
           <CyberButton variant="cyan" className="w-full" onClick={onCancel}>
@@ -439,55 +429,38 @@ function NutritionSetup({
   }
 
   if (step === "goal") {
+    const currentWeightKg = weightKg ?? bodyStats.weightKg;
+    const resolvedTarget = targetWeightKg ?? currentWeightKg - 5;
+
     return (
       <div className="stack-md">
         <div>
           <h3 className="font-display text-sm tracking-wide text-heading">
-            Bulk or cut?
+            Goal weight
           </h3>
           <p className="mt-1 text-xs leading-relaxed text-dim">
-            Choose whether you want to gain muscle or lose fat. We&apos;ll adjust
-            your daily calories from there.
+            Slide to your target weight. We&apos;ll set cut or bulk automatically
+            and adjust your daily calories.
           </p>
         </div>
 
-        {useSliderSetup ? (
-          <fieldset className="planner-segment">
-            <legend>Goal</legend>
-            <div className="planner-segment__options">
-              {(["bulk", "cut"] as const).map((option) => (
-                <button
-                  key={option}
-                  type="button"
-                  className={goal === option ? "is-active" : undefined}
-                  onClick={() => {
-                    setGoal(option);
-                    if (errors.goal) {
-                      setErrors((prev) => ({ ...prev, goal: false }));
-                    }
-                  }}
-                >
-                  {option === "bulk" ? "Lean bulk" : "Cut"}
-                </button>
-              ))}
-            </div>
-          </fieldset>
-        ) : (
-          <GoalChoice
-            selected={goal}
-            onSelect={(value) => {
-              setGoal(value);
-              if (errors.goal) {
-                setErrors((prev) => ({ ...prev, goal: false }));
-              }
-            }}
-          />
-        )}
+        <GoalWeightSlider
+          currentWeightKg={currentWeightKg}
+          targetWeightKg={resolvedTarget}
+          unit={activeWeightUnit}
+          idPrefix="food-tracker-goal"
+          onChange={(value) => {
+            setTargetWeightKg(value);
+            if (errors.goal) {
+              setErrors((prev) => ({ ...prev, goal: false }));
+            }
+          }}
+        />
 
-        {useSliderSetup && previewTargets ? (
+        {previewTargets ? (
           <div className="rounded-cyber border border-line bg-bg/30 p-[var(--space-panel)]">
             <p className="mb-3 text-[10px] tracking-wide text-dim uppercase">
-              Live macro preview
+              Live macro preview · {previewGoal ? formatGoalLabel(previewGoal) : ""}
             </p>
             <p className="font-display text-2xl tracking-wide text-heading">
               {previewTargets.dailyCalories}
@@ -536,7 +509,7 @@ function NutritionSetup({
 
         {errors.goal ? (
           <p className="text-xs text-magenta" role="alert">
-            Pick bulk or cut to continue.
+            Set a goal weight to continue.
           </p>
         ) : null}
 
@@ -559,8 +532,8 @@ function NutritionSetup({
           Your daily targets
         </h3>
         <p className="mt-1 text-xs leading-relaxed text-dim">
-          Based on {weightKg} kg, {heightCm} cm, age {ageYears},{" "}
-          {formatGoalLabel(goal!)} mode.
+          Based on {weightKg} kg → {targetWeightKg} kg goal (
+          {previewGoal ? formatGoalLabel(previewGoal) : "plan"}).
         </p>
       </div>
 
@@ -643,8 +616,9 @@ function NutritionSetup({
       ) : null}
 
       <p className="text-xs leading-relaxed text-dim">
-        Protein is set high for muscle ({goal === "cut" ? "2.2" : "2.0"} g/kg).
-        Fat fills ~25% of calories; carbs cover the rest.
+        Protein is set high for muscle (
+        {previewGoal === "cut" ? "2.2" : "2.0"} g/kg). Fat fills ~25% of calories;
+        carbs cover the rest.
       </p>
 
       <div className="stack-sm">
@@ -676,40 +650,6 @@ function shiftDateKey(dateKey: string, deltaDays: number): string {
   return toLocalDateKey(date);
 }
 
-function DailyTargetReminder({
-  profile,
-  onRecalibrate,
-}: {
-  profile: NutritionProfile;
-  onRecalibrate: () => void;
-}) {
-  return (
-    <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 rounded-cyber border border-line/60 bg-bg/30 px-3 py-2">
-      <div className="min-w-0">
-        <p className="text-[10px] tracking-wide text-dim uppercase">
-          Daily goal · {formatGoalLabel(profile.goal)}
-        </p>
-        <p className="mt-0.5 text-[11px] leading-snug text-dim">
-          <span className="text-amber">{profile.dailyCalories} kcal</span>
-          <span className="mx-1 text-line">·</span>
-          <span className="text-cyan">{profile.proteinG}g protein</span>
-          <span className="mx-1 text-line">·</span>
-          <span className="text-green">{profile.carbsG}g carbs</span>
-          <span className="mx-1 text-line">·</span>
-          <span className="text-magenta">{profile.fatG}g fat</span>
-        </p>
-      </div>
-      <button
-        type="button"
-        onClick={onRecalibrate}
-        className="shrink-0 text-[10px] tracking-wide text-cyan uppercase transition-colors hover:text-heading"
-      >
-        Edit
-      </button>
-    </div>
-  );
-}
-
 const MEAL_SLOT_ORDER: MealSlot[] = ["breakfast", "lunch", "dinner", "snack"];
 
 function sortFoodEntries(entries: FoodEntry[]): FoodEntry[] {
@@ -734,11 +674,13 @@ function sortFoodEntries(entries: FoodEntry[]): FoodEntry[] {
 
 function PlannedFoodList({
   entries,
+  advancedNutrition,
   onEdit,
   onRemove,
   onTogglePlannedMeal,
 }: {
   entries: FoodEntry[];
+  advancedNutrition: boolean;
   onEdit: (entry: FoodEntry) => void;
   onRemove: (entryId: string) => void;
   onTogglePlannedMeal: (entryId: string, completed: boolean) => void;
@@ -805,8 +747,7 @@ function PlannedFoodList({
                 </p>
               </div>
               <p className="mt-0.5 text-xs text-dim">
-                {entry.calories} kcal · P {entry.proteinG}g · C {entry.carbsG}g ·
-                F {entry.fatG}g
+                {formatFoodEntryMacros(entry, advancedNutrition)}
                 {!entry.completed ? (
                   <span className="text-dim/70"> · check when eaten</span>
                 ) : null}
@@ -839,9 +780,11 @@ function PlannedFoodList({
 
 function ManualFoodLogList({
   entries,
+  advancedNutrition,
   onRemove,
 }: {
   entries: FoodEntry[];
+  advancedNutrition: boolean;
   onRemove: (entryId: string) => void;
 }) {
   if (entries.length === 0) {
@@ -862,8 +805,7 @@ function ManualFoodLogList({
           <div className="min-w-0 flex-1">
             <p className="truncate text-sm font-medium text-heading">{entry.name}</p>
             <p className="mt-0.5 text-xs text-dim">
-              {entry.calories} kcal · P {entry.proteinG}g · C {entry.carbsG}g · F{" "}
-              {entry.fatG}g
+              {formatFoodEntryMacros(entry, advancedNutrition)}
             </p>
           </div>
           <IconButton
@@ -903,6 +845,8 @@ function NutritionDashboard({
   onEditPlannedFood: (entry: FoodEntry) => void;
   onTogglePlannedMeal: (entryId: string, completed: boolean) => void;
 }) {
+  const { data } = useGymStore();
+  const advancedNutrition = data.advancedNutrition === true;
   const totals = useMemo(() => sumDailyNutrition(entries), [entries]);
   const todayKey = toLocalDateKey(new Date());
   const isToday = dateKey === todayKey;
@@ -917,7 +861,7 @@ function NutritionDashboard({
 
   return (
     <div className="stack-md">
-      <DailyTargetReminder profile={profile} onRecalibrate={onRecalibrate} />
+      <NutritionBodyWeightPanel profile={profile} />
 
       <div className="flex items-center justify-between gap-2 rounded-cyber border border-line bg-bg/30 px-3 py-2">
         <button
@@ -928,13 +872,16 @@ function NutritionDashboard({
         >
           ‹
         </button>
-        <div className="text-center">
-          <p className="text-xs tracking-wide text-dim uppercase">
-            {isToday ? "Today" : "Daily log"}
-          </p>
-          <p className="text-sm font-medium text-heading">
-            {formatDateLabel(dateKey)}
-          </p>
+        <div className="text-center text-sm font-medium text-heading">
+          {isToday ? (
+            <>
+              <span className="text-xs tracking-wide text-dim uppercase">Today</span>
+              <span className="mx-1.5 text-line">·</span>
+              <span>{formatDateLabel(dateKey)}</span>
+            </>
+          ) : (
+            formatDateLabel(dateKey)
+          )}
         </div>
         <button
           type="button"
@@ -953,18 +900,34 @@ function NutritionDashboard({
       </div>
 
       <div>
-        <p className="mb-[var(--space-gap)] text-[10px] tracking-wide text-dim uppercase">
-          Today&apos;s intake
-        </p>
-        <div className="grid grid-cols-2 gap-[var(--space-gap)] sm:grid-cols-4">
-          <MacroStat
-            label="Calories"
-            value={profile.dailyCalories}
-            unit="kcal"
-            accent="amber"
-            consumed={totals.calories}
-            target={profile.dailyCalories}
-          />
+        <div className="mb-[var(--space-gap)] flex items-center justify-between gap-2">
+          <p className="text-[10px] tracking-wide text-dim uppercase">
+            Today&apos;s intake
+          </p>
+          <button
+            type="button"
+            onClick={onRecalibrate}
+            className="text-[10px] tracking-wide text-cyan uppercase transition-colors hover:text-heading"
+          >
+            Edit targets
+          </button>
+        </div>
+        <div
+          className={cn(
+            "grid gap-[var(--space-gap)]",
+            advancedNutrition ? "grid-cols-2 sm:grid-cols-4" : "grid-cols-2",
+          )}
+        >
+          {advancedNutrition ? (
+            <MacroStat
+              label="Calories"
+              value={profile.dailyCalories}
+              unit="kcal"
+              accent="amber"
+              consumed={totals.calories}
+              target={profile.dailyCalories}
+            />
+          ) : null}
           <MacroStat
             label="Protein"
             value={profile.proteinG}
@@ -981,14 +944,16 @@ function NutritionDashboard({
             consumed={totals.carbsG}
             target={profile.carbsG}
           />
-          <MacroStat
-            label="Fat"
-            value={profile.fatG}
-            unit="g"
-            accent="magenta"
-            consumed={totals.fatG}
-            target={profile.fatG}
-          />
+          {advancedNutrition ? (
+            <MacroStat
+              label="Fat"
+              value={profile.fatG}
+              unit="g"
+              accent="magenta"
+              consumed={totals.fatG}
+              target={profile.fatG}
+            />
+          ) : null}
         </div>
       </div>
 
@@ -1007,6 +972,7 @@ function NutritionDashboard({
         </div>
         <PlannedFoodList
           entries={plannedEntries}
+          advancedNutrition={advancedNutrition}
           onEdit={onEditPlannedFood}
           onRemove={onRemoveFood}
           onTogglePlannedMeal={onTogglePlannedMeal}
@@ -1026,7 +992,11 @@ function NutritionDashboard({
             Add food
           </CyberButton>
         </div>
-        <ManualFoodLogList entries={manualEntries} onRemove={onRemoveFood} />
+        <ManualFoodLogList
+          entries={manualEntries}
+          advancedNutrition={advancedNutrition}
+          onRemove={onRemoveFood}
+        />
       </div>
     </div>
   );
@@ -1042,6 +1012,8 @@ export function FoodTrackerSection({
   onUpdatePlannedFood,
   onTogglePlannedMeal,
 }: FoodTrackerSectionProps) {
+  const { data } = useGymStore();
+  const advancedNutrition = data.advancedNutrition === true;
   const [recalibrating, setRecalibrating] = useState(false);
   const [showAddFoodModal, setShowAddFoodModal] = useState(false);
   const [showPlannedFoodModal, setShowPlannedFoodModal] = useState(false);
@@ -1085,23 +1057,20 @@ export function FoodTrackerSection({
 
   if (!profile || recalibrating) {
     return (
-      <TerminalWindow title="nutrition">
-        <NutritionSetup
-          initialProfile={recalibrating ? profile : undefined}
-          requiredFirst={!profile}
-          onSave={handleSave}
-          onCancel={
-            profile && recalibrating ? () => setRecalibrating(false) : undefined
-          }
-        />
-      </TerminalWindow>
+      <NutritionSetup
+        initialProfile={recalibrating ? profile : undefined}
+        requiredFirst={!profile}
+        onSave={handleSave}
+        onCancel={
+          profile && recalibrating ? () => setRecalibrating(false) : undefined
+        }
+      />
     );
   }
 
   return (
     <>
-      <TerminalWindow title="nutrition">
-        <NutritionDashboard
+      <NutritionDashboard
           profile={profile}
           dateKey={selectedDateKey}
           entries={dayEntries}
@@ -1117,11 +1086,11 @@ export function FoodTrackerSection({
           onTogglePlannedMeal={(entryId, completed) =>
             onTogglePlannedMeal(selectedDateKey, entryId, completed)
           }
-        />
-      </TerminalWindow>
+      />
 
       <AddFoodModal
         open={showAddFoodModal}
+        advancedNutrition={advancedNutrition}
         onAdd={handleAddFood}
         onClose={() => setShowAddFoodModal(false)}
       />
@@ -1129,6 +1098,7 @@ export function FoodTrackerSection({
       <PlannedFoodModal
         open={showPlannedFoodModal}
         initialEntry={editingPlannedEntry}
+        advancedNutrition={advancedNutrition}
         onSave={handleSavePlannedFood}
         onClose={handleClosePlannedFoodModal}
       />

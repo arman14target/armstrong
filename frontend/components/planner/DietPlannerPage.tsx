@@ -7,6 +7,7 @@ import { NavigationHeader } from "@/components/NavigationHeader";
 import { ExperienceBar } from "@/components/planner/ExperienceBar";
 import { ImportPlanButton } from "@/components/planner/ImportPlanButton";
 import { MealPlanDisplay } from "@/components/planner/MealPlanDisplay";
+import { GoalWeightSlider } from "@/components/nutrition/GoalWeightSlider";
 import { NutritionBodyStatsSliders } from "@/components/nutrition/NutritionBodyStatsSliders";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { SectionHead } from "@/components/ui/SectionHead";
@@ -97,6 +98,7 @@ export function DietPlannerPage() {
 
                   <NutritionBodyStatsSliders
                     values={inputs}
+                    weightUnit="kg"
                     onChange={(bodyStats) =>
                       setInputs((prev) => ({ ...prev, ...bodyStats }))
                     }
@@ -111,23 +113,17 @@ export function DietPlannerPage() {
 
               {step === "goal" ? (
                 <div className="planner-form stack-md">
-                  <h2 className="planner-panel__title">Goal & experience</h2>
+                  <h2 className="planner-panel__title">Goal weight & experience</h2>
 
-                  <fieldset className="planner-segment">
-                    <legend>Goal</legend>
-                    <div className="planner-segment__options">
-                      {(["bulk", "cut"] as const).map((goal) => (
-                        <button
-                          key={goal}
-                          type="button"
-                          className={inputs.goal === goal ? "is-active" : undefined}
-                          onClick={() => setInputs((prev) => ({ ...prev, goal }))}
-                        >
-                          {goal === "bulk" ? "Lean bulk" : "Cut"}
-                        </button>
-                      ))}
-                    </div>
-                  </fieldset>
+                  <GoalWeightSlider
+                    currentWeightKg={inputs.weightKg}
+                    targetWeightKg={inputs.targetWeightKg}
+                    unit="kg"
+                    idPrefix="diet-planner-goal"
+                    onChange={(targetWeightKg) =>
+                      setInputs((prev) => ({ ...prev, targetWeightKg }))
+                    }
+                  />
 
                   <ExperienceBar
                     value={inputs.experience}

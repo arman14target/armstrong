@@ -103,8 +103,12 @@ export interface AppData {
   weightLog?: WeightEntry[];
   /** Optional goal weight (kg) the user is working toward. */
   targetWeightKg?: number;
+  /** Weight when the journey started; stays fixed when logging same-day updates. */
+  weightBaselineKg?: number;
   /** Display unit for weights; values are stored in kg regardless. */
   weightUnit?: WeightUnit;
+  /** When true, show calories, fat, and full nutrition detail. */
+  advancedNutrition?: boolean;
   /** When true, hide default split days — show coach-imported custom days only. */
   coachPlanActive?: boolean;
 }

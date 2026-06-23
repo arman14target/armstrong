@@ -28,7 +28,7 @@ describe("planner import", () => {
       heightCm: 180,
       age: 30,
       sex: "male" as const,
-      goal: "bulk" as const,
+      targetWeightKg: 83,
       experience: "intermediate" as const,
     };
     const plan = generateDietPlan(inputs);

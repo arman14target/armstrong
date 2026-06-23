@@ -1,7 +1,13 @@
 import { applyDietPlan } from "@/lib/coachDiet";
 import type { CoachChatMessage } from "@/lib/gemini";
 import { sendCoachMessage } from "@/lib/gemini";
-import { createNutritionProfile, type NutritionGoal, type NutritionSex, type PlannedMealInput } from "@/lib/nutrition";
+import {
+  createNutritionProfile,
+  defaultTargetWeightKg,
+  type NutritionGoal,
+  type NutritionSex,
+  type PlannedMealInput,
+} from "@/lib/nutrition";
 import { loadAppData, saveAppData } from "@/lib/storage";
 import { markLocalOnlySave } from "@/lib/localSaveReminder";
 import { isApiConfigured, getAuthToken } from "@/lib/api/client";
@@ -335,7 +341,10 @@ export function applyOnboardingImport(
       heightCm,
       age: payload.profile.age,
       sex: payload.profile.sex,
-      goal: payload.profile.nutritionGoal,
+      targetWeightKg: defaultTargetWeightKg(
+        payload.profile.weightKg,
+        payload.profile.nutritionGoal,
+      ),
     }),
   };
 

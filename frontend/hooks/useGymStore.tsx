@@ -60,7 +60,7 @@ import {
   type CoachGymPlan,
   type CoachWorkoutChange,
 } from "@/lib/coachWorkout";
-import { createFoodEntry, createNutritionProfile, createPlannedFoodEntry, FoodEntry, NutritionGoal, NutritionProfile, PlannedMealInput } from "@/lib/nutrition";
+import { createFoodEntry, createNutritionProfile, createPlannedFoodEntry, FoodEntry, NutritionProfile, nutritionProfileInputs, PlannedMealInput } from "@/lib/nutrition";
 import { logWeight } from "@/lib/weight";
 import { toLocalDateKey } from "@/lib/workoutCalendar";
 import type { WeightUnit } from "@/lib/types";
@@ -179,9 +179,9 @@ function useGymStoreState() {
     setData((prev) => {
       const next = updater(prev);
       saveAppData(next);
-      scheduleCloudSync();
       return next;
     });
+    scheduleCloudSync();
   }, []);
 
   const startSession = useCallback(
@@ -788,6 +788,8 @@ function useGymStoreState() {
       persist((prev) => ({
         ...prev,
         nutritionProfile: profile,
+        targetWeightKg: profile.targetWeightKg,
+        weightBaselineKg: prev.weightBaselineKg ?? profile.weightKg,
         weightLog: logWeight(
           prev.weightLog,
           profile.weightKg,
@@ -807,15 +809,29 @@ function useGymStoreState() {
         return;
       }
       persist((prev) => {
-        const weightLog = logWeight(
-          prev.weightLog,
-          weightKg,
-          toLocalDateKey(new Date()),
-        );
+        const today = toLocalDateKey(new Date());
+        const prevLog = prev.weightLog ?? [];
+        const todayEntry = prevLog.find((entry) => entry.date === today);
+
+        let weightBaselineKg = prev.weightBaselineKg;
+        if (!weightBaselineKg) {
+          if (todayEntry) {
+            weightBaselineKg = todayEntry.weightKg;
+          } else if (prevLog.length > 0) {
+            weightBaselineKg = prevLog[0].weightKg;
+          } else {
+            weightBaselineKg = weightKg;
+          }
+        }
+
+        const weightLog = logWeight(prevLog, weightKg, today);
         const nutritionProfile = prev.nutritionProfile
-          ? createNutritionProfile({ ...prev.nutritionProfile, weightKg })
+          ? createNutritionProfile({
+              ...nutritionProfileInputs(prev.nutritionProfile, prev.targetWeightKg),
+              weightKg,
+            })
           : prev.nutritionProfile;
-        return { ...prev, weightLog, nutritionProfile };
+        return { ...prev, weightLog, weightBaselineKg, nutritionProfile };
       });
     },
     [persist],
@@ -824,31 +840,20 @@ function useGymStoreState() {
   const setTargetWeight = useCallback(
     (targetWeightKg: number | null) => {
       persist((prev) => {
-        const next = { ...prev };
-        if (targetWeightKg && targetWeightKg > 0) {
-          next.targetWeightKg = targetWeightKg;
-        } else {
+        if (!targetWeightKg || targetWeightKg <= 0) {
+          const next = { ...prev };
           delete next.targetWeightKg;
+          return next;
         }
-        return next;
-      });
-    },
-    [persist],
-  );
 
-  const setNutritionGoal = useCallback(
-    (goal: NutritionGoal) => {
-      persist((prev) => {
-        if (!prev.nutritionProfile || prev.nutritionProfile.goal === goal) {
-          return prev;
-        }
-        return {
-          ...prev,
-          nutritionProfile: createNutritionProfile({
-            ...prev.nutritionProfile,
-            goal,
-          }),
-        };
+        const nutritionProfile = prev.nutritionProfile
+          ? createNutritionProfile({
+              ...nutritionProfileInputs(prev.nutritionProfile, prev.targetWeightKg),
+              targetWeightKg,
+            })
+          : prev.nutritionProfile;
+
+        return { ...prev, targetWeightKg, nutritionProfile };
       });
     },
     [persist],
@@ -857,6 +862,13 @@ function useGymStoreState() {
   const setWeightUnit = useCallback(
     (weightUnit: WeightUnit) => {
       persist((prev) => ({ ...prev, weightUnit }));
+    },
+    [persist],
+  );
+
+  const setAdvancedNutrition = useCallback(
+    (advancedNutrition: boolean) => {
+      persist((prev) => ({ ...prev, advancedNutrition }));
     },
     [persist],
   );
@@ -1059,8 +1071,8 @@ function useGymStoreState() {
     saveNutritionProfile,
     logBodyWeight,
     setTargetWeight,
-    setNutritionGoal,
     setWeightUnit,
+    setAdvancedNutrition,
     addFoodEntry,
     addPlannedFoodEntry,
     updatePlannedFoodEntry,

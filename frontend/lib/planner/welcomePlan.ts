@@ -1,9 +1,10 @@
 import type { AppData } from "@/lib/types";
-import type { NutritionGoal, NutritionSex } from "@/lib/nutrition";
+import type { NutritionSex } from "@/lib/nutrition";
 import {
   applyDietPlannerImport,
   applyGymPlannerImport,
 } from "@/lib/planner/plannerImport";
+import type { WeightUnit } from "@/lib/types";
 import {
   DEFAULT_GYM_INPUTS,
   generateGymPlan,
@@ -21,7 +22,8 @@ export interface WelcomePlanInputs {
   heightCm: number;
   age: number;
   sex: NutritionSex;
-  goal: NutritionGoal;
+  targetWeightKg: number;
+  weightUnit: WeightUnit;
   experience: ExperienceLevel;
   daysPerWeek: DaysPerWeek;
   focus: GymFocus;
@@ -37,7 +39,8 @@ export const DEFAULT_WELCOME_INPUTS: WelcomePlanInputs = {
   daysPerWeek: DEFAULT_GYM_INPUTS.daysPerWeek,
   focus: DEFAULT_GYM_INPUTS.focus,
   equipment: DEFAULT_GYM_INPUTS.equipment,
-  goal: DEFAULT_DIET_INPUTS.goal,
+  targetWeightKg: DEFAULT_DIET_INPUTS.targetWeightKg,
+  weightUnit: "kg",
 };
 
 export function toGymPlanInputs(inputs: WelcomePlanInputs): GymPlanInputs {
@@ -71,17 +74,22 @@ export function applyWelcomePlanImport(
     heightCm: inputs.heightCm,
     age: inputs.age,
     sex: inputs.sex,
-    goal: inputs.goal,
+    targetWeightKg: inputs.targetWeightKg,
     experience: inputs.experience,
   });
 
   const withWorkout = applyGymPlannerImport(data, gymPlan);
-  return applyDietPlannerImport(withWorkout, {
+  const withDiet = applyDietPlannerImport(withWorkout, {
     weightKg: inputs.weightKg,
     heightCm: inputs.heightCm,
     age: inputs.age,
     sex: inputs.sex,
-    goal: inputs.goal,
+    targetWeightKg: inputs.targetWeightKg,
     experience: inputs.experience,
   }, dietPlan);
+
+  return {
+    ...withDiet,
+    weightUnit: inputs.weightUnit,
+  };
 }

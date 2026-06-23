@@ -8,8 +8,8 @@ import {
   kgToLb,
   lbToKg,
   type HeightUnit,
-  type WeightUnit,
 } from "@/lib/planner/units";
+import type { WeightUnit } from "@/lib/types";
 
 export interface NutritionBodyStatsValues {
   weightKg: number;
@@ -21,15 +21,16 @@ export interface NutritionBodyStatsValues {
 interface NutritionBodyStatsSlidersProps {
   values: NutritionBodyStatsValues;
   onChange: (values: NutritionBodyStatsValues) => void;
+  weightUnit: WeightUnit;
   idPrefix?: string;
 }
 
 export function NutritionBodyStatsSliders({
   values,
   onChange,
+  weightUnit,
   idPrefix = "nutrition",
 }: NutritionBodyStatsSlidersProps) {
-  const [weightUnit, setWeightUnit] = useState<WeightUnit>("kg");
   const [heightUnit, setHeightUnit] = useState<HeightUnit>("cm");
 
   const weightDisplay =
@@ -38,8 +39,9 @@ export function NutritionBodyStatsSliders({
       : Math.round(kgToLb(values.weightKg));
 
   const updateWeight = (displayValue: number) => {
-    const weightKg = weightUnit === "kg" ? displayValue : lbToKg(displayValue);
-    onChange({ ...values, weightKg });
+    const nextWeightKg =
+      weightUnit === "kg" ? displayValue : lbToKg(displayValue);
+    onChange({ ...values, weightKg: nextWeightKg });
   };
 
   return (
@@ -47,18 +49,6 @@ export function NutritionBodyStatsSliders({
       <div className="planner-field">
         <div className="planner-field__head">
           <label htmlFor={`${idPrefix}-weight`}>Weight</label>
-          <div className="planner-unit-toggle">
-            {(["kg", "lb"] as const).map((unit) => (
-              <button
-                key={unit}
-                type="button"
-                className={weightUnit === unit ? "is-active" : undefined}
-                onClick={() => setWeightUnit(unit)}
-              >
-                {unit}
-              </button>
-            ))}
-          </div>
         </div>
         <p className="planner-field__value">
           {formatWeight(values.weightKg, weightUnit)}

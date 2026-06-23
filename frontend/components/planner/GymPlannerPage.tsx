@@ -17,7 +17,8 @@ import {
   generateGymPlan,
   type DaysPerWeek,
   type GymEquipment,
-  type GymFocus,
+  GYM_FOCUS_LABELS,
+  GYM_FOCUS_OPTIONS,
   type GymPlanInputs,
 } from "@/lib/planner/gymPlan";
 import type { NutritionSex } from "@/lib/nutrition";
@@ -237,22 +238,14 @@ export function GymPlannerPage() {
                   <fieldset className="planner-segment">
                     <legend>Focus</legend>
                     <div className="planner-segment__options">
-                      {(
-                        [
-                          ["strength", "Strength"],
-                          ["hypertrophy", "Hypertrophy"],
-                          ["balanced", "Balanced"],
-                        ] as const
-                      ).map(([focus, label]) => (
+                      {GYM_FOCUS_OPTIONS.map((focus) => (
                         <button
                           key={focus}
                           type="button"
                           className={inputs.focus === focus ? "is-active" : undefined}
-                          onClick={() =>
-                            setInputs((prev) => ({ ...prev, focus: focus as GymFocus }))
-                          }
+                          onClick={() => setInputs((prev) => ({ ...prev, focus }))}
                         >
-                          {label}
+                          {GYM_FOCUS_LABELS[focus]}
                         </button>
                       ))}
                     </div>
