@@ -63,15 +63,41 @@ describe("parseEnrichmentJson", () => {
     expect(out.amenities).toHaveLength(15);
   });
 
+  it("parses a quietTimes phrase and nulls out unknown stand-ins", () => {
+    expect(
+      parseEnrichmentJson(
+        JSON.stringify({
+          pricePlans: [],
+          amenities: [],
+          quietTimes: "Weekday mornings before 9am",
+        }),
+      ).quietTimes,
+    ).toBe("Weekday mornings before 9am");
+
+    for (const q of ["UNKNOWN", "n/a", "none", ""]) {
+      expect(
+        parseEnrichmentJson(
+          JSON.stringify({ pricePlans: [], amenities: [], quietTimes: q }),
+        ).quietTimes,
+      ).toBeNull();
+    }
+  });
+
   it("returns empty on garbage or non-JSON", () => {
     expect(parseEnrichmentJson("not json at all")).toEqual({
       pricePlans: [],
       amenities: [],
+      quietTimes: null,
     });
-    expect(parseEnrichmentJson("")).toEqual({ pricePlans: [], amenities: [] });
+    expect(parseEnrichmentJson("")).toEqual({
+      pricePlans: [],
+      amenities: [],
+      quietTimes: null,
+    });
     expect(parseEnrichmentJson("{ broken")).toEqual({
       pricePlans: [],
       amenities: [],
+      quietTimes: null,
     });
   });
 });

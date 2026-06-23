@@ -33,6 +33,7 @@ export interface GymComparison {
   distanceMeters: number | null;
   pricePlans: GymPricePlan[];
   amenities: string[];
+  quietTimes: string | null;
   enrichedAt: string | null;
   priceAvailable: boolean;
 }

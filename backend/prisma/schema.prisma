@@ -298,6 +298,8 @@ model Gym {
   website        String?
   rating         Float?
   photoUrl       String?        @map("photo_url")
+  /// Short phrase for least-crowded times (from grounded search), or null.
+  quietTimes     String?        @map("quiet_times")
   /// Null until first enriched; drives the cache TTL.
   lastEnrichedAt DateTime?      @map("last_enriched_at")
   pricePlans     GymPricePlan[]

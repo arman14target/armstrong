@@ -84,6 +84,16 @@ function GymColumn({
         </p>
       )}
 
+      {/* Least busy */}
+      <p className="mt-3 text-[10px] uppercase tracking-wide text-dim">
+        Least busy
+      </p>
+      {gym.quietTimes ? (
+        <p className="mt-1 text-xs leading-snug text-green">{gym.quietTimes}</p>
+      ) : (
+        <p className="mt-1 text-xs text-dim">—</p>
+      )}
+
       {/* Amenities */}
       <p className="mt-3 text-[10px] uppercase tracking-wide text-dim">
         Amenities

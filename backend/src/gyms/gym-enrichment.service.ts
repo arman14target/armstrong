@@ -10,26 +10,33 @@ export interface ExtractedPricePlan {
 export interface GymEnrichment {
   pricePlans: ExtractedPricePlan[];
   amenities: string[];
+  /** Short human phrase for least-crowded times, or null when unknown. */
+  quietTimes: string | null;
 }
 
-const EMPTY: GymEnrichment = { pricePlans: [], amenities: [] };
+const EMPTY: GymEnrichment = {
+  pricePlans: [],
+  amenities: [],
+  quietTimes: null,
+};
 
 const GEMINI_MODEL = "gemini-2.5-flash";
 const MAX_PLANS = 8;
 const MAX_AMENITIES = 15;
 
 function buildPrompt(name: string, address: string | null): string {
-  return `Using Google Search, find CURRENT, FACTUAL membership pricing and amenities for this specific gym:
+  return `Using Google Search (and Google's popular-times data when available), find CURRENT, FACTUAL info for this specific gym:
 Name: ${name}${address ? `\nAddress: ${address}` : ""}
 
 Return ONLY JSON of this exact shape (no prose, no markdown):
-{"pricePlans":[{"name":string,"priceText":string,"period":string|null}],"amenities":[string]}
+{"pricePlans":[{"name":string,"priceText":string,"period":string|null}],"amenities":[string],"quietTimes":string|null}
 
 Rules:
-- Only include prices/amenities you actually find in search results for THIS gym at THIS location.
+- Only include facts you actually find in search results for THIS gym at THIS location.
 - pricePlans: name = plan name (e.g. "Basic","Monthly"). priceText = price as written (e.g. "$29.99"). period = "month"|"year"|"week"|"day" if stated, else null.
 - If you cannot find published prices, return "pricePlans": []. NEVER guess, estimate, or invent prices.
 - amenities: facilities clearly mentioned (e.g. "Swimming Pool","Sauna","Steam Room","Group Classes","Personal Training","24/7 Access","Parking","Pool","Spa"). Title Case. Max 15.
+- quietTimes: ONE short phrase for when it is typically LEAST crowded (e.g. "Weekday mornings before 9am and after 8pm"). Use popular-times/reviews. If unknown, null. Never guess.
 - Omit anything you are not confident about.`;
 }
 
@@ -59,7 +66,11 @@ export function parseEnrichmentJson(raw: string): GymEnrichment {
     return EMPTY;
   }
 
-  const obj = data as { pricePlans?: unknown; amenities?: unknown };
+  const obj = data as {
+    pricePlans?: unknown;
+    amenities?: unknown;
+    quietTimes?: unknown;
+  };
 
   const pricePlans: ExtractedPricePlan[] = Array.isArray(obj.pricePlans)
     ? obj.pricePlans
@@ -99,7 +110,16 @@ export function parseEnrichmentJson(raw: string): GymEnrichment {
         .slice(0, MAX_AMENITIES)
     : [];
 
-  return { pricePlans, amenities };
+  let quietTimes: string | null = null;
+  if (typeof obj.quietTimes === "string") {
+    const q = obj.quietTimes.trim();
+    // The model is told to use null when unknown; guard the common stand-ins.
+    if (q && !/^(unknown|n\/?a|none|null)$/i.test(q)) {
+      quietTimes = q.slice(0, 120);
+    }
+  }
+
+  return { pricePlans, amenities, quietTimes };
 }
 
 @Injectable()
@@ -135,7 +155,10 @@ export class GymEnrichmentService {
         return parseEnrichmentJson(res.text ?? "");
       } catch (error) {
         const msg = String(error);
-        const retryable = /\b(429|503|UNAVAILABLE|RESOURCE_EXHAUSTED)\b/.test(msg);
+        // Only retry transient overload (503). A 429 RESOURCE_EXHAUSTED is a
+        // quota/rate cap whose retry delay is far longer than a request can
+        // wait — retrying just burns more quota, so bail immediately.
+        const retryable = /\b(503|UNAVAILABLE)\b/.test(msg);
         if (!retryable || attempt === 2) {
           this.logger.warn(`Gemini grounded enrich failed for ${name}: ${msg}`);
           return EMPTY;

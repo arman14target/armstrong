@@ -96,6 +96,8 @@ export interface GymComparison {
   distanceMeters: number | null;
   pricePlans: { name: string; priceText: string; period: string | null }[];
   amenities: string[];
+  /** Short least-crowded-times phrase, or null when unknown. */
+  quietTimes: string | null;
   enrichedAt: string | null;
   /** True when at least one price plan was found. */
   priceAvailable: boolean;
@@ -214,10 +216,8 @@ export class GymsService {
 
     if (stale && this.enrichment.isEnabled()) {
       try {
-        const { pricePlans, amenities } = await this.enrichment.enrich(
-          gym.name,
-          gym.address,
-        );
+        const { pricePlans, amenities, quietTimes } =
+          await this.enrichment.enrich(gym.name, gym.address);
         await this.prisma.$transaction([
           this.prisma.gymPricePlan.deleteMany({
             where: { gymId: gym.id, source: "crawl" },
@@ -253,7 +253,7 @@ export class GymsService {
           // Mark enriched even when empty, so we cache the "nothing found".
           this.prisma.gym.update({
             where: { id: gym.id },
-            data: { lastEnrichedAt: new Date() },
+            data: { lastEnrichedAt: new Date(), quietTimes },
           }),
         ]);
       } catch (error) {
@@ -282,6 +282,7 @@ export class GymsService {
         period: p.period,
       })),
       amenities: (full?.amenities ?? []).map((a) => a.name),
+      quietTimes: full?.quietTimes ?? null,
       enrichedAt: full?.lastEnrichedAt?.toISOString() ?? null,
       priceAvailable: (full?.pricePlans?.length ?? 0) > 0,
     };
