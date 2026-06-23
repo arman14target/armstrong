@@ -51,7 +51,7 @@ const COACH_IMPORTING = [
   "Assigning stickers and day colors...",
   "Calculating your daily macros...",
   "Importing your meal plan...",
-  "Setting up your food tracker...",
+  "Setting up your nutrition...",
   "Mapping workouts to your calendar...",
   "Saving your profile...",
   "Preparing your dashboard...",

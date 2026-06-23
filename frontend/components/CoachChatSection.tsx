@@ -110,10 +110,10 @@ function getCombinedApplyLabel(kinds: CoachActionKind[]): string {
   const hasWorkout = kinds.includes("workout");
 
   if (hasDiet && hasGym) {
-    return "Add to food tracker & workout days";
+    return "Add to Nutrition & workout days";
   }
   if (hasDiet && hasWorkout) {
-    return "Add to food tracker & update workout";
+    return "Add to Nutrition & update workout";
   }
   if (hasGym && hasWorkout) {
     return "Add to workout days & update exercise";
@@ -547,7 +547,7 @@ export function CoachChatSection({
                   <p className="coach-chat-empty__title">Ask your coach</p>
                   <p className="coach-chat-empty__copy">
                     Get a meal plan or gym split, tweak exercises, or ask
-                    bodybuilding questions. Tap Add to food tracker or Add to
+                    bodybuilding questions. Tap Add to Nutrition or Add to
                     workout days when you&apos;re ready — or keep chatting to
                     adjust.
                   </p>

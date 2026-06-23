@@ -43,7 +43,7 @@ const homeTabs: Array<{
   icon: typeof DumbbellIcon;
 }> = [
   { id: "workout", label: "Workout", icon: DumbbellIcon },
-  { id: "food-tracker", label: "Food tracker", icon: FoodIcon },
+  { id: "food-tracker", label: "Nutrition", icon: FoodIcon },
   { id: "history", label: "History", icon: HistoryIcon },
   { id: "coach", label: "Coach", icon: CoachIcon },
   { id: "profile", label: "Profile", icon: ProfileIcon },
@@ -200,7 +200,7 @@ export function HomeScreen() {
 
       {activeTab === "food-tracker" ? (
         <RevealOnScroll>
-          <SectionHead title="Food tracker" />
+          <SectionHead title="Nutrition" />
           <FoodTrackerSection
             profile={data.nutritionProfile}
             foodLog={data.foodLog ?? {}}

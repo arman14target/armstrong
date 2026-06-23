@@ -53,7 +53,7 @@ export function WelcomeChoice({ onMakePlan, onHavePlan, onLogin }: WelcomeChoice
           <div className="welcome-card__content">
             <h2 className="welcome-card__title">I already have a plan</h2>
             <p className="welcome-card__copy">
-              Jump straight into the app with the default workout days and food tracker.
+              Jump straight into the app with the default workout days and nutrition tracking.
             </p>
           </div>
           <ExistingPlanIcon />

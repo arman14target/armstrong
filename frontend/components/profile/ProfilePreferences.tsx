@@ -69,7 +69,7 @@ export function ProfilePreferences() {
           <div>
             <p className="text-sm text-heading">Advanced nutrition</p>
             <p className="mt-0.5 text-xs text-dim">
-              Also track calories and fat across food logging and history.
+              Also track calories and fat across meal logging and history.
             </p>
           </div>
           <label className="flex shrink-0 cursor-pointer items-center gap-2">

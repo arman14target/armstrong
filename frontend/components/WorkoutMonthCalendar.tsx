@@ -109,7 +109,7 @@ export function WorkoutMonthCalendar({
                 ariaParts.push("workout logged");
               }
               if (hasFood) {
-                ariaParts.push("food logged");
+                ariaParts.push("meal logged");
               }
               if (!hasWorkout && !hasFood) {
                 ariaParts.push("no activity");
@@ -157,7 +157,7 @@ export function WorkoutMonthCalendar({
             <span className="text-amber">{foodCount}</span>
             <span className="text-dim">
               {" "}
-              {foodCount === 1 ? "food log day" : "food log days"}
+              {foodCount === 1 ? "meal log day" : "meal log days"}
             </span>
           </p>
 
