@@ -50,6 +50,7 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
     addSet,
     deleteSet,
     updateSet,
+    updateSetDraft,
     completeSet,
     uncompleteSet,
     reorderMoves,
@@ -475,6 +476,9 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
             onAddSet={(moveId) => addSet(workoutId, moveId)}
             onUpdateSet={(moveId, setId, updates) =>
               updateSet(workoutId, moveId, setId, updates)
+            }
+            onDraftSet={(moveId, setId, weight, reps) =>
+              updateSetDraft(workoutId, setId, weight, reps)
             }
             onCompleteSet={(moveId, setId, weight, reps, restSeconds) =>
               handleCompleteSet(moveId, setId, weight, reps, restSeconds)

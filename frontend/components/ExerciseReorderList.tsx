@@ -17,6 +17,7 @@ interface ExerciseReorderListProps {
   onDelete: (moveId: string) => void;
   onAddSet: (moveId: string) => void;
   onUpdateSet: (moveId: string, setId: string, updates: Partial<SetConfig>) => void;
+  onDraftSet?: (moveId: string, setId: string, weight?: number, reps?: number) => void;
   onCompleteSet: (
     moveId: string,
     setId: string,
@@ -43,6 +44,7 @@ export function ExerciseReorderList({
   onDelete,
   onAddSet,
   onUpdateSet,
+  onDraftSet,
   onCompleteSet,
   onUncompleteSet,
   onDeleteSet,
@@ -176,6 +178,12 @@ export function ExerciseReorderList({
               onAddSet={() => onAddSet(move.id)}
               onUpdateSet={(setId, updates) =>
                 onUpdateSet(move.id, setId, updates)
+              }
+              onDraftSet={
+                onDraftSet
+                  ? (setId, weight, reps) =>
+                      onDraftSet(move.id, setId, weight, reps)
+                  : undefined
               }
               onCompleteSet={(setId, weight, reps, restSeconds) =>
                 onCompleteSet(move.id, setId, weight, reps, restSeconds)

@@ -27,6 +27,7 @@ interface MoveCardProps {
   onDelete: () => void;
   onAddSet: () => void;
   onUpdateSet: (setId: string, updates: Partial<SetConfig>) => void;
+  onDraftSet?: (setId: string, weight?: number, reps?: number) => void;
   onCompleteSet: (
     setId: string,
     weight: number,
@@ -52,6 +53,7 @@ export function MoveCard({
   onDelete,
   onAddSet,
   onUpdateSet,
+  onDraftSet,
   onCompleteSet,
   onUncompleteSet,
   onDeleteSet,
@@ -162,6 +164,11 @@ export function MoveCard({
                     isCompleted={completedSetIds.includes(set.id)}
                     onComplete={(weight, reps) =>
                       onCompleteSet(set.id, weight, reps, set.restSeconds)
+                    }
+                    onDraft={
+                      onDraftSet
+                        ? (weight, reps) => onDraftSet(set.id, weight, reps)
+                        : undefined
                     }
                     onUncomplete={
                       onUncompleteSet

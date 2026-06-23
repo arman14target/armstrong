@@ -14,15 +14,18 @@ import { clearLocalOnlyChanges } from "@/lib/localSaveReminder";
 import { loadAppData, saveAppData, clearAllAppData } from "@/lib/storage";
 import {
   clearUserPlanEverywhere,
-  syncUserPlanOnLogin,
+  detectSyncConflict,
+  resolveSyncConflict,
   type SyncAuthMode,
+  type SyncConflict,
+  type SyncConflictStrategy,
 } from "@/lib/userPlanSync";
 import {
   BatchExercisePreset,
   createMoveFromPreset,
   getWorkoutBatch,
 } from "@/lib/workoutBatches";
-import { shouldReuseActiveSession } from "@/lib/activeSession";
+import { applySetDraft, shouldReuseActiveSession } from "@/lib/activeSession";
 import {
   applyWorkoutTemplate,
   addCompletionDate,
@@ -72,6 +75,9 @@ type GymStoreValue = ReturnType<typeof useGymStoreState>;
 const GymStoreContext = createContext<GymStoreValue | null>(null);
 
 let syncedUserId: string | null = null;
+// Prevents the auth auto-effect and an explicit post-auth sync from both
+// kicking off a sync (and a duplicate conflict prompt) for the same login.
+let syncInFlight = false;
 
 function useGymStoreState() {
   const { user } = useAuth();
@@ -95,16 +101,14 @@ function useGymStoreState() {
     setCloudSyncUserId(user?.id ?? null);
   }, [user?.id]);
 
-  const syncForUser = useCallback(async (userId: string, mode: SyncAuthMode = "sign-in") => {
-    const synced = await syncUserPlanOnLogin(userId, mode);
-    setData((prev) => {
-      const localSession =
-        prev.activeSession ?? loadAppData().activeSession;
-      if (!localSession) {
-        return synced;
-      }
+  const [syncConflict, setSyncConflict] = useState<SyncConflict | null>(null);
 
-      if (synced.activeSession === localSession) {
+  // Commit a resolved plan into state, but never clobber an in-progress
+  // workout that lives only on this device.
+  const commitSyncedData = useCallback((synced: AppData) => {
+    setData((prev) => {
+      const localSession = prev.activeSession ?? loadAppData().activeSession;
+      if (!localSession || synced.activeSession === localSession) {
         return synced;
       }
 
@@ -112,9 +116,45 @@ function useGymStoreState() {
       saveAppData(merged);
       return merged;
     });
-    clearLocalOnlyChanges();
-    syncedUserId = userId;
   }, []);
+
+  const syncForUser = useCallback(
+    async (userId: string, _mode: SyncAuthMode = "sign-in") => {
+      if (syncInFlight) {
+        return;
+      }
+      syncInFlight = true;
+      try {
+        const result = await detectSyncConflict(userId);
+        if (result.kind === "conflict") {
+          // Wait for the user's choice; mark synced so the auth effect won't refire.
+          setSyncConflict(result.conflict);
+          syncedUserId = userId;
+          return;
+        }
+
+        commitSyncedData(result.appData);
+        clearLocalOnlyChanges();
+        syncedUserId = userId;
+      } finally {
+        syncInFlight = false;
+      }
+    },
+    [commitSyncedData],
+  );
+
+  const resolveDataConflict = useCallback(
+    async (strategy: SyncConflictStrategy) => {
+      if (!syncConflict) {
+        return;
+      }
+      const appData = await resolveSyncConflict(syncConflict, strategy);
+      commitSyncedData(appData);
+      clearLocalOnlyChanges();
+      setSyncConflict(null);
+    },
+    [syncConflict, commitSyncedData],
+  );
 
   useEffect(() => {
     if (!user?.id) {
@@ -370,6 +410,35 @@ function useGymStoreState() {
           ),
         ),
       );
+    },
+    [persist],
+  );
+
+  // Persist in-progress (typed-but-not-completed) set values so a half-logged
+  // workout survives the app closing. Completion stays keyed by completedSetIds,
+  // so storing a draft weight/reps here does not mark the set complete.
+  const updateSetDraft = useCallback(
+    (workoutId: string, setId: string, weight?: number, reps?: number) => {
+      if (weight === undefined && reps === undefined) {
+        return;
+      }
+      persist((prev) => {
+        const session = prev.activeSession;
+        if (!session) {
+          return prev;
+        }
+        const nextSession = applySetDraft(
+          session,
+          workoutId,
+          setId,
+          weight,
+          reps,
+        );
+        if (nextSession === session) {
+          return prev;
+        }
+        return { ...prev, activeSession: nextSession };
+      });
     },
     [persist],
   );
@@ -895,6 +964,7 @@ function useGymStoreState() {
     addSet,
     deleteSet,
     updateSet,
+    updateSetDraft,
     completeSet,
     uncompleteSet,
     reorderMoves,
@@ -911,6 +981,8 @@ function useGymStoreState() {
     getSession,
     resetAll,
     syncAfterAuth,
+    syncConflict,
+    resolveDataConflict,
     saveNutritionProfile,
     addFoodEntry,
     addPlannedFoodEntry,

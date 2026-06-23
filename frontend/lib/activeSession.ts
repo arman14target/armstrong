@@ -25,3 +25,35 @@ export function shouldReuseActiveSession(
 
   return true;
 }
+
+// Stores typed-but-not-completed set values on the session so a half-logged
+// workout survives the app closing. Completion is tracked by completedSetIds,
+// so writing a draft here never marks the set complete. Returns the same
+// session reference when nothing changes, so callers can skip a write.
+export function applySetDraft(
+  session: ActiveSession,
+  workoutId: string,
+  setId: string,
+  weight?: number,
+  reps?: number,
+): ActiveSession {
+  if (
+    session.workoutType !== workoutId ||
+    (weight === undefined && reps === undefined) ||
+    session.completedSetIds.includes(setId)
+  ) {
+    return session;
+  }
+
+  return {
+    ...session,
+    setWeights:
+      weight !== undefined
+        ? { ...session.setWeights, [setId]: weight }
+        : session.setWeights,
+    setReps:
+      reps !== undefined
+        ? { ...(session.setReps ?? {}), [setId]: reps }
+        : (session.setReps ?? {}),
+  };
+}
