@@ -13,6 +13,7 @@ const navLinks = [
   { href: "/blog/", label: "Blog" },
   { href: "/diet-planner/", label: "Diet Planner" },
   { href: "/gym-planner/", label: "Gym Planner" },
+  { href: "/gym-finder/", label: "Gym Finder" },
 ] as const;
 
 interface NavigationHeaderProps {

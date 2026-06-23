@@ -6,7 +6,7 @@
 // workoutSetupSeen) are kept as jsonb columns on purpose.
 
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   // native = local/Docker; rhel targets = Vercel serverless (AWS Lambda) runtime.
   binaryTargets = ["native", "rhel-openssl-1.0.x", "rhel-openssl-3.0.x"]
 }
@@ -53,14 +53,14 @@ model User {
   createdAt    DateTime @default(now()) @map("created_at")
   updatedAt    DateTime @updatedAt @map("updated_at")
 
-  meta             PlanMeta?
-  builtinWorkouts  BuiltinWorkout[]
-  customWorkouts   CustomWorkout[]
-  activeSession    ActiveSession?
-  completionDates  CompletionDate[]
-  dayEntries       WorkoutDayEntry[]
-  foodEntries      FoodEntry[]
-  chatMessages     ChatMessage[]
+  meta            PlanMeta?
+  builtinWorkouts BuiltinWorkout[]
+  customWorkouts  CustomWorkout[]
+  activeSession   ActiveSession?
+  completionDates CompletionDate[]
+  dayEntries      WorkoutDayEntry[]
+  foodEntries     FoodEntry[]
+  chatMessages    ChatMessage[]
 
   @@map("users")
 }
@@ -165,15 +165,15 @@ model CustomWorkout {
 
 /// An exercise. Belongs to exactly one builtin OR one custom workout.
 model Move {
-  id              String         @id @default(uuid())
-  clientId        String         @map("client_id")
-  name            String
-  position        Int            @default(0)
-  builtinWorkout  BuiltinWorkout? @relation(fields: [builtinWorkoutId], references: [id], onDelete: Cascade)
-  builtinWorkoutId String?       @map("builtin_workout_id")
-  customWorkout   CustomWorkout?  @relation(fields: [customWorkoutId], references: [id], onDelete: Cascade)
-  customWorkoutId String?        @map("custom_workout_id")
-  sets            ExerciseSet[]
+  id               String          @id @default(uuid())
+  clientId         String          @map("client_id")
+  name             String
+  position         Int             @default(0)
+  builtinWorkout   BuiltinWorkout? @relation(fields: [builtinWorkoutId], references: [id], onDelete: Cascade)
+  builtinWorkoutId String?         @map("builtin_workout_id")
+  customWorkout    CustomWorkout?  @relation(fields: [customWorkoutId], references: [id], onDelete: Cascade)
+  customWorkoutId  String?         @map("custom_workout_id")
+  sets             ExerciseSet[]
 
   @@index([builtinWorkoutId])
   @@index([customWorkoutId])
@@ -181,14 +181,14 @@ model Move {
 }
 
 model ExerciseSet {
-  id          String  @id @default(uuid())
-  clientId    String  @map("client_id")
-  restSeconds Int     @map("rest_seconds")
-  lastWeight  Float?  @map("last_weight")
-  lastReps    Int?    @map("last_reps")
-  position    Int     @default(0)
-  moveId      String  @map("move_id")
-  move        Move    @relation(fields: [moveId], references: [id], onDelete: Cascade)
+  id          String @id @default(uuid())
+  clientId    String @map("client_id")
+  restSeconds Int    @map("rest_seconds")
+  lastWeight  Float? @map("last_weight")
+  lastReps    Int?   @map("last_reps")
+  position    Int    @default(0)
+  moveId      String @map("move_id")
+  move        Move   @relation(fields: [moveId], references: [id], onDelete: Cascade)
 
   @@index([moveId])
   @@map("exercise_sets")
@@ -196,16 +196,16 @@ model ExerciseSet {
 
 /// In-progress workout. At most one per user (preserved across sync).
 model ActiveSession {
-  userId          String   @id @map("user_id")
-  user            User     @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workoutType     String   @map("workout_type")
-  startedAt       DateTime @map("started_at")
-  setWeights      Json     @default("{}") @map("set_weights")
-  setReps         Json     @default("{}") @map("set_reps")
-  completedSetIds String[] @map("completed_set_ids")
-  activeRestSetId String?  @map("active_rest_set_id")
+  userId          String    @id @map("user_id")
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workoutType     String    @map("workout_type")
+  startedAt       DateTime  @map("started_at")
+  setWeights      Json      @default("{}") @map("set_weights")
+  setReps         Json      @default("{}") @map("set_reps")
+  completedSetIds String[]  @map("completed_set_ids")
+  activeRestSetId String?   @map("active_rest_set_id")
   restEndsAt      DateTime? @map("rest_ends_at")
-  baselineWorkout Json     @map("baseline_workout")
+  baselineWorkout Json      @map("baseline_workout")
 
   @@map("active_sessions")
 }
@@ -278,4 +278,61 @@ model ChatMessage {
 
   @@index([userId, kind, position])
   @@map("chat_messages")
+}
+
+enum GymDataSource {
+  crawl
+  admin
+  user
+}
+
+/// Cached gym data for the finder/compare feature, keyed by Foursquare place id.
+/// Enriched on demand (Jina + Gemini) when users compare gyms.
+model Gym {
+  id             String         @id @default(uuid())
+  fsqPlaceId     String         @unique @map("fsq_place_id")
+  name           String
+  address        String?
+  latitude       Float?
+  longitude      Float?
+  website        String?
+  rating         Float?
+  photoUrl       String?        @map("photo_url")
+  /// Short phrase for least-crowded times (from grounded search), or null.
+  quietTimes     String?        @map("quiet_times")
+  /// Null until first enriched; drives the cache TTL.
+  lastEnrichedAt DateTime?      @map("last_enriched_at")
+  pricePlans     GymPricePlan[]
+  amenities      GymAmenity[]
+  createdAt      DateTime       @default(now()) @map("created_at")
+  updatedAt      DateTime       @updatedAt @map("updated_at")
+
+  @@map("gyms")
+}
+
+model GymPricePlan {
+  id        String        @id @default(uuid())
+  gymId     String        @map("gym_id")
+  gym       Gym           @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  name      String
+  /// Raw price text as published (e.g. "$29.99/mo"); gym pricing is rarely structured.
+  priceText String        @map("price_text")
+  period    String?
+  source    GymDataSource @default(crawl)
+  createdAt DateTime      @default(now()) @map("created_at")
+
+  @@index([gymId])
+  @@map("gym_price_plans")
+}
+
+model GymAmenity {
+  id     String        @id @default(uuid())
+  gymId  String        @map("gym_id")
+  gym    Gym           @relation(fields: [gymId], references: [id], onDelete: Cascade)
+  name   String
+  source GymDataSource @default(crawl)
+
+  @@unique([gymId, name])
+  @@index([gymId])
+  @@map("gym_amenities")
 }
