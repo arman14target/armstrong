@@ -34,6 +34,12 @@ export default function sitemap(): MetadataRoute.Sitemap {
       priority: 0.85,
     },
     {
+      url: absoluteUrl("/gym-finder"),
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.85,
+    },
+    {
       url: absoluteUrl("/blog"),
       lastModified: new Date(),
       changeFrequency: "weekly",
