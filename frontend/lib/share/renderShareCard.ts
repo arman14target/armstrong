@@ -19,8 +19,11 @@ const H = SIZE;
 const PAD = 80;
 
 const COLORS = {
-  bgTop: "#0a0a0b",
-  bgBottom: "#121216",
+  // Gold→gray themed backdrop (warm charcoal top → graphite bottom). Kept dark
+  // so the light text and surface cards stay legible.
+  bgTop: "#1c1813",
+  bgMid: "#1a1a1e",
+  bgBottom: "#0b0b0d",
   surface: "#16161a",
   line: "#2e2e36",
   gold: "#f5b800",
@@ -63,18 +66,27 @@ export async function renderShareCard(
 }
 
 function paintBackground(ctx: CanvasRenderingContext2D): void {
-  const grad = ctx.createLinearGradient(0, 0, 0, H);
+  // Diagonal gold→gray gradient matching the app theme.
+  const grad = ctx.createLinearGradient(0, 0, W, H);
   grad.addColorStop(0, COLORS.bgTop);
+  grad.addColorStop(0.55, COLORS.bgMid);
   grad.addColorStop(1, COLORS.bgBottom);
   ctx.fillStyle = grad;
   ctx.fillRect(0, 0, W, H);
 
-  // Faint gold glow at top, echoing the app's --shadow-glow.
-  const glow = ctx.createRadialGradient(W / 2, 0, 0, W / 2, 0, 560);
-  glow.addColorStop(0, "rgba(245, 184, 0, 0.14)");
+  // Warm gold sheen across the upper-left, echoing the app's --shadow-glow.
+  const glow = ctx.createRadialGradient(W * 0.32, 0, 0, W * 0.32, 0, 720);
+  glow.addColorStop(0, "rgba(245, 184, 0, 0.18)");
   glow.addColorStop(1, "rgba(245, 184, 0, 0)");
   ctx.fillStyle = glow;
-  ctx.fillRect(0, 0, W, 560);
+  ctx.fillRect(0, 0, W, 760);
+
+  // Subtle orange counter-glow lower-right for depth.
+  const ember = ctx.createRadialGradient(W, H, 0, W, H, 620);
+  ember.addColorStop(0, "rgba(255, 107, 53, 0.10)");
+  ember.addColorStop(1, "rgba(255, 107, 53, 0)");
+  ctx.fillStyle = ember;
+  ctx.fillRect(0, H - 620, W, 620);
 }
 
 /**
