@@ -20,7 +20,7 @@ const COACH_CHAT_THINKING = [
   "Cross-referencing your question with your plan...",
   "Seeing if this affects a specific training day...",
   "Checking which exercise to swap...",
-  "Reading your food log...",
+  "Reading your meal log...",
   "Checking what you logged today...",
   "Comparing your meals to your macro targets...",
   "Looking at your daily calorie target...",

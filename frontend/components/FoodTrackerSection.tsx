@@ -790,7 +790,7 @@ function ManualFoodLogList({
   if (entries.length === 0) {
     return (
       <p className="rounded-cyber border border-dashed border-line bg-bg/30 px-[var(--space-panel)] py-6 text-center text-xs leading-relaxed text-dim">
-        Nothing logged yet. Tap &ldquo;Add food&rdquo; to log what you eat.
+        Nothing logged yet. Tap &ldquo;Add meal&rdquo; to log what you eat.
       </p>
     );
   }
@@ -982,14 +982,14 @@ function NutritionDashboard({
       <div className="stack-sm">
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-display text-sm tracking-wide text-heading">
-            Food log
+            Meal log
           </h3>
           <CyberButton
             variant="green"
             className="px-3 py-1.5 text-xs"
             onClick={onAddFood}
           >
-            Add food
+            Add meal
           </CyberButton>
         </div>
         <ManualFoodLogList

@@ -170,11 +170,11 @@ export function AddFoodModal({
             <div className="inline-flex min-w-0 items-center">
               <PanelDot />
               <span className="ml-[var(--space-inline)] tracking-wide text-cyan">
-                Log food
+                Log meal
               </span>
             </div>
             <IconButton
-              label="Close add food"
+              label="Close add meal"
               variant="ghost"
               className="size-8"
               onClick={onClose}

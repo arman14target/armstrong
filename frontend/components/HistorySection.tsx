@@ -150,7 +150,7 @@ export function HistorySection({ data }: HistorySectionProps) {
             <TerminalWindow title="activity log">
               {daySummaries.length === 0 ? (
                 <p className="activity-history__empty">
-                  No activity yet. Finish a workout or log food to see your
+                  No activity yet. Finish a workout or log a meal to see your
                   history here.
                 </p>
               ) : (
