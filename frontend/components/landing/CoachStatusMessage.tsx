@@ -12,7 +12,7 @@ const COACH_THINKING_EARLY = [
   "Considering recovery between sessions...",
   "Looking at what equipment you likely have...",
   "Sketching the right training split for you...",
-  "Weighing strength vs. hypertrophy for your goal...",
+  "Weighing strength vs. muscle size for your goal...",
   "Almost ready to start building your plan...",
 ] as const;
 

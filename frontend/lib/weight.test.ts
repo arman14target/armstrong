@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   displayToKg,
   formatWeight,
+  formatBodyWeight,
   kgToLb,
   lbToKg,
   logWeight,
@@ -23,6 +24,12 @@ describe("unit conversion", () => {
     expect(formatWeight(72, "kg")).toBe("72 kg");
     expect(formatWeight(72.45, "kg")).toBe("72.5 kg");
     expect(formatWeight(80, "lb")).toBe("176.4 lb");
+  });
+
+  it("formats body weight to two decimals for 50 g steps", () => {
+    expect(formatBodyWeight(80, "kg")).toBe("80.00 kg");
+    expect(formatBodyWeight(80.05, "kg")).toBe("80.05 kg");
+    expect(formatBodyWeight(80.1, "kg")).toBe("80.10 kg");
   });
 });
 
@@ -82,5 +89,11 @@ describe("weightProgress", () => {
       { date: "2026-06-22", weightKg: 70 },
     ];
     expect(weightProgress(overshoot, "cut", 75)!.percentToTarget).toBe(100);
+  });
+
+  it("uses baseline so same-day edits still move progress", () => {
+    const log: WeightEntry[] = [{ date: "2026-06-22", weightKg: 79.5 }];
+    const p = weightProgress(log, "cut", 75, 80)!;
+    expect(p.percentToTarget).toBe(10);
   });
 });

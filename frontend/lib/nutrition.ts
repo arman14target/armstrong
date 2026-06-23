@@ -1,4 +1,4 @@
-export type NutritionGoal = "bulk" | "cut";
+export type NutritionGoal = "bulk" | "cut" | "maintain";
 export type NutritionSex = "male" | "female";
 
 export interface NutritionInputs {
@@ -6,7 +6,7 @@ export interface NutritionInputs {
   heightCm: number;
   age: number;
   sex: NutritionSex;
-  goal: NutritionGoal;
+  targetWeightKg: number;
 }
 
 export interface NutritionTargets {
@@ -17,6 +17,8 @@ export interface NutritionTargets {
 }
 
 export interface NutritionProfile extends NutritionInputs, NutritionTargets {
+  /** Derived from current vs goal weight; kept for display and legacy sync. */
+  goal: NutritionGoal;
   calculatedAt: string;
 }
 
@@ -28,12 +30,68 @@ const CUT_DEFICIT_KCAL = 500;
 const PROTEIN_G_PER_KG: Record<NutritionGoal, number> = {
   bulk: 2,
   cut: 2.2,
+  maintain: 2,
 };
 
 const FAT_CALORIE_RATIO = 0.25;
 
 function round(value: number): number {
   return Math.round(value);
+}
+
+/** Cut when goal is below current weight, bulk when above, maintain when equal. */
+export function inferNutritionGoal(
+  weightKg: number,
+  targetWeightKg: number,
+): NutritionGoal {
+  const delta = targetWeightKg - weightKg;
+  if (delta < -0.025) {
+    return "cut";
+  }
+  if (delta > 0.025) {
+    return "bulk";
+  }
+  return "maintain";
+}
+
+/** Guess a goal weight for legacy profiles that only stored cut/bulk. */
+export function defaultTargetWeightKg(
+  weightKg: number,
+  goal: NutritionGoal,
+): number {
+  if (goal === "cut") {
+    return Math.max(40, weightKg - 5);
+  }
+  if (goal === "bulk") {
+    return weightKg + 3;
+  }
+  return weightKg;
+}
+
+export function resolveTargetWeightKg(
+  profile: Pick<NutritionProfile, "weightKg" | "goal" | "targetWeightKg">,
+  fallback?: number,
+): number {
+  if (profile.targetWeightKg !== undefined && profile.targetWeightKg > 0) {
+    return profile.targetWeightKg;
+  }
+  if (fallback !== undefined && fallback > 0) {
+    return fallback;
+  }
+  return defaultTargetWeightKg(profile.weightKg, profile.goal);
+}
+
+export function nutritionProfileInputs(
+  profile: NutritionProfile,
+  fallbackTargetWeightKg?: number,
+): NutritionInputs {
+  return {
+    weightKg: profile.weightKg,
+    heightCm: profile.heightCm,
+    age: profile.age,
+    sex: profile.sex,
+    targetWeightKg: resolveTargetWeightKg(profile, fallbackTargetWeightKg),
+  };
 }
 
 /** Mifflin–St Jeor basal metabolic rate (kcal/day). */
@@ -49,12 +107,16 @@ export function calculateTdee(
   return calculateBmr(inputs) * ACTIVITY_MULTIPLIER;
 }
 
-export function calculateNutritionTargets(inputs: NutritionInputs): NutritionTargets {
+export function calculateNutritionTargets(
+  inputs: NutritionInputs & { goal: NutritionGoal },
+): NutritionTargets {
   const tdee = calculateTdee(inputs);
   const goalCalories =
     inputs.goal === "bulk"
       ? tdee + BULK_SURPLUS_KCAL
-      : tdee - CUT_DEFICIT_KCAL;
+      : inputs.goal === "cut"
+        ? tdee - CUT_DEFICIT_KCAL
+        : tdee;
 
   const dailyCalories = round(Math.max(goalCalories, 1200));
 
@@ -79,15 +141,23 @@ export function calculateNutritionTargets(inputs: NutritionInputs): NutritionTar
 }
 
 export function createNutritionProfile(inputs: NutritionInputs): NutritionProfile {
+  const goal = inferNutritionGoal(inputs.weightKg, inputs.targetWeightKg);
   return {
     ...inputs,
-    ...calculateNutritionTargets(inputs),
+    goal,
+    ...calculateNutritionTargets({ ...inputs, goal }),
     calculatedAt: new Date().toISOString(),
   };
 }
 
 export function formatGoalLabel(goal: NutritionGoal): string {
-  return goal === "bulk" ? "Bulk" : "Cut";
+  if (goal === "bulk") {
+    return "Bulk";
+  }
+  if (goal === "maintain") {
+    return "Maintain";
+  }
+  return "Cut";
 }
 
 export type MealSlot = "breakfast" | "lunch" | "dinner" | "snack";
@@ -185,6 +255,39 @@ export function createFoodEntry(
     id: crypto.randomUUID(),
     loggedAt: new Date().toISOString(),
   };
+}
+
+export function formatFoodEntryMacros(
+  entry: Pick<FoodEntry, "calories" | "proteinG" | "carbsG" | "fatG">,
+  advanced = false,
+): string {
+  if (advanced) {
+    return `${entry.calories} kcal · P ${entry.proteinG}g · C ${entry.carbsG}g · F ${entry.fatG}g`;
+  }
+
+  return `P ${entry.proteinG}g · C ${entry.carbsG}g`;
+}
+
+export function formatDailyMacroSummary(
+  totals: DailyNutritionTotals,
+  advanced = false,
+): string {
+  if (advanced) {
+    return `${totals.calories} kcal · P ${totals.proteinG}g · C ${totals.carbsG}g · F ${totals.fatG}g`;
+  }
+
+  return `P ${totals.proteinG}g · C ${totals.carbsG}g`;
+}
+
+export function formatProfileMacroTargets(
+  profile: Pick<NutritionProfile, "dailyCalories" | "proteinG" | "carbsG" | "fatG">,
+  advanced = false,
+): string {
+  if (advanced) {
+    return `${profile.dailyCalories} kcal · P ${profile.proteinG}g · C ${profile.carbsG}g · F ${profile.fatG}g`;
+  }
+
+  return `P ${profile.proteinG}g · C ${profile.carbsG}g`;
 }
 
 export function getFoodDatesForMonth(

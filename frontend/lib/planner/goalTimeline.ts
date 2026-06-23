@@ -1,4 +1,4 @@
-import type { NutritionGoal } from "@/lib/nutrition";
+import { inferNutritionGoal, type NutritionGoal } from "@/lib/nutrition";
 import type { ExperienceLevel } from "@/lib/planner/experience";
 
 export interface GoalTimelineEstimate {
@@ -10,7 +10,7 @@ export interface GoalTimelineEstimate {
 
 export interface GoalTimelineInput {
   weightKg: number;
-  goal: NutritionGoal;
+  targetWeightKg: number;
   experience: ExperienceLevel;
 }
 
@@ -24,6 +24,10 @@ function weeklyChangeKg(goal: NutritionGoal, experience: ExperienceLevel): numbe
     }[experience];
   }
 
+  if (goal === "maintain") {
+    return 0.15;
+  }
+
   return {
     amateur: 0.25,
     intermediate: 0.35,
@@ -32,31 +36,24 @@ function weeklyChangeKg(goal: NutritionGoal, experience: ExperienceLevel): numbe
   }[experience];
 }
 
-function computeTargetChangeKg(
-  weightKg: number,
-  goal: NutritionGoal,
-  experience: ExperienceLevel,
-): number {
-  if (goal === "cut") {
-    const pct = experience === "amateur" ? 0.08 : 0.1;
-    return Math.min(Math.max(weightKg * pct, 3), 12);
-  }
-
-  const pct = experience === "pro" ? 0.03 : 0.05;
-  return Math.min(Math.max(weightKg * pct, 2), 8);
-}
-
 export function estimateGoalTimeline(input: GoalTimelineInput): GoalTimelineEstimate {
-  const weeklyRateKg = weeklyChangeKg(input.goal, input.experience);
+  const goal = inferNutritionGoal(input.weightKg, input.targetWeightKg);
+  const weeklyRateKg = weeklyChangeKg(goal, input.experience);
   const targetChangeKg =
-    Math.round(computeTargetChangeKg(input.weightKg, input.goal, input.experience) * 10) / 10;
-  const rawWeeks = Math.ceil(targetChangeKg / weeklyRateKg);
-  const weeks = Math.max(6, Math.min(rawWeeks, 40));
+    Math.round(Math.abs(input.targetWeightKg - input.weightKg) * 10) / 10;
+  const rawWeeks =
+    targetChangeKg > 0 ? Math.ceil(targetChangeKg / weeklyRateKg) : 0;
+  const weeks = Math.max(6, Math.min(rawWeeks || 6, 40));
 
   return {
     weeks,
     targetChangeKg,
     weeklyRateKg,
-    goalLabel: input.goal === "cut" ? "fat loss" : "lean mass gain",
+    goalLabel:
+      goal === "cut"
+        ? "fat loss"
+        : goal === "bulk"
+          ? "lean mass gain"
+          : "maintenance",
   };
 }

@@ -1,4 +1,10 @@
+import Image from "next/image";
 import { cn } from "@/lib/cn";
+import {
+  dayStickerDisplayScale,
+  dayStickerImageSrc,
+  isDayEquipmentSticker,
+} from "@/lib/dayStickers";
 import {
   DAY_THEME_STYLES,
   type WorkoutDayTheme,
@@ -6,22 +12,45 @@ import {
 
 interface DayStickerProps {
   theme: WorkoutDayTheme;
-  emoji: string;
+  sticker: string;
   className?: string;
 }
 
-export function DaySticker({ theme, emoji, className }: DayStickerProps) {
+export function DaySticker({ theme, sticker, className }: DayStickerProps) {
+  const isEquipment = isDayEquipmentSticker(sticker);
+  const displayScale = dayStickerDisplayScale(sticker);
+  const imageSize = `${85 * displayScale}%`;
+
   return (
     <span
       aria-hidden
       className={cn(
-        "inline-flex size-12 items-center justify-center rounded-lg border bg-icon-overlay text-2xl shadow-[2px_3px_0_var(--color-icon-shadow)]",
-        DAY_THEME_STYLES[theme].border,
-        DAY_THEME_STYLES[theme].iconColor,
+        "relative inline-flex size-12 items-center justify-center",
+        !isEquipment &&
+          "rounded-lg border bg-icon-overlay shadow-[2px_3px_0_var(--color-icon-shadow)]",
+        !isEquipment && DAY_THEME_STYLES[theme].border,
+        !isEquipment && DAY_THEME_STYLES[theme].iconColor,
         className,
       )}
     >
-      {emoji}
+      {isEquipment ? (
+        <>
+          <span
+            aria-hidden
+            className="pointer-events-none absolute bottom-[6%] left-1/2 z-0 h-3 w-[78%] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(ellipse_110%_100%_at_50%_0%,color-mix(in_srgb,var(--color-secondary)_85%,transparent),transparent_68%)] blur-[5px] opacity-75"
+          />
+          <Image
+            src={dayStickerImageSrc(sticker)}
+            alt=""
+            width={48}
+            height={48}
+            className="relative z-[1] object-contain drop-shadow-[0_3px_8px_color-mix(in_srgb,var(--color-secondary)_38%,transparent)]"
+            style={{ width: imageSize, height: imageSize }}
+          />
+        </>
+      ) : (
+        <span className="text-2xl">{sticker}</span>
+      )}
     </span>
   );
 }

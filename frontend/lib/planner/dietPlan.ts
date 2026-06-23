@@ -2,6 +2,7 @@ import {
   calculateNutritionTargets,
   formatGoalLabel,
   formatMealSlotLabel,
+  inferNutritionGoal,
   type MealSlot,
   type NutritionGoal,
   type NutritionInputs,
@@ -136,13 +137,14 @@ function mealName(slot: MealSlot, experience: ExperienceLevel): string {
 }
 
 export function generateDietPlan(inputs: DietPlanInputs): DietPlanResult {
-  const targets = calculateNutritionTargets(inputs);
+  const goal = inferNutritionGoal(inputs.weightKg, inputs.targetWeightKg);
+  const targets = calculateNutritionTargets({ ...inputs, goal });
   const multiplier = experienceVolumeMultiplier(inputs.experience);
 
   const adjustedTargets: NutritionTargets = {
     dailyCalories: targets.dailyCalories,
     proteinG: round(targets.proteinG * multiplier),
-    carbsG: round(targets.carbsG * (inputs.goal === "cut" ? 0.95 : 1)),
+    carbsG: round(targets.carbsG * (goal === "cut" ? 0.95 : 1)),
     fatG: targets.fatG,
   };
 
@@ -188,7 +190,7 @@ export function generateDietPlan(inputs: DietPlanInputs): DietPlanResult {
     targets: adjustedTargets,
     meals,
     experience: inputs.experience,
-    goalLabel: formatGoalLabel(inputs.goal),
+    goalLabel: formatGoalLabel(goal),
     hydrationLiters,
     mealPrepNote,
     proteinPerMealG: round(adjustedTargets.proteinG / meals.length),
@@ -200,7 +202,7 @@ export const DEFAULT_DIET_INPUTS: DietPlanInputs = {
   heightCm: 178,
   age: 28,
   sex: "male",
-  goal: "bulk",
+  targetWeightKg: 83,
   experience: "intermediate",
 };
 

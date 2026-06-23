@@ -8,7 +8,7 @@ describe("generateDietPlan", () => {
       heightCm: 180,
       age: 30,
       sex: "male",
-      goal: "bulk",
+      targetWeightKg: 83,
       experience: "intermediate",
     });
 
@@ -24,7 +24,7 @@ describe("generateDietPlan", () => {
       heightCm: 175,
       age: 25,
       sex: "female",
-      goal: "cut",
+      targetWeightKg: 70,
       experience: "amateur",
     });
     const pro = generateDietPlan({
@@ -32,7 +32,7 @@ describe("generateDietPlan", () => {
       heightCm: 175,
       age: 25,
       sex: "female",
-      goal: "cut",
+      targetWeightKg: 70,
       experience: "pro",
     });
 

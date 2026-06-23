@@ -5,16 +5,16 @@ import {
   CalendarDayDetailModal,
   type CalendarDayWorkout,
 } from "@/components/CalendarDayDetailModal";
+import { ActivityStatsPanel } from "@/components/history/ActivityStatsPanel";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { WorkoutMonthCalendar } from "@/components/WorkoutMonthCalendar";
 import {
-  buildActivityHistory,
-  type ActivityHistoryItem,
+  buildActivityDaySummaries,
+  type ActivityDaySummary,
 } from "@/lib/activityHistory";
-import { ShareWorkoutButton } from "@/components/share/ShareWorkoutButton";
-import { buildHistoryShareSummary } from "@/lib/share/workoutShareSummary";
 import { cn } from "@/lib/cn";
 import { formatDuration } from "@/lib/formatRelativeTime";
+import { formatDailyMacroSummary } from "@/lib/nutrition";
 import type { AppData } from "@/lib/types";
 import { formatDateLabel } from "@/lib/workoutCalendar";
 import { getWorkoutEntriesForDate, getWorkoutLabel } from "@/lib/workouts";
@@ -25,47 +25,71 @@ interface HistorySectionProps {
   data: AppData;
 }
 
-function ActivityHistoryRow({
-  item,
+function formatWorkoutSummary(day: ActivityDaySummary): string | null {
+  if (day.workouts.length === 0) {
+    return null;
+  }
+
+  return day.workouts
+    .map((workout) => {
+      const duration =
+        workout.durationSeconds !== undefined
+          ? ` · ${formatDuration(workout.durationSeconds)}`
+          : "";
+      const exercises =
+        workout.exercises.length > 0
+          ? ` — ${workout.exercises.join(", ")}`
+          : "";
+      return `${workout.label}${duration}${exercises}`;
+    })
+    .join(" · ");
+}
+
+function formatFoodSummary(day: ActivityDaySummary, advanced: boolean): string | null {
+  if (!day.food || day.foodNames.length === 0) {
+    return null;
+  }
+
+  return `${day.foodNames.join(", ")} · ${formatDailyMacroSummary(day.food, advanced)}`;
+}
+
+function ActivityDayRow({
+  day,
+  advancedNutrition,
   onSelectDate,
 }: {
-  item: ActivityHistoryItem;
+  day: ActivityDaySummary;
+  advancedNutrition: boolean;
   onSelectDate: (dateKey: string) => void;
 }) {
-  const isWorkout = item.kind === "workout";
-  const dateLabel = formatDateLabel(item.dateKey);
+  const workoutSummary = formatWorkoutSummary(day);
+  const foodSummary = formatFoodSummary(day, advancedNutrition);
+  const dateLabel = formatDateLabel(day.dateKey);
 
   return (
     <button
       type="button"
-      onClick={() => onSelectDate(item.dateKey)}
-      className={cn(
-        "activity-history__row",
-        isWorkout
-          ? "activity-history__row--workout"
-          : "activity-history__row--food",
-      )}
+      onClick={() => onSelectDate(day.dateKey)}
+      className="activity-history__row activity-history__row--day"
     >
       <div className="activity-history__row-main">
-        <p className="activity-history__row-title">
-          {isWorkout ? item.label : item.name}
-        </p>
-        <p className="activity-history__row-meta">
-          {isWorkout ? (
-            <>
-              {formatDuration(item.durationSeconds)}
-              {item.durationSeconds !== undefined ? " session" : ""}
-            </>
-          ) : (
-            <>
-              {item.calories} kcal · P {item.proteinG}g · C {item.carbsG}g · F{" "}
-              {item.fatG}g
-              {item.fromPlan && !item.completed ? " · planned" : ""}
-            </>
-          )}
-        </p>
+        <p className="activity-history__row-title">{dateLabel}</p>
+        {workoutSummary ? (
+          <p className="activity-history__row-meta activity-history__row-meta--workout">
+            {workoutSummary}
+          </p>
+        ) : null}
+        {foodSummary ? (
+          <p
+            className={cn(
+              "activity-history__row-meta activity-history__row-meta--food",
+              workoutSummary && "mt-1",
+            )}
+          >
+            {foodSummary}
+          </p>
+        ) : null}
       </div>
-      <p className="activity-history__row-date">{dateLabel}</p>
     </button>
   );
 }
@@ -74,8 +98,8 @@ export function HistorySection({ data }: HistorySectionProps) {
   const [view, setView] = useState<HistoryView>("activity");
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
 
-  const historyItems = useMemo(
-    () => buildActivityHistory(data, data.foodLog, data.workoutDayLog),
+  const daySummaries = useMemo(
+    () => buildActivityDaySummaries(data, data.foodLog, data.workoutDayLog),
     [data],
   );
 
@@ -99,79 +123,60 @@ export function HistorySection({ data }: HistorySectionProps) {
 
   return (
     <>
-      <fieldset className="planner-segment history-section__tabs">
-        <legend className="sr-only">History view</legend>
-        <div className="planner-segment__options history-section__tab-options">
-          <button
-            type="button"
-            className={view === "activity" ? "is-active" : undefined}
-            onClick={() => setView("activity")}
-          >
-            Activity
-          </button>
-          <button
-            type="button"
-            className={view === "calendar" ? "is-active" : undefined}
-            onClick={() => setView("calendar")}
-          >
-            Calendar
-          </button>
-        </div>
-      </fieldset>
+      <div className="stack-md">
+        <fieldset className="planner-segment history-section__tabs">
+          <legend className="sr-only">History view</legend>
+          <div className="planner-segment__options history-section__tab-options">
+            <button
+              type="button"
+              className={view === "activity" ? "is-active" : undefined}
+              onClick={() => setView("activity")}
+            >
+              Activity
+            </button>
+            <button
+              type="button"
+              className={view === "calendar" ? "is-active" : undefined}
+              onClick={() => setView("calendar")}
+            >
+              Calendar
+            </button>
+          </div>
+        </fieldset>
 
-      {view === "activity" ? (
-        <TerminalWindow title="activity log">
-          {historyItems.length === 0 ? (
-            <p className="activity-history__empty">
-              No activity yet. Finish a workout or log food to see your history
-              here.
-            </p>
-          ) : (
-            <ul className="activity-history__list">
-              {historyItems.map((item) => {
-                const shareSummary =
-                  item.kind === "workout"
-                    ? buildHistoryShareSummary(data, {
-                        workoutId: item.workoutId,
-                        completedAt: item.timestamp,
-                        durationSeconds: item.durationSeconds,
-                      })
-                    : null;
-                return (
-                  <li
-                    key={
-                      item.kind === "workout"
-                        ? `w-${item.timestamp}-${item.workoutId}`
-                        : `f-${item.entryId}`
-                    }
-                    className="activity-history__item"
-                  >
-                    <ActivityHistoryRow
-                      item={item}
+        {view === "activity" ? (
+          <div className="stack-md">
+            <ActivityStatsPanel />
+            <TerminalWindow title="activity log">
+              {daySummaries.length === 0 ? (
+                <p className="activity-history__empty">
+                  No activity yet. Finish a workout or log food to see your
+                  history here.
+                </p>
+              ) : (
+                <ul className="activity-history__list">
+                  {daySummaries.map((day) => (
+                    <li key={day.dateKey} className="activity-history__item">
+                    <ActivityDayRow
+                      day={day}
+                      advancedNutrition={data.advancedNutrition === true}
                       onSelectDate={setSelectedDateKey}
                     />
-                    {shareSummary && (
-                      <ShareWorkoutButton
-                        summary={shareSummary}
-                        className="activity-history__share"
-                      >
-                        ↗
-                      </ShareWorkoutButton>
-                    )}
-                  </li>
-                );
-              })}
-            </ul>
-          )}
-        </TerminalWindow>
-      ) : (
-        <WorkoutMonthCalendar
-          data={data}
-          nutritionProfile={data.nutritionProfile}
-          foodLog={data.foodLog}
-          workoutDayLog={data.workoutDayLog}
-        />
-      )}
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </TerminalWindow>
+          </div>
+        ) : (
+          <WorkoutMonthCalendar
+            data={data}
+            nutritionProfile={data.nutritionProfile}
+            foodLog={data.foodLog}
+            workoutDayLog={data.workoutDayLog}
+          />
+        )}
+      </div>
 
       <CalendarDayDetailModal
         open={selectedDateKey !== null}
@@ -179,6 +184,7 @@ export function HistorySection({ data }: HistorySectionProps) {
         workouts={selectedWorkouts}
         foodEntries={selectedFoodEntries}
         nutritionProfile={data.nutritionProfile}
+        advancedNutrition={data.advancedNutrition === true}
         onClose={() => setSelectedDateKey(null)}
       />
     </>

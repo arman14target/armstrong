@@ -14,7 +14,7 @@ export function WorkoutDayIcon({ type, className }: WorkoutDayIconProps) {
   return (
     <DaySticker
       theme={BUILTIN_DAY_THEME[type]}
-      emoji={BUILTIN_DAY_STICKER[type]}
+      sticker={BUILTIN_DAY_STICKER[type]}
       className={className}
     />
   );

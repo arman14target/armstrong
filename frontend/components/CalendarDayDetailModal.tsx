@@ -9,6 +9,8 @@ import {
   DailyNutritionTotals,
   FoodEntry,
   NutritionProfile,
+  formatDailyMacroSummary,
+  formatFoodEntryMacros,
   sumDailyNutrition,
 } from "@/lib/nutrition";
 import { formatDateLabel } from "@/lib/workoutCalendar";
@@ -25,38 +27,33 @@ interface CalendarDayDetailModalProps {
   workouts: CalendarDayWorkout[];
   foodEntries: FoodEntry[];
   nutritionProfile?: NutritionProfile;
+  advancedNutrition?: boolean;
   onClose: () => void;
-}
-
-function MacroLine({ label, value, unit }: { label: string; value: number; unit: string }) {
-  return (
-    <span>
-      {label} <span className="text-heading">{value}</span>
-      {unit}
-    </span>
-  );
 }
 
 function FoodTotalsSummary({
   totals,
   profile,
+  advancedNutrition,
 }: {
   totals: DailyNutritionTotals;
   profile?: NutritionProfile;
+  advancedNutrition: boolean;
 }) {
   return (
     <div className="rounded-cyber border border-line bg-bg/40 p-[var(--space-panel)]">
       <p className="text-xs tracking-wide text-dim uppercase">Daily totals</p>
       <p className="mt-1 text-sm font-medium text-heading">
-        {totals.calories} kcal
-        {profile ? (
-          <span className="text-dim"> / {profile.dailyCalories} target</span>
+        {formatDailyMacroSummary(totals, advancedNutrition)}
+        {profile && advancedNutrition ? (
+          <span className="text-dim"> / {profile.dailyCalories} kcal target</span>
         ) : null}
-      </p>
-      <p className="mt-1 flex flex-wrap gap-x-3 gap-y-0.5 text-xs text-dim">
-        <MacroLine label="P" value={totals.proteinG} unit="g" />
-        <MacroLine label="C" value={totals.carbsG} unit="g" />
-        <MacroLine label="F" value={totals.fatG} unit="g" />
+        {profile && !advancedNutrition ? (
+          <span className="text-dim">
+            {" "}
+            / P {profile.proteinG}g · C {profile.carbsG}g target
+          </span>
+        ) : null}
       </p>
     </div>
   );
@@ -68,6 +65,7 @@ export function CalendarDayDetailModal({
   workouts,
   foodEntries,
   nutritionProfile,
+  advancedNutrition = false,
   onClose,
 }: CalendarDayDetailModalProps) {
   useEffect(() => {
@@ -172,7 +170,11 @@ export function CalendarDayDetailModal({
                 Food
               </h3>
               <div className="mt-2 stack-sm">
-                <FoodTotalsSummary totals={foodTotals} profile={nutritionProfile} />
+                <FoodTotalsSummary
+                  totals={foodTotals}
+                  profile={nutritionProfile}
+                  advancedNutrition={advancedNutrition}
+                />
                 <ul className="stack-sm">
                   {foodEntries.map((entry) => (
                     <li
@@ -183,8 +185,7 @@ export function CalendarDayDetailModal({
                         {entry.name}
                       </p>
                       <p className="mt-0.5 text-xs text-dim">
-                        {entry.calories} kcal · P {entry.proteinG}g · C {entry.carbsG}g · F{" "}
-                        {entry.fatG}g
+                        {formatFoodEntryMacros(entry, advancedNutrition)}
                       </p>
                     </li>
                   ))}

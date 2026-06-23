@@ -2,7 +2,9 @@
 
 import { useMemo, useState } from "react";
 import { ExperienceBar } from "@/components/planner/ExperienceBar";
+import { GoalWeightSlider } from "@/components/nutrition/GoalWeightSlider";
 import { NutritionBodyStatsSliders } from "@/components/nutrition/NutritionBodyStatsSliders";
+import { WeightUnitPicker } from "@/components/nutrition/WeightUnitPicker";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { EXPERIENCE_DESCRIPTIONS } from "@/lib/planner/experience";
 import { estimateGoalTimeline } from "@/lib/planner/goalTimeline";
@@ -10,7 +12,13 @@ import {
   DEFAULT_WELCOME_INPUTS,
   type WelcomePlanInputs,
 } from "@/lib/planner/welcomePlan";
-import type { DaysPerWeek, GymEquipment, GymFocus } from "@/lib/planner/gymPlan";
+import {
+  GYM_FOCUS_LABELS,
+  GYM_FOCUS_OPTIONS,
+  type DaysPerWeek,
+  type GymEquipment,
+} from "@/lib/planner/gymPlan";
+import type { WeightUnit } from "@/lib/types";
 import { GoalTimelineChart } from "@/components/welcome/GoalTimelineChart";
 import { WelcomeBackButton } from "@/components/welcome/WelcomeBackButton";
 import { WelcomeBrand } from "@/components/welcome/WelcomeBrand";
@@ -34,10 +42,10 @@ export function WelcomeOnboarding({ onBack, onComplete }: WelcomeOnboardingProps
     () =>
       estimateGoalTimeline({
         weightKg: inputs.weightKg,
-        goal: inputs.goal,
+        targetWeightKg: inputs.targetWeightKg,
         experience: inputs.experience,
       }),
-    [inputs.weightKg, inputs.goal, inputs.experience],
+    [inputs.weightKg, inputs.targetWeightKg, inputs.experience],
   );
 
   return (
@@ -61,8 +69,16 @@ export function WelcomeOnboarding({ onBack, onComplete }: WelcomeOnboardingProps
 
             <NutritionBodyStatsSliders
               values={inputs}
+              weightUnit={inputs.weightUnit}
               onChange={(bodyStats) => setInputs((prev) => ({ ...prev, ...bodyStats }))}
               idPrefix="welcome"
+            />
+
+            <WeightUnitPicker
+              value={inputs.weightUnit}
+              onChange={(weightUnit: WeightUnit) =>
+                setInputs((prev) => ({ ...prev, weightUnit }))
+              }
             />
 
             <CyberButton variant="cyan" onClick={() => setStep("goal")}>
@@ -75,24 +91,19 @@ export function WelcomeOnboarding({ onBack, onComplete }: WelcomeOnboardingProps
           <div className="planner-form stack-md">
             <h2 className="welcome-panel__title">What are you working toward?</h2>
             <p className="welcome-panel__copy">
-              We will pair your nutrition goal with a workout split that matches your level.
+              Set your goal weight — we&apos;ll figure out cut or bulk from there and
+              match your training to your level.
             </p>
 
-            <fieldset className="planner-segment">
-              <legend>Goal</legend>
-              <div className="planner-segment__options">
-                {(["bulk", "cut"] as const).map((goal) => (
-                  <button
-                    key={goal}
-                    type="button"
-                    className={inputs.goal === goal ? "is-active" : undefined}
-                    onClick={() => setInputs((prev) => ({ ...prev, goal }))}
-                  >
-                    {goal === "bulk" ? "Lean bulk" : "Cut fat"}
-                  </button>
-                ))}
-              </div>
-            </fieldset>
+            <GoalWeightSlider
+              currentWeightKg={inputs.weightKg}
+              targetWeightKg={inputs.targetWeightKg}
+              unit={inputs.weightUnit}
+              idPrefix="welcome-goal"
+              onChange={(targetWeightKg) =>
+                setInputs((prev) => ({ ...prev, targetWeightKg }))
+              }
+            />
 
             <ExperienceBar
               value={inputs.experience}
@@ -139,20 +150,14 @@ export function WelcomeOnboarding({ onBack, onComplete }: WelcomeOnboardingProps
             <fieldset className="planner-segment">
               <legend>Focus</legend>
               <div className="planner-segment__options">
-                {(
-                  [
-                    ["strength", "Strength"],
-                    ["hypertrophy", "Hypertrophy"],
-                    ["balanced", "Balanced"],
-                  ] as const
-                ).map(([focus, label]) => (
+                {GYM_FOCUS_OPTIONS.map((focus) => (
                   <button
                     key={focus}
                     type="button"
                     className={inputs.focus === focus ? "is-active" : undefined}
-                    onClick={() => setInputs((prev) => ({ ...prev, focus: focus as GymFocus }))}
+                    onClick={() => setInputs((prev) => ({ ...prev, focus }))}
                   >
-                    {label}
+                    {GYM_FOCUS_LABELS[focus]}
                   </button>
                 ))}
               </div>

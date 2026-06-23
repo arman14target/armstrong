@@ -2,6 +2,12 @@ import type { NutritionGoal } from "@/lib/nutrition";
 import type { WeightEntry, WeightUnit } from "@/lib/types";
 
 export const KG_PER_LB = 0.45359237;
+/** Fine-grained body-weight adjustments (50 g). */
+export const WEIGHT_STEP_KG = 0.05;
+
+export function snapWeightKg(kg: number): number {
+  return Math.round(kg / WEIGHT_STEP_KG) * WEIGHT_STEP_KG;
+}
 
 export function kgToLb(kg: number): number {
   return kg / KG_PER_LB;
@@ -27,6 +33,12 @@ export function formatWeight(kg: number, unit: WeightUnit): string {
   const rounded = Math.round(value * 10) / 10;
   const text = Number.isInteger(rounded) ? String(rounded) : rounded.toFixed(1);
   return `${text} ${unit}`;
+}
+
+/** Body-weight display with enough precision to show 50 g steps. */
+export function formatBodyWeight(kg: number, unit: WeightUnit): string {
+  const value = kgToDisplay(kg, unit);
+  return `${value.toFixed(2)} ${unit}`;
 }
 
 /**
@@ -58,24 +70,43 @@ export interface WeightProgress {
 }
 
 /**
- * Summarize movement from the first logged weight to the latest, judged against
- * the user's goal. Returns null when there isn't at least one entry.
+ * Summarize movement from the journey baseline to the latest log entry.
+ * Pass `baselineWeightKg` so same-day weight edits still move progress toward goal.
  */
+export function resolveWeightBaselineKg(
+  log: WeightEntry[] | undefined,
+  baselineWeightKg?: number,
+): number | undefined {
+  if (baselineWeightKg !== undefined && baselineWeightKg > 0) {
+    return baselineWeightKg;
+  }
+  if (log && log.length > 0) {
+    return log[0].weightKg;
+  }
+  return undefined;
+}
+
 export function weightProgress(
   log: WeightEntry[] | undefined,
   goal: NutritionGoal,
   targetWeightKg?: number,
+  baselineWeightKg?: number,
 ): WeightProgress | null {
-  if (!log || log.length === 0) {
+  const startKg = resolveWeightBaselineKg(log, baselineWeightKg);
+  const currentKg = log?.[log.length - 1]?.weightKg;
+
+  if (startKg === undefined || currentKg === undefined) {
     return null;
   }
-
-  const startKg = log[0].weightKg;
-  const currentKg = log[log.length - 1].weightKg;
   const deltaKg = currentKg - startKg;
 
-  // Cut = lose weight (delta ≤ 0 is progress); bulk = gain (delta ≥ 0).
-  const towardGoal = goal === "cut" ? deltaKg <= 0 : deltaKg >= 0;
+  // Cut = lose weight; bulk = gain; maintain = stay near start.
+  const towardGoal =
+    goal === "cut"
+      ? deltaKg <= 0
+      : goal === "bulk"
+        ? deltaKg >= 0
+        : Math.abs(deltaKg) < 0.5;
 
   let percentToTarget: number | undefined;
   if (targetWeightKg !== undefined && targetWeightKg !== startKg) {

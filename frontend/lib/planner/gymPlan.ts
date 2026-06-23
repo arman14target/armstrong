@@ -5,6 +5,12 @@ import {
 } from "@/lib/planner/experience";
 
 export type GymFocus = "strength" | "hypertrophy" | "balanced";
+export const GYM_FOCUS_OPTIONS: GymFocus[] = ["strength", "hypertrophy", "balanced"];
+export const GYM_FOCUS_LABELS: Record<GymFocus, string> = {
+  strength: "Strength",
+  hypertrophy: "Muscle size",
+  balanced: "Balanced",
+};
 export type GymEquipment = "full_gym" | "home";
 export type DaysPerWeek = 3 | 4 | 5 | 6;
 

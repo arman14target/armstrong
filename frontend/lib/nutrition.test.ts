@@ -3,6 +3,12 @@ import {
   calculateBmr,
   calculateNutritionTargets,
   countsTowardDailyTotals,
+  createNutritionProfile,
+  formatDailyMacroSummary,
+  formatFoodEntryMacros,
+  formatProfileMacroTargets,
+  inferNutritionGoal,
+  resolveTargetWeightKg,
   sumDailyNutrition,
 } from "@/lib/nutrition";
 import type { FoodEntry } from "@/lib/nutrition";
@@ -19,6 +25,39 @@ function food(partial: Partial<FoodEntry>): FoodEntry {
     ...partial,
   };
 }
+
+describe("inferNutritionGoal", () => {
+  it("returns cut when goal weight is below current", () => {
+    expect(inferNutritionGoal(80, 75)).toBe("cut");
+  });
+
+  it("returns bulk when goal weight is above current", () => {
+    expect(inferNutritionGoal(80, 85)).toBe("bulk");
+  });
+
+  it("returns maintain when weights match", () => {
+    expect(inferNutritionGoal(80, 80)).toBe("maintain");
+  });
+});
+
+describe("createNutritionProfile", () => {
+  it("derives goal from target weight", () => {
+    const profile = createNutritionProfile({
+      weightKg: 80,
+      heightCm: 180,
+      age: 30,
+      sex: "male",
+      targetWeightKg: 75,
+    });
+    expect(profile.goal).toBe("cut");
+    expect(profile.targetWeightKg).toBe(75);
+  });
+
+  it("resolves legacy target from stored goal", () => {
+    expect(resolveTargetWeightKg({ weightKg: 80, goal: "bulk" })).toBe(83);
+    expect(resolveTargetWeightKg({ weightKg: 80, goal: "cut" })).toBe(75);
+  });
+});
 
 describe("calculateBmr (Mifflin–St Jeor)", () => {
   const base = { weightKg: 80, heightCm: 180, age: 30 } as const;
@@ -41,6 +80,7 @@ describe("calculateNutritionTargets", () => {
       age: 30,
       sex: "male",
       goal: "bulk",
+      targetWeightKg: 83,
     });
     // TDEE 1780*1.55 = 2759, +400 surplus = 3159
     expect(t.dailyCalories).toBe(3159);
@@ -56,8 +96,35 @@ describe("calculateNutritionTargets", () => {
       age: 25,
       sex: "female",
       goal: "cut",
+      targetWeightKg: 30,
     });
     expect(t.dailyCalories).toBe(1200);
+  });
+});
+
+describe("nutrition display", () => {
+  const sample = {
+    calories: 500,
+    proteinG: 40,
+    carbsG: 50,
+    fatG: 12,
+  };
+
+  it("shows protein and carbs only in basic mode", () => {
+    expect(formatFoodEntryMacros(sample, false)).toBe("P 40g · C 50g");
+    expect(formatDailyMacroSummary(sample, false)).toBe("P 40g · C 50g");
+    expect(
+      formatProfileMacroTargets(
+        { dailyCalories: 2200, proteinG: 160, carbsG: 220, fatG: 70 },
+        false,
+      ),
+    ).toBe("P 160g · C 220g");
+  });
+
+  it("shows full macros in advanced mode", () => {
+    expect(formatFoodEntryMacros(sample, true)).toBe(
+      "500 kcal · P 40g · C 50g · F 12g",
+    );
   });
 });
 

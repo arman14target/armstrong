@@ -216,7 +216,9 @@ export function mergeAppDataOnSync(remote: AppData, local: AppData): AppData {
     },
     weightLog: mergeWeightLogs(remote.weightLog, local.weightLog),
     targetWeightKg: local.targetWeightKg ?? remote.targetWeightKg,
+    weightBaselineKg: local.weightBaselineKg ?? remote.weightBaselineKg,
     weightUnit: local.weightUnit ?? remote.weightUnit,
+    advancedNutrition: local.advancedNutrition ?? remote.advancedNutrition,
     coachPlanActive: remote.coachPlanActive ?? local.coachPlanActive,
   };
 }

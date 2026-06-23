@@ -5,6 +5,16 @@ export const LOCAL_SAVE_REMINDER_DISMISS_KEY = "armstrong-local-save-dismissed";
 export const LOCAL_SAVE_REMINDER_EVENT = "armstrong-local-save";
 export const OPEN_PROFILE_SIGNUP_EVENT = "armstrong-open-profile-signup";
 
+function notifyLocalSaveReminderChange(): void {
+  if (typeof window === "undefined") {
+    return;
+  }
+
+  queueMicrotask(() => {
+    window.dispatchEvent(new Event(LOCAL_SAVE_REMINDER_EVENT));
+  });
+}
+
 export function hasLocalOnlyChanges(): boolean {
   if (typeof window === "undefined") {
     return false;
@@ -27,7 +37,7 @@ export function dismissLocalSaveReminderForSession(): void {
   }
 
   sessionStorage.setItem(LOCAL_SAVE_REMINDER_DISMISS_KEY, "1");
-  window.dispatchEvent(new Event(LOCAL_SAVE_REMINDER_EVENT));
+  notifyLocalSaveReminderChange();
 }
 
 export function requestProfileSignup(): void {
@@ -37,7 +47,7 @@ export function requestProfileSignup(): void {
 
   // User acted on reminder, hide it for this session.
   sessionStorage.setItem(LOCAL_SAVE_REMINDER_DISMISS_KEY, "1");
-  window.dispatchEvent(new Event(LOCAL_SAVE_REMINDER_EVENT));
+  notifyLocalSaveReminderChange();
   window.dispatchEvent(new Event(OPEN_PROFILE_SIGNUP_EVENT));
 }
 
@@ -48,7 +58,7 @@ export function markLocalOnlySave(): void {
 
   sessionStorage.removeItem(LOCAL_SAVE_REMINDER_DISMISS_KEY);
   localStorage.setItem(LOCAL_ONLY_CHANGES_KEY, "1");
-  window.dispatchEvent(new Event(LOCAL_SAVE_REMINDER_EVENT));
+  notifyLocalSaveReminderChange();
 }
 
 export function clearLocalOnlyChanges(): void {
@@ -57,5 +67,5 @@ export function clearLocalOnlyChanges(): void {
   }
 
   localStorage.removeItem(LOCAL_ONLY_CHANGES_KEY);
-  window.dispatchEvent(new Event(LOCAL_SAVE_REMINDER_EVENT));
+  notifyLocalSaveReminderChange();
 }
