@@ -2,21 +2,25 @@ name: Release
 
 # Conventional-commit driven releases. release-please opens/maintains a
 # "release PR" that bumps the version + CHANGELOG; merging it tags the repo and
-# creates a GitHub Release. Free; uses the built-in GITHUB_TOKEN.
+# creates a GitHub Release.
+#
+# Requires repo setting: Settings → Actions → General → Workflow permissions →
+# "Read and write permissions" + "Allow GitHub Actions to create and approve
+# pull requests". Optional fallback: add a repo-scoped PAT as RELEASE_PLEASE_TOKEN.
 on:
   push:
     branches: [main]
   workflow_dispatch:
 
-permissions:
-  contents: write
-  pull-requests: write
-
 jobs:
   release-please:
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      pull-requests: write
     steps:
       - uses: googleapis/release-please-action@v5
         with:
           config-file: release-please-config.json
           manifest-file: .release-please-manifest.json
+          token: ${{ secrets.RELEASE_PLEASE_TOKEN || secrets.GITHUB_TOKEN }}
