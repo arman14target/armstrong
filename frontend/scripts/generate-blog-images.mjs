@@ -122,6 +122,16 @@ const SLUG_SCENES = {
     "coastal California gym with ocean breeze feel, functional training rig and kettlebells near sunny windows",
   "top-20-gyms-dublin":
     "compact European city gym with green accent walls, rowing ergs, and rainy street visible through window",
+  "planet-fitness-membership-guide":
+    "large bright commercial gym cardio floor with rows of treadmills and purple accent lighting, budget fitness center atmosphere",
+  "la-fitness-membership-guide":
+    "spacious American gym with free weight area, squat racks, and indoor lap pool visible through glass partition",
+  "anytime-fitness-membership-guide":
+    "compact 24-hour neighbourhood gym with keycard entry door, dumbbell rack and single squat rack under fluorescent lighting",
+  "puregym-membership-guide":
+    "modern UK budget gym in retail park unit with yellow accent equipment, squat racks and cardio machines, overcast daylight",
+  "equinox-membership-guide":
+    "luxury boutique gym interior with designer lighting, premium wood and leather finishes, high-end weight floor empty and immaculate",
 };
 
 const DEFAULT_SCENE =
