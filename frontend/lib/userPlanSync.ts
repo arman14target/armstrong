@@ -219,6 +219,7 @@ export function mergeAppDataOnSync(remote: AppData, local: AppData): AppData {
     weightBaselineKg: local.weightBaselineKg ?? remote.weightBaselineKg,
     weightUnit: local.weightUnit ?? remote.weightUnit,
     advancedNutrition: local.advancedNutrition ?? remote.advancedNutrition,
+    locale: remote.locale ?? local.locale,
     coachPlanActive: remote.coachPlanActive ?? local.coachPlanActive,
   };
 }

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { PanelDot } from "@/components/ui/PanelDot";
@@ -20,12 +21,16 @@ export function ConfirmModal({
   open,
   title,
   message,
-  confirmLabel = "Confirm",
-  cancelLabel = "Cancel",
+  confirmLabel,
+  cancelLabel,
   onConfirm,
   onCancel,
   confirming = false,
 }: ConfirmModalProps) {
+  const { t } = useTranslation();
+  const resolvedConfirmLabel = confirmLabel ?? t("common.confirm");
+  const resolvedCancelLabel = cancelLabel ?? t("common.cancel");
+
   useEffect(() => {
     if (!open) {
       return;
@@ -69,7 +74,9 @@ export function ConfirmModal({
       >
         <div className="panel-header">
           <PanelDot />
-          <span className="ml-[var(--space-inline)] tracking-wide text-magenta">Warning</span>
+          <span className="ml-[var(--space-inline)] tracking-wide text-magenta">
+            {t("modals.warning")}
+          </span>
         </div>
 
         <div className="modal-body">
@@ -88,7 +95,7 @@ export function ConfirmModal({
               onClick={onCancel}
               disabled={confirming}
             >
-              {cancelLabel}
+              {resolvedCancelLabel}
             </CyberButton>
             <CyberButton
               variant="magenta"
@@ -96,7 +103,7 @@ export function ConfirmModal({
               onClick={onConfirm}
               disabled={confirming}
             >
-              {confirming ? "Resetting..." : confirmLabel}
+              {confirming ? t("modals.resetting") : resolvedConfirmLabel}
             </CyberButton>
           </div>
         </div>

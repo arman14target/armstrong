@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { CyberButton } from "@/components/ui/CyberButton";
 
 interface ImportPlanButtonProps {
@@ -12,11 +13,13 @@ interface ImportPlanButtonProps {
 
 export function ImportPlanButton({
   onImport,
-  label = "Add plan to app",
+  label,
   className,
 }: ImportPlanButtonProps) {
+  const { t } = useTranslation();
   const router = useRouter();
   const [imported, setImported] = useState(false);
+  const buttonLabel = label ?? t("planner.import.default");
 
   const handleImport = () => {
     onImport();
@@ -31,7 +34,7 @@ export function ImportPlanButton({
       onClick={handleImport}
       aria-live="polite"
     >
-      {imported ? "Opening app…" : label}
+      {imported ? t("planner.import.opening") : buttonLabel}
     </CyberButton>
   );
 }

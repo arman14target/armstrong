@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useEffect, useRef, useState } from "react";
 import {
   getGoogleClientId,
@@ -18,12 +19,14 @@ export function GoogleSignInButton({
   onError,
   disabled = false,
 }: GoogleSignInButtonProps) {
+  const { t } = useTranslation();
+
   // Native (iOS/Android): the GSI web widget is blocked in webviews — use the
   // Capacitor plugin behind a themed button instead.
   if (isNativePlatform()) {
     return (
       <NativeSocialButton
-        label="Continue with Google"
+        label={t("auth.continueGoogle")}
         onClick={nativeGoogleSignIn}
         onToken={onCredential}
         onError={onError}
@@ -109,13 +112,14 @@ export function NativeSocialButton({
   onError?: (message: string) => void;
   disabled?: boolean;
 }) {
+  const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const handle = async () => {
     setBusy(true);
     try {
       onToken(await onClick());
     } catch (e) {
-      onError?.(e instanceof Error ? e.message : "Sign-in failed. Try again.");
+      onError?.(e instanceof Error ? e.message : t("auth.signInFailed"));
     } finally {
       setBusy(false);
     }
@@ -127,7 +131,7 @@ export function NativeSocialButton({
       disabled={disabled || busy}
       className="flex h-10 w-full items-center justify-center gap-2 rounded-cyber border border-line bg-surface text-sm font-medium text-heading transition-colors hover:border-primary/40 disabled:opacity-50"
     >
-      {busy ? "Signing in…" : label}
+      {busy ? t("auth.signingInEllipsis") : label}
     </button>
   );
 }

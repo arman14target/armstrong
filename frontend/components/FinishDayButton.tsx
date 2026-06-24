@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import { useTranslation } from "react-i18next";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { cn } from "@/lib/cn";
 import { APP_ROUTE } from "@/lib/routes";
@@ -22,12 +23,11 @@ export function FinishWorkoutButton({
   compact?: boolean;
 }) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const handleFinish = () => {
     if (!hasCompletedSets) {
-      const confirmed = window.confirm(
-        "No sets completed yet. Finish the day anyway?",
-      );
+      const confirmed = window.confirm(t("workout.finishNoSetsConfirm"));
       if (!confirmed) {
         return;
       }
@@ -46,7 +46,7 @@ export function FinishWorkoutButton({
       )}
       onClick={handleFinish}
     >
-      {compact ? "Finish" : "Finish workout"}
+      {compact ? t("workout.finish") : t("workout.finishFull")}
     </CyberButton>
   );
 }
@@ -57,12 +57,13 @@ export function CancelWorkoutButton({
   className,
 }: Omit<WorkoutActionButtonProps, "onFinish">) {
   const router = useRouter();
+  const { t } = useTranslation();
 
   const handleCancel = () => {
     const confirmed = window.confirm(
       hasCompletedSets
-        ? "Cancel this workout? All progress from this session will be lost."
-        : "Cancel this workout?",
+        ? t("workout.cancelWithProgressConfirm")
+        : t("workout.cancelConfirm"),
     );
     if (!confirmed) {
       return;
@@ -80,7 +81,7 @@ export function CancelWorkoutButton({
       )}
       onClick={handleCancel}
     >
-      Cancel workout
+      {t("workout.cancelWorkout")}
     </CyberButton>
   );
 }

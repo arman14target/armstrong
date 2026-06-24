@@ -110,6 +110,7 @@ export interface AppData {
   targetWeightKg?: number;
   weightUnit?: WeightUnit;
   advancedNutrition?: boolean;
+  locale?: string;
   coachPlanActive?: boolean;
 }
 

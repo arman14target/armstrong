@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 import type { WeightUnit } from "@/lib/types";
 import {
@@ -26,6 +27,7 @@ export function GoalWeightSlider({
   idPrefix = "goal-weight",
   className,
 }: GoalWeightSliderProps) {
+  const { t } = useTranslation();
   const minKg = snapWeightKg(Math.max(40, currentWeightKg - 30));
   const maxKg = snapWeightKg(Math.min(200, currentWeightKg + 30));
 
@@ -46,7 +48,7 @@ export function GoalWeightSlider({
     <div className={cn("stack-md", className)}>
       <div className="planner-field">
         <div className="planner-field__head">
-          <label htmlFor={`${idPrefix}-target`}>Goal weight</label>
+          <label htmlFor={`${idPrefix}-target`}>{t("nutrition.goalWeight")}</label>
         </div>
         <p className="planner-field__value">{formatWeight(targetWeightKg, unit)}</p>
         <input

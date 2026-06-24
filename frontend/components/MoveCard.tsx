@@ -1,6 +1,7 @@
 "use client";
 
 import { Fragment, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Move, SetConfig } from "@/lib/types";
 import { CloseIcon, InfoIcon, PlusIcon } from "@/components/icons/ActionIcons";
 import { ExerciseInfoModal } from "@/components/ExerciseInfoModal";
@@ -60,10 +61,11 @@ export function MoveCard({
   onRestComplete,
   onAllSetsComplete,
 }: MoveCardProps) {
+  const { t } = useTranslation();
   const [nameSearchOpen, setNameSearchOpen] = useState(false);
   const [infoOpen, setInfoOpen] = useState(false);
   const [catalogSlug, setCatalogSlug] = useState<string | null>(null);
-  const title = move.name.trim() || "Exercise";
+  const title = move.name.trim() || t("common.exercise");
   const timeBased = isTimeBasedExercise(move.name);
   const allSetsComplete =
     move.sets.length > 0 &&
@@ -71,6 +73,7 @@ export function MoveCard({
   const wasAllSetsCompleteRef = useRef(allSetsComplete);
   const defaultRestForNewSet =
     move.sets[move.sets.length - 1]?.restSeconds ?? 90;
+  const defaultRestLabel = formatRestLabel(defaultRestForNewSet);
 
   useEffect(() => {
     let cancelled = false;
@@ -109,7 +112,7 @@ export function MoveCard({
           <div className="flex items-center gap-1">
             {catalogSlug ? (
               <IconButton
-                label={`About ${title}`}
+                label={t("exercise.aboutAria", { name: title })}
                 variant="ghost"
                 className="size-8"
                 onClick={() => setInfoOpen(true)}
@@ -118,7 +121,7 @@ export function MoveCard({
               </IconButton>
             ) : null}
             <IconButton
-              label={`Remove ${title}`}
+              label={t("exercise.removeAria", { name: title })}
               variant="danger"
               className="size-8"
               onClick={onDelete}
@@ -130,10 +133,10 @@ export function MoveCard({
       >
         <div className="set-table">
           <div className="set-table-header" aria-hidden>
-            <span>Set</span>
-            <span>Previous</span>
-            <span>{timeBased ? "—" : "kg"}</span>
-            <span>{timeBased ? "sec" : "Reps"}</span>
+            <span>{t("sets.setHeader")}</span>
+            <span>{t("sets.previousHeader")}</span>
+            <span>{timeBased ? "—" : t("sets.kgHeader")}</span>
+            <span>{timeBased ? t("sets.secHeader") : t("sets.repsHeader")}</span>
             <span />
           </div>
 
@@ -198,10 +201,10 @@ export function MoveCard({
           type="button"
           onClick={onAddSet}
           className="set-add-button"
-          aria-label={`Add set with ${formatRestLabel(defaultRestForNewSet)} rest`}
+          aria-label={t("sets.addSetAria", { rest: defaultRestLabel })}
         >
           <PlusIcon />
-          <span>Add Set ({formatRestLabel(defaultRestForNewSet)})</span>
+          <span>{t("sets.addSet", { rest: defaultRestLabel })}</span>
         </button>
       </TerminalWindow>
 
@@ -214,8 +217,8 @@ export function MoveCard({
       <ExerciseSearchModal
         open={nameSearchOpen}
         initialValue={move.name}
-        title="Rename exercise"
-        confirmLabel="Save name"
+        title={t("exercise.renameTitle")}
+        confirmLabel={t("exercise.saveName")}
         onConfirm={(name) => {
           onUpdateName(name);
           setNameSearchOpen(false);

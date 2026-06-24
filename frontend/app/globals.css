@@ -678,6 +678,8 @@
   .cyber-btn {
     padding-inline: var(--space-btn-x);
     padding-block: var(--space-btn-y);
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
   }
 
   .cyber-btn--cyan,
@@ -696,12 +698,6 @@
     color: var(--color-primary);
   }
 
-  .cyber-btn--cyan:hover:not(:disabled) {
-    border-color: color-mix(in srgb, var(--color-primary) 80%, transparent);
-    background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
-    box-shadow: var(--shadow-glow);
-  }
-
   .cyber-btn--cyan:active:not(:disabled) {
     background-color: color-mix(in srgb, var(--color-primary) 16%, transparent);
   }
@@ -709,12 +705,6 @@
   .cyber-btn--magenta {
     border-color: color-mix(in srgb, var(--color-secondary) 55%, transparent);
     color: var(--color-secondary);
-  }
-
-  .cyber-btn--magenta:hover:not(:disabled) {
-    border-color: color-mix(in srgb, var(--color-secondary) 80%, transparent);
-    background-color: color-mix(in srgb, var(--color-secondary) 10%, transparent);
-    box-shadow: 0 0 16px rgba(255, 107, 53, 0.35), 0 0 36px rgba(255, 107, 53, 0.1);
   }
 
   .cyber-btn--magenta:active:not(:disabled) {
@@ -726,12 +716,6 @@
     color: var(--color-success);
   }
 
-  .cyber-btn--green:hover:not(:disabled) {
-    border-color: color-mix(in srgb, var(--color-success) 80%, transparent);
-    background-color: color-mix(in srgb, var(--color-success) 10%, transparent);
-    box-shadow: 0 0 16px rgba(34, 217, 122, 0.3), 0 0 36px rgba(34, 217, 122, 0.1);
-  }
-
   .cyber-btn--green:active:not(:disabled) {
     background-color: color-mix(in srgb, var(--color-success) 16%, transparent);
   }
@@ -741,14 +725,34 @@
     color: var(--color-error);
   }
 
-  .cyber-btn--red:hover:not(:disabled) {
-    border-color: color-mix(in srgb, var(--color-error) 80%, transparent);
-    background-color: color-mix(in srgb, var(--color-error) 10%, transparent);
-    box-shadow: 0 0 16px rgba(255, 71, 87, 0.35), 0 0 36px rgba(255, 71, 87, 0.1);
-  }
-
   .cyber-btn--red:active:not(:disabled) {
     background-color: color-mix(in srgb, var(--color-error) 16%, transparent);
+  }
+
+  @media (hover: hover) {
+    .cyber-btn--cyan:hover:not(:disabled) {
+      border-color: color-mix(in srgb, var(--color-primary) 80%, transparent);
+      background-color: color-mix(in srgb, var(--color-primary) 10%, transparent);
+      box-shadow: var(--shadow-glow);
+    }
+
+    .cyber-btn--magenta:hover:not(:disabled) {
+      border-color: color-mix(in srgb, var(--color-secondary) 80%, transparent);
+      background-color: color-mix(in srgb, var(--color-secondary) 10%, transparent);
+      box-shadow: 0 0 16px rgba(255, 107, 53, 0.35), 0 0 36px rgba(255, 107, 53, 0.1);
+    }
+
+    .cyber-btn--green:hover:not(:disabled) {
+      border-color: color-mix(in srgb, var(--color-success) 80%, transparent);
+      background-color: color-mix(in srgb, var(--color-success) 10%, transparent);
+      box-shadow: 0 0 16px rgba(34, 217, 122, 0.3), 0 0 36px rgba(34, 217, 122, 0.1);
+    }
+
+    .cyber-btn--red:hover:not(:disabled) {
+      border-color: color-mix(in srgb, var(--color-error) 80%, transparent);
+      background-color: color-mix(in srgb, var(--color-error) 10%, transparent);
+      box-shadow: 0 0 16px rgba(255, 71, 87, 0.35), 0 0 36px rgba(255, 71, 87, 0.1);
+    }
   }
 
   .cyber-input:focus {
@@ -3842,6 +3846,7 @@ html[data-page="landing"] .crt-shell::after {
   width: 100%;
   accent-color: var(--color-cyan);
   cursor: pointer;
+  touch-action: pan-x;
 }
 
 .planner-unit-toggle,
@@ -3966,7 +3971,10 @@ html[data-page="landing"] .crt-shell::after {
 
 .planner-xp__track-wrap {
   position: relative;
-  height: 1.75rem;
+  height: 2.25rem;
+  touch-action: none;
+  cursor: pointer;
+  user-select: none;
 }
 
 .planner-xp__track {
@@ -3997,6 +4005,7 @@ html[data-page="landing"] .crt-shell::after {
   margin: 0;
   opacity: 0;
   cursor: pointer;
+  pointer-events: none;
 }
 
 .planner-xp__ticks {
@@ -4008,6 +4017,18 @@ html[data-page="landing"] .crt-shell::after {
   text-transform: uppercase;
   color: var(--color-dim);
   text-align: center;
+}
+
+.planner-xp__tick {
+  padding: 0.2rem 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  letter-spacing: inherit;
+  text-transform: inherit;
+  color: inherit;
+  cursor: pointer;
+  touch-action: manipulation;
 }
 
 .planner-xp__tick--active {
@@ -4576,11 +4597,15 @@ html[data-page="landing"] .crt-shell::after {
   letter-spacing: 0.08em;
   text-transform: uppercase;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
   transition: opacity 0.15s ease;
 }
 
-.welcome-back:hover {
-  opacity: 0.82;
+@media (hover: hover) {
+  .welcome-back:hover {
+    opacity: 0.82;
+  }
 }
 
 .welcome-back__flash {
@@ -4874,10 +4899,9 @@ html[data-page="landing"] .crt-shell::after {
 }
 
 .welcome-steps__dot--current {
-  border-color: color-mix(in srgb, var(--color-line) 90%, white 10%);
-  background: color-mix(in srgb, var(--color-surface) 88%, transparent);
-  box-shadow: none;
-  transform: scale(1.08);
+  border-color: var(--color-cyan);
+  background: color-mix(in srgb, var(--color-cyan) 18%, var(--color-surface));
+  box-shadow: 0 0 8px color-mix(in srgb, var(--color-cyan) 35%, transparent);
 }
 
 .welcome-timeline {

@@ -1,3 +1,5 @@
+import { t } from "@/lib/i18n/t";
+
 export const EXPERIENCE_LEVELS = [
   "amateur",
   "intermediate",
@@ -8,17 +10,33 @@ export const EXPERIENCE_LEVELS = [
 export type ExperienceLevel = (typeof EXPERIENCE_LEVELS)[number];
 
 export const EXPERIENCE_LABELS: Record<ExperienceLevel, string> = {
-  amateur: "Amateur",
-  intermediate: "Intermediate",
-  advanced: "Advanced",
-  pro: "Pro",
+  get amateur() {
+    return t("experience.labels.amateur");
+  },
+  get intermediate() {
+    return t("experience.labels.intermediate");
+  },
+  get advanced() {
+    return t("experience.labels.advanced");
+  },
+  get pro() {
+    return t("experience.labels.pro");
+  },
 };
 
 export const EXPERIENCE_DESCRIPTIONS: Record<ExperienceLevel, string> = {
-  amateur: "New to tracking — simpler meals, machines, and full-body basics.",
-  intermediate: "Consistent training — balanced splits and structured macros.",
-  advanced: "Years in the gym — higher volume, compound focus, meal timing.",
-  pro: "Competition-ready — peak volume, weak-point work, precision nutrition.",
+  get amateur() {
+    return t("experience.descriptions.amateur");
+  },
+  get intermediate() {
+    return t("experience.descriptions.intermediate");
+  },
+  get advanced() {
+    return t("experience.descriptions.advanced");
+  },
+  get pro() {
+    return t("experience.descriptions.pro");
+  },
 };
 
 /** 0 = amateur, 3 = pro — for sliders and bar fill. */

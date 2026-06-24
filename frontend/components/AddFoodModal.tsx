@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { CloseIcon } from "@/components/icons/ActionIcons";
 import {
@@ -70,6 +71,7 @@ export function AddFoodModal({
   onAdd,
   onClose,
 }: AddFoodModalProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [calories, setCalories] = useState("");
   const [proteinG, setProteinG] = useState("");
@@ -170,11 +172,11 @@ export function AddFoodModal({
             <div className="inline-flex min-w-0 items-center">
               <PanelDot />
               <span className="ml-[var(--space-inline)] tracking-wide text-cyan">
-                Log meal
+                {t("nutrition.logMeal")}
               </span>
             </div>
             <IconButton
-              label="Close add meal"
+              label={t("nutrition.closeAddMeal")}
               variant="ghost"
               className="size-8"
               onClick={onClose}
@@ -188,15 +190,14 @@ export function AddFoodModal({
               id="add-food-title"
               className="font-display text-lg tracking-wide text-heading"
             >
-              What did you eat?
+              {t("nutrition.whatDidYouEat")}
             </h2>
             <p className="mt-[var(--space-gap)] text-sm leading-relaxed text-dim">
-              Search for a meal to auto-fill nutrition, or type any food name and
-              enter protein yourself.
+              {t("nutrition.addFoodHint")}
             </p>
 
             <div className="mt-[var(--space-gap-md)] block">
-              <FieldLabel required>Food name</FieldLabel>
+              <FieldLabel required>{t("nutrition.foodName")}</FieldLabel>
               <button
                 type="button"
                 onClick={() => setFoodSearchOpen(true)}
@@ -206,17 +207,17 @@ export function AddFoodModal({
                   errors.name && "border-magenta/60",
                 )}
               >
-                {name.trim() || "e.g. Chicken rice bowl"}
+                {name.trim() || t("nutrition.foodNamePlaceholder")}
               </button>
               {errors.name ? (
                 <p className="mt-1 text-xs text-magenta" role="alert">
-                  Enter a name with at least 2 characters.
+                  {t("nutrition.foodNameError")}
                 </p>
               ) : null}
             </div>
 
             <label className={cn("mt-[var(--space-gap)] block", !advancedNutrition && "sr-only")}>
-              <FieldLabel>Calories (kcal)</FieldLabel>
+              <FieldLabel>{t("nutrition.caloriesKcal")}</FieldLabel>
               <input
                 type="number"
                 inputMode="decimal"
@@ -236,7 +237,7 @@ export function AddFoodModal({
               )}
             >
               <label className="block">
-                <FieldLabel required>Protein (g)</FieldLabel>
+                <FieldLabel required>{t("nutrition.proteinG")}</FieldLabel>
                 <input
                   type="number"
                   inputMode="decimal"
@@ -258,12 +259,12 @@ export function AddFoodModal({
                 />
                 {errors.proteinG ? (
                   <p className="mt-1 text-xs text-magenta" role="alert">
-                    Protein is required.
+                    {t("nutrition.proteinRequired")}
                   </p>
                 ) : null}
               </label>
               <label className="block">
-                <FieldLabel>Carbs (g)</FieldLabel>
+                <FieldLabel>{t("nutrition.carbsG")}</FieldLabel>
                 <input
                   type="number"
                   inputMode="decimal"
@@ -276,7 +277,7 @@ export function AddFoodModal({
               </label>
               {advancedNutrition ? (
                 <label className="block">
-                  <FieldLabel>Fat (g)</FieldLabel>
+                  <FieldLabel>{t("nutrition.fatG")}</FieldLabel>
                   <input
                     type="number"
                     inputMode="decimal"
@@ -292,10 +293,10 @@ export function AddFoodModal({
 
             <div className="mt-[var(--space-section)] stack-sm">
               <CyberButton variant="green" className="w-full" onClick={handleSubmit}>
-                Add to log
+                {t("nutrition.addToLog")}
               </CyberButton>
               <CyberButton variant="cyan" className="w-full" onClick={onClose}>
-                Cancel
+                {t("common.cancel")}
               </CyberButton>
             </div>
           </div>

@@ -1,4 +1,5 @@
 import { getApiBaseUrl } from "@/lib/api/client";
+import { t } from "@/lib/i18n/t";
 
 /** Fallback dataset when our backend API isn't configured. */
 const EXERCISE_CATALOG_URL =
@@ -95,7 +96,7 @@ let catalogIndexesPromise: Promise<CatalogIndexes> | null = null;
 function formatMuscleLabel(muscles: string[] | undefined): string {
   const primary = muscles?.[0]?.trim();
   if (!primary) {
-    return "General";
+    return t("exercise.generalMuscle");
   }
 
   return primary.charAt(0).toUpperCase() + primary.slice(1);

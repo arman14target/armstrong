@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CheckIcon } from "@/components/icons/ActionIcons";
 import { NumericKeyboardInput } from "@/components/NumericKeyboardInput";
 import { IconButton } from "@/components/ui/IconButton";
@@ -53,6 +54,7 @@ export function SetRow({
   onDraft,
   onUncomplete,
 }: SetRowProps) {
+  const { t } = useTranslation();
   const defaultWeight =
     sessionWeight !== undefined ? sessionWeight : (lastWeight ?? "");
   const defaultReps =
@@ -235,7 +237,9 @@ export function SetRow({
         </div>
       ) : (
         <label className="set-table-row__field">
-          <span className="sr-only">Weight in kg for set {index + 1}</span>
+          <span className="sr-only">
+            {t("sets.weightAria", { index: index + 1 })}
+          </span>
           <NumericKeyboardInput
             type="number"
             inputMode="decimal"
@@ -261,7 +265,9 @@ export function SetRow({
 
       <label className="set-table-row__field">
         <span className="sr-only">
-          {isTimeBased ? `Hold time in seconds for set ${index + 1}` : `Reps for set ${index + 1}`}
+          {isTimeBased
+            ? t("sets.holdTimeAria", { index: index + 1 })
+            : t("sets.repsAria", { index: index + 1 })}
         </span>
         <NumericKeyboardInput
           type="number"
@@ -288,8 +294,8 @@ export function SetRow({
         <IconButton
           label={
             isCompleted
-              ? `Set ${index + 1} completed — double-click to undo`
-              : `Complete set ${index + 1}`
+              ? t("sets.completedUndoAria", { index: index + 1 })
+              : t("sets.completeAria", { index: index + 1 })
           }
           variant={isCompleted ? "green" : "cyan"}
           className="size-9 sm:size-10"

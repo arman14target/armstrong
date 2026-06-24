@@ -1,6 +1,7 @@
 "use client";
 
 import { useId } from "react";
+import { useTranslation } from "react-i18next";
 
 interface SparklineProps {
   values: number[];
@@ -21,6 +22,7 @@ export function Sparkline({
   className,
   height = 104,
 }: SparklineProps) {
+  const { t } = useTranslation();
   const gradientId = useId();
   if (values.length === 0) {
     return null;
@@ -55,7 +57,7 @@ export function Sparkline({
       preserveAspectRatio="none"
       className={className}
       role="img"
-      aria-label="Body weight trend"
+      aria-label={t("aria.bodyWeightTrend")}
     >
       <defs>
         <linearGradient id={gradientId} x1="0" y1="0" x2="0" y2="1">

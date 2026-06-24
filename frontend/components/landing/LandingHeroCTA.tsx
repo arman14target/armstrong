@@ -1,7 +1,10 @@
+"use client";
+
+import { useTranslation } from "react-i18next";
 import { DownloadButtons } from "@/components/landing/DownloadButtons";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { cn } from "@/lib/cn";
-import { landingHero } from "@/lib/landingContent";
+import { getLandingHero } from "@/lib/landingContent";
 import { APP_ROUTE } from "@/lib/routes";
 
 interface LandingHeroCTAProps {
@@ -9,6 +12,9 @@ interface LandingHeroCTAProps {
 }
 
 export function LandingHeroCTA({ className }: LandingHeroCTAProps) {
+  const { t } = useTranslation();
+  const landingHero = getLandingHero(t);
+
   return (
     <div className={cn("stack-md max-w-xl", className)}>
       <CyberButton

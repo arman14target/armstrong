@@ -1,8 +1,8 @@
+import i18n from "@/lib/i18n";
 import {
   AppData,
   CustomWorkoutDay,
   Move,
-  WORKOUT_LABELS,
   WORKOUT_TYPES,
   WorkoutDayEntry,
   WorkoutTemplate,
@@ -29,10 +29,10 @@ export function isValidWorkoutId(data: AppData, id: string): boolean {
 
 export function getWorkoutLabel(data: AppData, id: string): string {
   if (isBuiltinWorkoutType(id)) {
-    return WORKOUT_LABELS[id];
+    return i18n.t(`workout.${id}`);
   }
 
-  return findCustomWorkout(data, id)?.name ?? "Workout";
+  return findCustomWorkout(data, id)?.name ?? i18n.t("common.workout");
 }
 
 export function getWorkoutTemplate(

@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useMemo, useState } from "react";
 import {
   CalendarDayDetailModal,
@@ -34,6 +35,7 @@ export function WorkoutMonthCalendar({
   foodLog,
   workoutDayLog,
 }: WorkoutMonthCalendarProps) {
+  const { t } = useTranslation();
   const today = useMemo(() => new Date(), []);
   const year = today.getFullYear();
   const month = today.getMonth();
@@ -106,13 +108,13 @@ export function WorkoutMonthCalendar({
               const isToday = cell.dateKey === todayKey;
               const ariaParts = [`${cell.day}`];
               if (hasWorkout) {
-                ariaParts.push("workout logged");
+                ariaParts.push(t("history.ariaWorkoutLogged"));
               }
               if (hasFood) {
-                ariaParts.push("meal logged");
+                ariaParts.push(t("history.ariaMealLogged"));
               }
               if (!hasWorkout && !hasFood) {
-                ariaParts.push("no activity");
+                ariaParts.push(t("history.ariaNoActivity"));
               }
 
               return (
@@ -151,24 +153,24 @@ export function WorkoutMonthCalendar({
             <span className="text-green">{workoutCount}</span>
             <span className="text-dim">
               {" "}
-              {workoutCount === 1 ? "workout day" : "workout days"}
+              {t("history.workoutDay", { count: workoutCount })}
             </span>
             <span className="text-dim"> · </span>
             <span className="text-amber">{foodCount}</span>
             <span className="text-dim">
               {" "}
-              {foodCount === 1 ? "meal log day" : "meal log days"}
+              {t("history.mealLogDay", { count: foodCount })}
             </span>
           </p>
 
           <div className="workout-calendar__legend" aria-hidden>
             <span className="workout-calendar__legend-item">
               <span className="workout-calendar__indicator workout-calendar__indicator--workout" />
-              Workout
+              {t("history.legendWorkout")}
             </span>
             <span className="workout-calendar__legend-item">
               <span className="workout-calendar__indicator workout-calendar__indicator--food" />
-              Food
+              {t("history.legendFood")}
             </span>
           </div>
         </div>

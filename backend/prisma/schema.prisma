@@ -120,6 +120,7 @@ model PlanMeta {
   targetWeightKg   Float?   @map("target_weight_kg")
   weightUnit       String?  @map("weight_unit")
   advancedNutrition Boolean @default(false) @map("advanced_nutrition")
+  locale           String?  @map("locale")
   updatedAt        DateTime @updatedAt @map("updated_at")
 
   @@map("plan_meta")

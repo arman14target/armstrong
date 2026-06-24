@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 import type { WeightUnit } from "@/lib/types";
 import { formatBodyWeight, snapWeightKg, WEIGHT_STEP_KG } from "@/lib/weight";
@@ -20,9 +21,11 @@ export function WeightStepper({
   unit = "kg",
   minKg = 40,
   maxKg = 200,
-  label = "Current weight",
+  label,
   className,
 }: WeightStepperProps) {
+  const { t } = useTranslation();
+  const resolvedLabel = label ?? t("nutrition.currentWeight");
   const adjust = (delta: number) => {
     const next = snapWeightKg(valueKg + delta);
     onChange(Math.min(maxKg, Math.max(minKg, next)));
@@ -30,11 +33,11 @@ export function WeightStepper({
 
   return (
     <div className={cn("stack-sm", className)}>
-      <p className="text-[10px] tracking-wide text-dim uppercase">{label}</p>
+      <p className="text-[10px] tracking-wide text-dim uppercase">{resolvedLabel}</p>
       <div className="flex items-center justify-center gap-3">
         <button
           type="button"
-          aria-label={`Decrease weight by ${WEIGHT_STEP_KG * 1000} grams`}
+          aria-label={t("nutrition.decreaseWeight", { grams: WEIGHT_STEP_KG * 1000 })}
           onClick={() => adjust(-WEIGHT_STEP_KG)}
           disabled={valueKg <= minKg + WEIGHT_STEP_KG / 2}
           className="flex size-11 shrink-0 items-center justify-center rounded-cyber border border-line bg-bg/50 text-xl font-semibold text-heading transition-colors hover:border-primary/40 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
@@ -46,7 +49,7 @@ export function WeightStepper({
         </p>
         <button
           type="button"
-          aria-label={`Increase weight by ${WEIGHT_STEP_KG * 1000} grams`}
+          aria-label={t("nutrition.increaseWeight", { grams: WEIGHT_STEP_KG * 1000 })}
           onClick={() => adjust(WEIGHT_STEP_KG)}
           disabled={valueKg >= maxKg - WEIGHT_STEP_KG / 2}
           className="flex size-11 shrink-0 items-center justify-center rounded-cyber border border-line bg-bg/50 text-xl font-semibold text-heading transition-colors hover:border-primary/40 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
@@ -54,7 +57,7 @@ export function WeightStepper({
           +
         </button>
       </div>
-      <p className="text-center text-[10px] text-dim">±50 g per tap</p>
+      <p className="text-center text-[10px] text-dim">{t("nutrition.stepHint")}</p>
     </div>
   );
 }

@@ -64,6 +64,8 @@ import { createFoodEntry, createNutritionProfile, createPlannedFoodEntry, FoodEn
 import { logWeight } from "@/lib/weight";
 import { toLocalDateKey } from "@/lib/workoutCalendar";
 import type { WeightUnit } from "@/lib/types";
+import { changeAppLanguage } from "@/lib/i18n";
+import type { AppLocale } from "@/lib/i18n/locales";
 import {
   applyDietPlannerImport,
   applyGymPlannerImport,
@@ -873,6 +875,14 @@ function useGymStoreState() {
     [persist],
   );
 
+  const setLocale = useCallback(
+    (locale: AppLocale) => {
+      void changeAppLanguage(locale);
+      persist((prev) => ({ ...prev, locale }));
+    },
+    [persist],
+  );
+
   const addFoodEntry = useCallback(
     (
       dateKey: string,
@@ -1073,6 +1083,7 @@ function useGymStoreState() {
     setTargetWeight,
     setWeightUnit,
     setAdvancedNutrition,
+    setLocale,
     addFoodEntry,
     addPlannedFoodEntry,
     updatePlannedFoodEntry,

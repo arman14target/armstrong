@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { GoalTimelineEstimate } from "@/lib/planner/goalTimeline";
 
 interface GoalTimelineChartProps {
@@ -57,6 +58,7 @@ function pointsToPath(points: Array<[number, number]>): string {
 }
 
 export function GoalTimelineChart({ estimate }: GoalTimelineChartProps) {
+  const { t } = useTranslation();
   const [animate, setAnimate] = useState(false);
 
   const { linePath, fillPath, end } = useMemo(() => {
@@ -82,7 +84,7 @@ export function GoalTimelineChart({ estimate }: GoalTimelineChartProps) {
         className="welcome-timeline__chart"
         viewBox="0 0 300 120"
         role="img"
-        aria-label={`Projected progress over ${estimate.weeks} weeks`}
+        aria-label={t("welcome.timelineChartAria", { weeks: estimate.weeks })}
       >
         <defs>
           <linearGradient id="welcome-timeline-gradient" x1="0%" y1="100%" x2="100%" y2="0%">
@@ -124,10 +126,10 @@ export function GoalTimelineChart({ estimate }: GoalTimelineChartProps) {
         />
 
         <text x="24" y="118" className="welcome-timeline__label">
-          Today
+          {t("welcome.timelineToday")}
         </text>
         <text x="276" y="118" textAnchor="end" className="welcome-timeline__label">
-          Week {estimate.weeks}
+          {t("welcome.timelineWeek", { weeks: estimate.weeks })}
         </text>
       </svg>
     </div>

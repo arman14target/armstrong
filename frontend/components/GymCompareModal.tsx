@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
 import { CloseIcon } from "@/components/icons/ActionIcons";
 import { IconButton } from "@/components/ui/IconButton";
@@ -22,6 +23,7 @@ function GymColumn({
   unit: DistanceUnit;
   enrichmentEnabled: boolean;
 }) {
+  const { t } = useTranslation();
   const distance = formatDistance(gym.distanceMeters, unit);
   return (
     <div className="flex min-w-0 flex-col rounded-cyber border border-line bg-bg/40 p-2.5 sm:p-3">
@@ -34,14 +36,14 @@ function GymColumn({
             {gym.name}
           </p>
           <p className="mt-0.5 text-[11px] text-dim">
-            {distance ? `${distance} away` : gym.address ? "Nearby" : "—"}
+            {distance ? t("gym.away", { distance }) : gym.address ? t("gym.nearby") : "—"}
           </p>
         </div>
       </div>
 
       {/* Price */}
       <p className="mt-3 text-[10px] uppercase tracking-wide text-dim">
-        Membership
+        {t("gym.membership")}
       </p>
       {gym.pricePlans.length > 0 ? (
         <ul className="mt-1 stack-sm">
@@ -64,7 +66,7 @@ function GymColumn({
         <p className="mt-1 text-xs text-dim">
           {enrichmentEnabled ? (
             <>
-              Not listed —{" "}
+              {t("gym.notListed")}{" "}
               {gym.website ? (
                 <a
                   href={gym.website}
@@ -72,10 +74,10 @@ function GymColumn({
                   rel="noopener noreferrer"
                   className="text-cyan hover:text-heading"
                 >
-                  check site
+                  {t("gym.checkSite")}
                 </a>
               ) : (
-                "check site"
+                t("gym.checkSite")
               )}
             </>
           ) : (
@@ -86,7 +88,7 @@ function GymColumn({
 
       {/* Least busy */}
       <p className="mt-3 text-[10px] uppercase tracking-wide text-dim">
-        Least busy
+        {t("gym.leastBusy")}
       </p>
       {gym.quietTimes ? (
         <p className="mt-1 text-xs leading-snug text-green">{gym.quietTimes}</p>
@@ -96,7 +98,7 @@ function GymColumn({
 
       {/* Amenities */}
       <p className="mt-3 text-[10px] uppercase tracking-wide text-dim">
-        Amenities
+        {t("gym.amenities")}
       </p>
       {gym.amenities.length > 0 ? (
         <ul className="mt-1 flex flex-wrap gap-1">
@@ -120,7 +122,7 @@ function GymColumn({
           rel="noopener noreferrer"
           className="mt-auto pt-3 text-[11px] text-cyan hover:text-heading"
         >
-          Visit website →
+          {t("gym.visitWebsite")}
         </a>
       )}
     </div>
@@ -142,6 +144,8 @@ export function GymCompareModal({
   unit: DistanceUnit;
   onClose: () => void;
 }) {
+  const { t } = useTranslation();
+
   useEffect(() => {
     if (!open) return;
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
@@ -175,11 +179,11 @@ export function GymCompareModal({
           <div className="inline-flex min-w-0 items-center">
             <PanelDot />
             <span className="ml-[var(--space-inline)] tracking-wide text-primary">
-              Compare gyms
+              {t("gym.compareGyms")}
             </span>
           </div>
           <IconButton
-            label="Close comparison"
+            label={t("gym.closeComparison")}
             variant="ghost"
             className="size-8"
             onClick={onClose}
@@ -190,7 +194,7 @@ export function GymCompareModal({
 
         <div className="modal-body min-h-0 flex-1 overflow-y-auto">
           <h2 id="gym-compare-title" className="sr-only">
-            Gym comparison
+            {t("gym.comparisonTitle")}
           </h2>
 
           {loading && (
@@ -200,11 +204,9 @@ export function GymCompareModal({
                 aria-hidden="true"
               />
               <p className="text-center text-sm text-dim">
-                Reading each gym&apos;s website for prices &amp; amenities…
+                {t("gym.loadingDetail")}
                 <br />
-                <span className="text-[11px]">
-                  This can take up to a minute the first time.
-                </span>
+                <span className="text-[11px]">{t("gym.loadingHint")}</span>
               </p>
             </div>
           )}
@@ -219,8 +221,7 @@ export function GymCompareModal({
             <>
               {!result.enrichmentEnabled && (
                 <p className="mb-3 rounded-cyber border border-line bg-bg/40 px-3 py-2 text-[11px] text-dim">
-                  Live pricing &amp; amenities aren&apos;t enabled on the server
-                  yet — showing distance and contact only.
+                  {t("gym.enrichmentDisabled")}
                 </p>
               )}
               <div
@@ -240,9 +241,7 @@ export function GymCompareModal({
                 ))}
               </div>
               <p className="mt-3 text-[10px] leading-snug text-dim">
-                Prices &amp; amenities are auto-gathered from each gym&apos;s
-                website and may be incomplete or out of date. Always confirm with
-                the gym.
+                {t("gym.disclaimer")}
               </p>
             </>
           )}

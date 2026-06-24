@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useMemo, useState } from "react";
 import { AddFoodModal } from "@/components/AddFoodModal";
 import { CheckIcon, PencilIcon, TrashIcon } from "@/components/icons/ActionIcons";
@@ -147,6 +148,8 @@ function SexChoice({
   selected: NutritionSex | null;
   onSelect: (sex: NutritionSex) => void;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="grid grid-cols-2 gap-2">
       {(["male", "female"] as const).map((sex) => (
@@ -161,7 +164,7 @@ function SexChoice({
               : "border-line bg-bg/40 text-dim hover:border-cyan/30",
           )}
         >
-          {sex}
+          {t(`nutrition.${sex}`)}
         </button>
       ))}
     </div>
@@ -179,6 +182,7 @@ function NutritionSetup({
   onCancel?: () => void;
   requiredFirst?: boolean;
 }) {
+  const { t } = useTranslation();
   const { data, setWeightUnit } = useGymStore();
   const savedWeightUnit = data.weightUnit;
   const useSliderSetup = !initialProfile;
@@ -303,18 +307,16 @@ function NutritionSetup({
       <div className="stack-md">
         {requiredFirst ? (
           <p className="rounded-cyber border border-cyan/25 bg-cyan/5 px-3 py-2 text-xs leading-relaxed text-dim">
-            Set your daily nutrition targets first. Once saved, you can start
-            logging meals and tracking intake against your goal.
+            {t("nutrition.setupRequiredHint")}
           </p>
         ) : null}
 
         <div>
           <h3 className="font-display text-sm tracking-wide text-heading">
-            Your stats
+            {t("nutrition.yourStats")}
           </h3>
           <p className="mt-1 text-xs leading-relaxed text-dim">
-            We use the Mifflin–St Jeor formula with your weight, height, age,
-            and sex to estimate daily calories.
+            {t("nutrition.statsFormulaHint")}
           </p>
         </div>
 
@@ -338,7 +340,7 @@ function NutritionSetup({
             <div className="grid grid-cols-2 gap-[var(--space-gap)]">
               <label className="block">
                 <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
-                  Weight (kg)
+                  {t("nutrition.weightKg")}
                 </span>
                 <input
                   type="number"
@@ -357,7 +359,7 @@ function NutritionSetup({
 
               <label className="block">
                 <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
-                  Height (cm)
+                  {t("nutrition.heightCm")}
                 </span>
                 <input
                   type="number"
@@ -377,7 +379,7 @@ function NutritionSetup({
 
             <label className="block">
               <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
-                Age
+                {t("nutrition.age")}
               </span>
               <input
                 type="number"
@@ -396,7 +398,7 @@ function NutritionSetup({
 
             <div>
               <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
-                Sex
+                {t("nutrition.sex")}
               </span>
               <SexChoice
                 selected={sex}
@@ -409,7 +411,7 @@ function NutritionSetup({
               />
               {errors.sex ? (
                 <p className="mt-1 text-xs text-magenta" role="alert">
-                  Select male or female for an accurate estimate.
+                  {t("nutrition.sexError")}
                 </p>
               ) : null}
             </div>
@@ -417,11 +419,11 @@ function NutritionSetup({
         )}
 
         <CyberButton variant="green" className="w-full" onClick={handleBodyNext}>
-          Next: goal weight
+          {t("nutrition.nextGoalWeight")}
         </CyberButton>
         {onCancel ? (
           <CyberButton variant="cyan" className="w-full" onClick={onCancel}>
-            Cancel
+            {t("common.cancel")}
           </CyberButton>
         ) : null}
       </div>
@@ -436,11 +438,10 @@ function NutritionSetup({
       <div className="stack-md">
         <div>
           <h3 className="font-display text-sm tracking-wide text-heading">
-            Goal weight
+            {t("nutrition.goalWeight")}
           </h3>
           <p className="mt-1 text-xs leading-relaxed text-dim">
-            Slide to your target weight. We&apos;ll set cut or bulk automatically
-            and adjust your daily calories.
+            {t("nutrition.goalWeightHint")}
           </p>
         </div>
 
@@ -460,17 +461,19 @@ function NutritionSetup({
         {previewTargets ? (
           <div className="rounded-cyber border border-line bg-bg/30 p-[var(--space-panel)]">
             <p className="mb-3 text-[10px] tracking-wide text-dim uppercase">
-              Live macro preview · {previewGoal ? formatGoalLabel(previewGoal) : ""}
+              {t("nutrition.liveMacroPreview", {
+                goal: previewGoal ? formatGoalLabel(previewGoal) : "",
+              })}
             </p>
             <p className="font-display text-2xl tracking-wide text-heading">
               {previewTargets.dailyCalories}
-              <span className="ml-1 text-sm text-dim">kcal / day</span>
+              <span className="ml-1 text-sm text-dim">{t("nutrition.macros.kcalPerDay")}</span>
             </p>
             <MacroBars
               className="mt-3"
               items={[
                 {
-                  label: "Protein",
+                  label: t("nutrition.macros.protein"),
                   value: previewTargets.proteinG,
                   max: Math.max(
                     previewTargets.proteinG,
@@ -481,7 +484,7 @@ function NutritionSetup({
                   accent: "cyan",
                 },
                 {
-                  label: "Carbs",
+                  label: t("nutrition.macros.carbs"),
                   value: previewTargets.carbsG,
                   max: Math.max(
                     previewTargets.proteinG,
@@ -492,7 +495,7 @@ function NutritionSetup({
                   accent: "green",
                 },
                 {
-                  label: "Fat",
+                  label: t("nutrition.macros.fat"),
                   value: previewTargets.fatG,
                   max: Math.max(
                     previewTargets.proteinG,
@@ -509,16 +512,16 @@ function NutritionSetup({
 
         {errors.goal ? (
           <p className="text-xs text-magenta" role="alert">
-            Set a goal weight to continue.
+            {t("nutrition.setGoalWeightError")}
           </p>
         ) : null}
 
         <div className="stack-sm">
           <CyberButton variant="green" className="w-full" onClick={handleGoalNext}>
-            See my targets
+            {t("nutrition.seeTargets")}
           </CyberButton>
           <CyberButton variant="cyan" className="w-full" onClick={() => setStep("body")}>
-            Back
+            {t("common.back")}
           </CyberButton>
         </div>
       </div>
@@ -529,11 +532,14 @@ function NutritionSetup({
     <div className="stack-md">
       <div>
         <h3 className="font-display text-sm tracking-wide text-heading">
-          Your daily targets
+          {t("nutrition.yourDailyTargets")}
         </h3>
         <p className="mt-1 text-xs leading-relaxed text-dim">
-          Based on {weightKg} kg → {targetWeightKg} kg goal (
-          {previewGoal ? formatGoalLabel(previewGoal) : "plan"}).
+          {t("nutrition.targetsSummary", {
+            current: weightKg,
+            target: targetWeightKg,
+            goal: previewGoal ? formatGoalLabel(previewGoal) : t("nutrition.goal.plan"),
+          })}
         </p>
       </div>
 
@@ -543,14 +549,14 @@ function NutritionSetup({
             <MacroBars
               items={[
                 {
-                  label: "Calories",
+                  label: t("nutrition.macros.calories"),
                   value: previewTargets.dailyCalories,
                   max: previewTargets.dailyCalories,
                   unit: "kcal",
                   accent: "cyan",
                 },
                 {
-                  label: "Protein",
+                  label: t("nutrition.macros.protein"),
                   value: previewTargets.proteinG,
                   max: Math.max(
                     previewTargets.proteinG,
@@ -561,7 +567,7 @@ function NutritionSetup({
                   accent: "cyan",
                 },
                 {
-                  label: "Carbs",
+                  label: t("nutrition.macros.carbs"),
                   value: previewTargets.carbsG,
                   max: Math.max(
                     previewTargets.proteinG,
@@ -572,7 +578,7 @@ function NutritionSetup({
                   accent: "green",
                 },
                 {
-                  label: "Fat",
+                  label: t("nutrition.macros.fat"),
                   value: previewTargets.fatG,
                   max: Math.max(
                     previewTargets.proteinG,
@@ -588,25 +594,25 @@ function NutritionSetup({
         ) : (
           <div className="grid grid-cols-2 gap-[var(--space-gap)] sm:grid-cols-4">
             <MacroStat
-              label="Calories"
+              label={t("nutrition.macros.calories")}
               value={previewTargets.dailyCalories}
               unit="kcal"
               accent="amber"
             />
             <MacroStat
-              label="Protein"
+              label={t("nutrition.macros.protein")}
               value={previewTargets.proteinG}
               unit="g"
               accent="cyan"
             />
             <MacroStat
-              label="Carbs"
+              label={t("nutrition.macros.carbs")}
               value={previewTargets.carbsG}
               unit="g"
               accent="green"
             />
             <MacroStat
-              label="Fat"
+              label={t("nutrition.macros.fat")}
               value={previewTargets.fatG}
               unit="g"
               accent="magenta"
@@ -616,17 +622,17 @@ function NutritionSetup({
       ) : null}
 
       <p className="text-xs leading-relaxed text-dim">
-        Protein is set high for muscle (
-        {previewGoal === "cut" ? "2.2" : "2.0"} g/kg). Fat fills ~25% of calories;
-        carbs cover the rest.
+        {previewGoal === "cut"
+          ? t("nutrition.proteinHintCut")
+          : t("nutrition.proteinHintBulk")}
       </p>
 
       <div className="stack-sm">
         <CyberButton variant="green" className="w-full" onClick={handleSave}>
-          Save targets
+          {t("nutrition.saveTargets")}
         </CyberButton>
         <CyberButton variant="cyan" className="w-full" onClick={() => setStep("goal")}>
-          Back
+          {t("common.back")}
         </CyberButton>
       </div>
     </div>
@@ -685,13 +691,13 @@ function PlannedFoodList({
   onRemove: (entryId: string) => void;
   onTogglePlannedMeal: (entryId: string, completed: boolean) => void;
 }) {
+  const { t } = useTranslation();
   const sortedEntries = sortFoodEntries(entries);
 
   if (sortedEntries.length === 0) {
     return (
       <p className="rounded-cyber border border-dashed border-line bg-bg/30 px-[var(--space-panel)] py-6 text-center text-xs leading-relaxed text-dim">
-        No planned meals yet. Add your own below, or ask your coach for a meal
-        plan.
+        {t("nutrition.noPlannedMeals")}
       </p>
     );
   }
@@ -721,7 +727,7 @@ function PlannedFoodList({
                   onTogglePlannedMeal(entry.id, event.target.checked)
                 }
                 className="peer sr-only"
-                aria-label={`Mark ${entry.name} as eaten`}
+                aria-label={t("nutrition.markEaten", { name: entry.name })}
               />
               <span
                 aria-hidden
@@ -749,13 +755,13 @@ function PlannedFoodList({
               <p className="mt-0.5 text-xs text-dim">
                 {formatFoodEntryMacros(entry, advancedNutrition)}
                 {!entry.completed ? (
-                  <span className="text-dim/70"> · check when eaten</span>
+                  <span className="text-dim/70"> · {t("nutrition.checkWhenEaten")}</span>
                 ) : null}
               </p>
             </div>
             <div className="flex shrink-0 items-center gap-0.5">
               <IconButton
-                label={`Edit ${entry.name}`}
+                label={t("nutrition.editEntry", { name: entry.name })}
                 variant="ghost"
                 className="size-8 text-dim hover:text-cyan"
                 onClick={() => onEdit(entry)}
@@ -763,7 +769,7 @@ function PlannedFoodList({
                 <PencilIcon />
               </IconButton>
               <IconButton
-                label={`Remove ${entry.name}`}
+                label={t("nutrition.removeEntry", { name: entry.name })}
                 variant="ghost"
                 className="size-8 text-dim hover:text-magenta"
                 onClick={() => onRemove(entry.id)}
@@ -787,10 +793,12 @@ function ManualFoodLogList({
   advancedNutrition: boolean;
   onRemove: (entryId: string) => void;
 }) {
+  const { t } = useTranslation();
+
   if (entries.length === 0) {
     return (
       <p className="rounded-cyber border border-dashed border-line bg-bg/30 px-[var(--space-panel)] py-6 text-center text-xs leading-relaxed text-dim">
-        Nothing logged yet. Tap &ldquo;Add meal&rdquo; to log what you eat.
+        {t("nutrition.noMealsLogged")}
       </p>
     );
   }
@@ -845,6 +853,7 @@ function NutritionDashboard({
   onEditPlannedFood: (entry: FoodEntry) => void;
   onTogglePlannedMeal: (entryId: string, completed: boolean) => void;
 }) {
+  const { t } = useTranslation();
   const { data } = useGymStore();
   const advancedNutrition = data.advancedNutrition === true;
   const totals = useMemo(() => sumDailyNutrition(entries), [entries]);
@@ -868,14 +877,14 @@ function NutritionDashboard({
           type="button"
           onClick={() => onDateChange(shiftDateKey(dateKey, -1))}
           className="rounded-cyber px-2 py-1 text-sm text-dim transition-colors hover:border-cyan/30 hover:text-heading"
-          aria-label="Previous day"
+          aria-label={t("history.prevDay")}
         >
           ‹
         </button>
         <div className="text-center text-sm font-medium text-heading">
           {isToday ? (
             <>
-              <span className="text-xs tracking-wide text-dim uppercase">Today</span>
+              <span className="text-xs tracking-wide text-dim uppercase">{t("nutrition.today")}</span>
               <span className="mx-1.5 text-line">·</span>
               <span>{formatDateLabel(dateKey)}</span>
             </>
@@ -893,7 +902,7 @@ function NutritionDashboard({
               ? "cursor-not-allowed text-dim/40"
               : "text-dim hover:border-cyan/30 hover:text-heading",
           )}
-          aria-label="Next day"
+          aria-label={t("history.nextDay")}
         >
           ›
         </button>
@@ -902,14 +911,14 @@ function NutritionDashboard({
       <div>
         <div className="mb-[var(--space-gap)] flex items-center justify-between gap-2">
           <p className="text-[10px] tracking-wide text-dim uppercase">
-            Today&apos;s intake
+            {t("nutrition.todaysIntake")}
           </p>
           <button
             type="button"
             onClick={onRecalibrate}
             className="text-[10px] tracking-wide text-cyan uppercase transition-colors hover:text-heading"
           >
-            Edit targets
+            {t("nutrition.editTargets")}
           </button>
         </div>
         <div
@@ -920,7 +929,7 @@ function NutritionDashboard({
         >
           {advancedNutrition ? (
             <MacroStat
-              label="Calories"
+              label={t("nutrition.macros.calories")}
               value={profile.dailyCalories}
               unit="kcal"
               accent="amber"
@@ -929,7 +938,7 @@ function NutritionDashboard({
             />
           ) : null}
           <MacroStat
-            label="Protein"
+            label={t("nutrition.macros.protein")}
             value={profile.proteinG}
             unit="g"
             accent="cyan"
@@ -937,7 +946,7 @@ function NutritionDashboard({
             target={profile.proteinG}
           />
           <MacroStat
-            label="Carbs"
+            label={t("nutrition.macros.carbs")}
             value={profile.carbsG}
             unit="g"
             accent="green"
@@ -946,7 +955,7 @@ function NutritionDashboard({
           />
           {advancedNutrition ? (
             <MacroStat
-              label="Fat"
+              label={t("nutrition.macros.fat")}
               value={profile.fatG}
               unit="g"
               accent="magenta"
@@ -960,14 +969,14 @@ function NutritionDashboard({
       <div className="stack-sm">
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-display text-sm tracking-wide text-heading">
-            Planned meals
+            {t("nutrition.plannedMeals")}
           </h3>
           <CyberButton
             variant="cyan"
             className="px-3 py-1.5 text-xs"
             onClick={onAddPlannedFood}
           >
-            Add planned meal
+            {t("nutrition.addPlannedMeal")}
           </CyberButton>
         </div>
         <PlannedFoodList
@@ -982,14 +991,14 @@ function NutritionDashboard({
       <div className="stack-sm">
         <div className="flex items-center justify-between gap-2">
           <h3 className="font-display text-sm tracking-wide text-heading">
-            Meal log
+            {t("nutrition.mealLog")}
           </h3>
           <CyberButton
             variant="green"
             className="px-3 py-1.5 text-xs"
             onClick={onAddFood}
           >
-            Add meal
+            {t("nutrition.addMeal")}
           </CyberButton>
         </div>
         <ManualFoodLogList

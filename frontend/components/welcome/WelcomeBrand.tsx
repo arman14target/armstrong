@@ -1,3 +1,6 @@
+"use client";
+
+import { useTranslation } from "react-i18next";
 import { GlitchText } from "@/components/ui/GlitchText";
 import { cn } from "@/lib/cn";
 
@@ -12,6 +15,8 @@ export function WelcomeBrand({
   compact = false,
   loading = false,
 }: WelcomeBrandProps) {
+  const { t } = useTranslation();
+
   return (
     <div
       className={cn(
@@ -30,7 +35,7 @@ export function WelcomeBrand({
         )}
       />
       {!compact ? (
-        <p className="welcome-brand__tagline">Train hard. Track everything.</p>
+        <p className="welcome-brand__tagline">{t("brand.tagline")}</p>
       ) : null}
     </div>
   );

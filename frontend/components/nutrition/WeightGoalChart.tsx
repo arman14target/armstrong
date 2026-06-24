@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { CheckIcon, PencilIcon } from "@/components/icons/ActionIcons";
 import { IconButton } from "@/components/ui/IconButton";
 import { cn } from "@/lib/cn";
@@ -41,6 +42,7 @@ export function WeightGoalChart({
   onSave,
   onAdjust,
 }: WeightGoalChartProps) {
+  const { t } = useTranslation();
   const resolvedBaseline =
     baselineKg ?? resolveWeightBaselineKg(log) ?? currentWeightKg;
   const effectiveCurrentKg = editing ? draftWeightKg : currentWeightKg;
@@ -67,7 +69,7 @@ export function WeightGoalChart({
             {editing ? (
               <button
                 type="button"
-                aria-label="Decrease weight by 50 grams"
+                aria-label={t("nutrition.decreaseWeight", { grams: 50 })}
                 onClick={() => onAdjust?.(-WEIGHT_STEP_KG)}
                 disabled={draftWeightKg <= 40 + WEIGHT_STEP_KG / 2}
                 className="flex size-9 shrink-0 items-center justify-center rounded-cyber border border-line bg-bg/50 text-lg font-semibold text-heading transition-colors hover:border-primary/40 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
@@ -83,7 +85,7 @@ export function WeightGoalChart({
             {editing ? (
               <button
                 type="button"
-                aria-label="Increase weight by 50 grams"
+                aria-label={t("nutrition.increaseWeight", { grams: 50 })}
                 onClick={() => onAdjust?.(WEIGHT_STEP_KG)}
                 disabled={draftWeightKg >= 200 - WEIGHT_STEP_KG / 2}
                 className="flex size-9 shrink-0 items-center justify-center rounded-cyber border border-line bg-bg/50 text-lg font-semibold text-heading transition-colors hover:border-primary/40 hover:text-primary disabled:cursor-not-allowed disabled:opacity-40"
@@ -94,7 +96,7 @@ export function WeightGoalChart({
 
             {onEdit || onSave ? (
               <IconButton
-                label={editing ? "Save weight" : "Edit weight"}
+                label={editing ? t("nutrition.saveWeight") : t("nutrition.editWeight")}
                 variant={editing ? "green" : "ghost"}
                 className={cn(
                   "size-9",
@@ -123,19 +125,19 @@ export function WeightGoalChart({
               ? `${progress.deltaKg > 0 ? "▲" : "▼"} ${formatBodyWeight(
                   Math.abs(progress.deltaKg),
                   unit,
-                )} since start`
-              : "Starting point"}
+                )} ${t("nutrition.sinceStart")}`
+              : t("nutrition.startingPoint")}
           </p>
 
           {editing ? (
-            <p className="mt-1 text-[10px] text-dim">±50 g per tap · tap ✓ to save</p>
+            <p className="mt-1 text-[10px] text-dim">{t("nutrition.editWeightHint")}</p>
           ) : null}
         </div>
 
         {pct !== undefined ? (
           <div className="shrink-0 text-right">
             <p className="font-display text-2xl leading-none text-primary">{pct}%</p>
-            <p className="mt-1 text-[10px] uppercase tracking-wide text-dim">to goal</p>
+            <p className="mt-1 text-[10px] uppercase tracking-wide text-dim">{t("nutrition.toGoal")}</p>
           </div>
         ) : null}
       </div>

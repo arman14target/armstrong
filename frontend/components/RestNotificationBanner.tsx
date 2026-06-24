@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import {
   getNotificationPermission,
   isNotificationSupported,
@@ -18,6 +19,7 @@ export function RestNotificationBanner({
   active = true,
   onPermissionGranted,
 }: RestNotificationBannerProps) {
+  const { t } = useTranslation();
   const [visible, setVisible] = useState(false);
   const [requesting, setRequesting] = useState(false);
   const [dismissedForSession, setDismissedForSession] = useState(false);
@@ -71,10 +73,9 @@ export function RestNotificationBanner({
 
   return (
     <div className="mb-[var(--space-gap-md)] rounded-cyber border border-cyan/30 bg-cyan/5 p-[var(--space-panel)]">
-      <p className="text-sm text-heading">Get notified when rest is over</p>
+      <p className="text-sm text-heading">{t("notifications.restBannerTitle")}</p>
       <p className="mt-1 text-xs text-dim">
-        Enable notifications so Armstrong can alert you when your rest timer
-        finishes — even if the app is in the background.
+        {t("notifications.restBannerBody")}
       </p>
       <div className="mt-[var(--space-gap)] inline-gap flex-nowrap">
         <button
@@ -83,14 +84,14 @@ export function RestNotificationBanner({
           disabled={requesting}
           className="cyber-btn--cyan min-h-10 rounded-cyber border px-[var(--space-inline)] text-xs disabled:opacity-60"
         >
-          {requesting ? "Enabling..." : "Enable notifications"}
+          {requesting ? t("common.enabling") : t("notifications.enable")}
         </button>
         <button
           type="button"
           onClick={handleDismiss}
           className="min-h-10 rounded-cyber border border-line px-[var(--space-inline)] text-xs text-dim transition-colors hover:text-heading"
         >
-          Not now
+          {t("common.notNow")}
         </button>
       </div>
     </div>

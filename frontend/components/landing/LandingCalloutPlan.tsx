@@ -1,48 +1,37 @@
-const planDays = [
-  {
-    label: "Push",
-    accent: "cyan" as const,
-    detail: "Bench · OHP · Fly",
-  },
-  {
-    label: "Pull",
-    accent: "magenta" as const,
-    detail: "Rows · Pulldown · Curl",
-  },
-  {
-    label: "Legs",
-    accent: "green" as const,
-    detail: "Squat · RDL · Curl",
-  },
-] as const;
+"use client";
 
-const dietMeals = [
-  { label: "Chicken & rice", accent: "amber" as const },
-  { label: "Oats & whey shake", accent: "amber" as const },
-  { label: "Ground beef & sweet potato", accent: "amber" as const },
-] as const;
+import { useTranslation } from "react-i18next";
+
+const PLAN_DAY_IDS = ["push", "pull", "legs"] as const;
+const DIET_MEAL_IDS = ["chicken", "oats", "beef"] as const;
 
 export function LandingCalloutPlan() {
+  const { t } = useTranslation();
+
   return (
     <div className="landing-callout-plan">
       <p className="landing-callout-plan__goal">
-        &ldquo;I want to gain weight&rdquo;
+        &ldquo;{t("landing.calloutPlan.goal")}&rdquo;
       </p>
 
       <section className="landing-callout-plan__section">
         <div className="landing-callout-plan__head">
-          <span className="landing-callout-plan__label">Your plan</span>
-          <span className="landing-callout-plan__badge">3 days</span>
+          <span className="landing-callout-plan__label">{t("landing.calloutPlan.yourPlan")}</span>
+          <span className="landing-callout-plan__badge">{t("landing.calloutPlan.daysBadge")}</span>
         </div>
 
         <ul className="landing-callout-plan__list">
-          {planDays.map((day) => (
+          {PLAN_DAY_IDS.map((id) => (
             <li
-              key={day.label}
-              className={`landing-callout-plan__item landing-callout-plan__item--${day.accent}`}
+              key={id}
+              className={`landing-callout-plan__item landing-callout-plan__item--${id === "push" ? "cyan" : id === "pull" ? "magenta" : "green"}`}
             >
-              <span className="landing-callout-plan__item-label">{day.label}</span>
-              <span className="landing-callout-plan__item-detail">{day.detail}</span>
+              <span className="landing-callout-plan__item-label">
+                {t(`landing.calloutPlan.days.${id}.label`)}
+              </span>
+              <span className="landing-callout-plan__item-detail">
+                {t(`landing.calloutPlan.days.${id}.detail`)}
+              </span>
             </li>
           ))}
         </ul>
@@ -51,20 +40,22 @@ export function LandingCalloutPlan() {
       <section className="landing-callout-plan__section">
         <div className="landing-callout-plan__head">
           <span className="landing-callout-plan__label landing-callout-plan__label--diet">
-            Your diet
+            {t("landing.calloutPlan.yourDiet")}
           </span>
           <span className="landing-callout-plan__badge landing-callout-plan__badge--diet">
-            3,200 kcal
+            {t("landing.calloutPlan.kcalBadge")}
           </span>
         </div>
 
         <ul className="landing-callout-plan__list">
-          {dietMeals.map((meal) => (
+          {DIET_MEAL_IDS.map((id) => (
             <li
-              key={meal.label}
-              className={`landing-callout-plan__item landing-callout-plan__item--${meal.accent}`}
+              key={id}
+              className="landing-callout-plan__item landing-callout-plan__item--amber"
             >
-              <span className="landing-callout-plan__item-label">{meal.label}</span>
+              <span className="landing-callout-plan__item-label">
+                {t(`landing.calloutPlan.meals.${id}`)}
+              </span>
             </li>
           ))}
         </ul>

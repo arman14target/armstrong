@@ -1,3 +1,5 @@
+"use client";
+
 import Image from "next/image";
 import { cn } from "@/lib/cn";
 import {
@@ -5,6 +7,7 @@ import {
   dayStickerImageSrc,
   isDayEquipmentSticker,
 } from "@/lib/dayStickers";
+import { useCachedImage } from "@/hooks/useCachedImage";
 import {
   DAY_THEME_STYLES,
   type WorkoutDayTheme,
@@ -20,6 +23,9 @@ export function DaySticker({ theme, sticker, className }: DayStickerProps) {
   const isEquipment = isDayEquipmentSticker(sticker);
   const displayScale = dayStickerDisplayScale(sticker);
   const imageSize = `${85 * displayScale}%`;
+  const imageSrc = useCachedImage(
+    isEquipment ? dayStickerImageSrc(sticker) : "",
+  );
 
   return (
     <span
@@ -40,7 +46,7 @@ export function DaySticker({ theme, sticker, className }: DayStickerProps) {
             className="pointer-events-none absolute bottom-[6%] left-1/2 z-0 h-3 w-[78%] -translate-x-1/2 rounded-[50%] bg-[radial-gradient(ellipse_110%_100%_at_50%_0%,color-mix(in_srgb,var(--color-secondary)_85%,transparent),transparent_68%)] blur-[5px] opacity-75"
           />
           <Image
-            src={dayStickerImageSrc(sticker)}
+            src={imageSrc}
             alt=""
             width={48}
             height={48}

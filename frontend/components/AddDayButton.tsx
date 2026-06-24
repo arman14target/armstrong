@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { PlusIcon } from "@/components/icons/ActionIcons";
 import { cn } from "@/lib/cn";
 
@@ -9,6 +10,8 @@ interface AddDayButtonProps {
 }
 
 export function AddDayButton({ onClick, className }: AddDayButtonProps) {
+  const { t } = useTranslation();
+
   return (
     <button
       type="button"
@@ -23,10 +26,10 @@ export function AddDayButton({ onClick, className }: AddDayButtonProps) {
           <PlusIcon className="size-6" />
         </div>
         <p className="text-sm font-semibold leading-tight tracking-wide text-dim group-hover:text-heading">
-          Add Day
+          {t("workout.addDay")}
         </p>
         <p className="text-[10px] leading-tight text-dim/80">
-          New workout split
+          {t("addDay.subtitle")}
         </p>
       </div>
     </button>

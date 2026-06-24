@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import {
   PlanEntryChoiceScreen,
   type PlanEntryChoiceScreenProps,
@@ -11,10 +12,12 @@ type ExercisePlanScreenProps = Omit<
 >;
 
 export function ExercisePlanScreen(props: ExercisePlanScreenProps) {
+  const { t } = useTranslation();
+
   return (
     <PlanEntryChoiceScreen
-      title="Exercise Plan"
-      description="How would you like to add your workout plan?"
+      title={t("welcome.exercisePlanTitle")}
+      description={t("welcome.exercisePlanDescription")}
       {...props}
     />
   );

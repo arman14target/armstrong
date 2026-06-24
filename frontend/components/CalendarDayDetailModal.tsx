@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useEffect } from "react";
 import { CloseIcon } from "@/components/icons/ActionIcons";
 import { IconButton } from "@/components/ui/IconButton";
@@ -40,18 +41,26 @@ function FoodTotalsSummary({
   profile?: NutritionProfile;
   advancedNutrition: boolean;
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="rounded-cyber border border-line bg-bg/40 p-[var(--space-panel)]">
-      <p className="text-xs tracking-wide text-dim uppercase">Daily totals</p>
+      <p className="text-xs tracking-wide text-dim uppercase">{t("history.dailyTotals")}</p>
       <p className="mt-1 text-sm font-medium text-heading">
         {formatDailyMacroSummary(totals, advancedNutrition)}
         {profile && advancedNutrition ? (
-          <span className="text-dim"> / {profile.dailyCalories} kcal target</span>
+          <span className="text-dim">
+            {" "}
+            {t("history.kcalTarget", { calories: profile.dailyCalories })}
+          </span>
         ) : null}
         {profile && !advancedNutrition ? (
           <span className="text-dim">
             {" "}
-            / P {profile.proteinG}g · C {profile.carbsG}g target
+            {t("history.macroTarget", {
+              proteinG: profile.proteinG,
+              carbsG: profile.carbsG,
+            })}
           </span>
         ) : null}
       </p>
@@ -68,6 +77,8 @@ export function CalendarDayDetailModal({
   advancedNutrition = false,
   onClose,
 }: CalendarDayDetailModalProps) {
+  const { t } = useTranslation();
+
   useEffect(() => {
     if (!open) {
       return;
@@ -115,11 +126,11 @@ export function CalendarDayDetailModal({
           <div className="inline-flex min-w-0 items-center">
             <PanelDot />
             <span className="ml-[var(--space-inline)] tracking-wide text-cyan">
-              Day details
+              {t("history.dayDetails")}
             </span>
           </div>
           <IconButton
-            label="Close day details"
+            label={t("history.closeDayDetails")}
             variant="ghost"
             className="size-8"
             onClick={onClose}
@@ -138,14 +149,14 @@ export function CalendarDayDetailModal({
 
           {!hasWorkouts && !hasFood ? (
             <p className="mt-[var(--space-gap-md)] rounded-cyber border border-dashed border-line bg-bg/30 px-[var(--space-panel)] py-6 text-center text-sm leading-relaxed text-dim">
-              Nothing logged on this day yet.
+              {t("history.nothingLoggedDay")}
             </p>
           ) : null}
 
           {hasWorkouts ? (
             <section className="mt-[var(--space-gap-md)]">
               <h3 className="text-xs font-semibold tracking-wide text-green uppercase">
-                Workouts
+                {t("history.workouts")}
               </h3>
               <ul className="mt-2 stack-sm">
                 {workouts.map((workout) => (
@@ -156,7 +167,9 @@ export function CalendarDayDetailModal({
                     <p className="text-sm font-medium text-heading">{workout.label}</p>
                     <p className="mt-0.5 text-xs text-dim">
                       {formatDuration(workout.durationSeconds)}
-                      {workout.durationSeconds !== undefined ? " session" : ""}
+                      {workout.durationSeconds !== undefined
+                        ? ` ${t("history.session")}`
+                        : ""}
                     </p>
                   </li>
                 ))}
@@ -167,7 +180,7 @@ export function CalendarDayDetailModal({
           {hasFood ? (
             <section className="mt-[var(--space-gap-md)]">
               <h3 className="text-xs font-semibold tracking-wide text-amber uppercase">
-                Food
+                {t("history.food")}
               </h3>
               <div className="mt-2 stack-sm">
                 <FoodTotalsSummary

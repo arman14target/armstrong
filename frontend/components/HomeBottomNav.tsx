@@ -6,6 +6,7 @@ import {
   useState,
   type ComponentType,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 
 export type HomeTab =
@@ -32,6 +33,7 @@ export function HomeBottomNav({
   activeTab,
   onTabChange,
 }: HomeBottomNavProps) {
+  const { t } = useTranslation();
   const trackRef = useRef<HTMLDivElement>(null);
   const tabRefs = useRef<Array<HTMLButtonElement | null>>([]);
   const [indicator, setIndicator] = useState({ left: 0, width: 72 });
@@ -61,7 +63,7 @@ export function HomeBottomNav({
   }, [activeTab, tabs]);
 
   return (
-    <nav className="home-bottom-nav" aria-label="Home sections">
+    <nav className="home-bottom-nav" aria-label={t("aria.homeSections")}>
       <div ref={trackRef} className="home-bottom-nav__track">
         <div
           className="home-bottom-nav__glass"

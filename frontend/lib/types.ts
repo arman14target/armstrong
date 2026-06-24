@@ -109,6 +109,8 @@ export interface AppData {
   weightUnit?: WeightUnit;
   /** When true, show calories, fat, and full nutrition detail. */
   advancedNutrition?: boolean;
+  /** BCP 47 app display locale (e.g. en-US, de-CH). */
+  locale?: string;
   /** When true, hide default split days — show coach-imported custom days only. */
   coachPlanActive?: boolean;
 }

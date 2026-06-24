@@ -18,6 +18,7 @@ import {
   apiSignUp,
 } from "@/lib/api/auth";
 import { ApiError, isApiConfigured, type AppUser } from "@/lib/api/client";
+import { t } from "@/lib/i18n/t";
 import { isGoogleConfigured } from "@/lib/googleAuth";
 import { isAppleConfigured } from "@/lib/appleAuth";
 
@@ -43,27 +44,27 @@ const AuthContext = createContext<AuthContextValue | null>(null);
 
 function formatAuthError(message: string): string {
   if (message.includes("Invalid login credentials")) {
-    return "Email or password is incorrect.";
+    return t("auth.errors.invalidCredentials");
   }
 
   if (message.includes("User already registered")) {
-    return "An account with this email already exists. Try signing in.";
+    return t("auth.errors.userExists");
   }
 
   if (message.includes("Password should be at least")) {
-    return "Password must be at least 6 characters.";
+    return t("auth.errors.passwordTooShort");
   }
 
   if (message.includes("Invalid Google sign-in")) {
-    return "Google sign-in failed. Please try again.";
+    return t("auth.errors.googleFailed");
   }
 
   if (message.includes("Invalid Apple sign-in")) {
-    return "Apple sign-in failed. Please try again.";
+    return t("auth.errors.appleFailed");
   }
 
   if (message.includes("is not configured")) {
-    return "That sign-in method is not available right now.";
+    return t("auth.errors.notConfigured");
   }
 
   return message;
@@ -112,7 +113,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const message =
           error instanceof ApiError
             ? formatAuthError(error.message)
-            : "Something went wrong. Please try again.";
+            : t("auth.genericError");
         return { error: message, userId: null };
       }
     },
@@ -144,7 +145,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         const message =
           error instanceof ApiError
             ? formatAuthError(error.message)
-            : "Something went wrong. Please try again.";
+            : t("auth.genericError");
         return { error: message, userId: null };
       }
     },

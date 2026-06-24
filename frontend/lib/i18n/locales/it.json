@@ -1,0 +1,1196 @@
+{
+  "nav": {
+    "workout": "Allenamento",
+    "nutrition": "Nutrizione",
+    "history": "Cronologia",
+    "coach": "Coach",
+    "profile": "Profilo"
+  },
+  "brand": {
+    "tagline": "Allenati sodo. Traccia tutto.",
+    "logged": "{{count}}+ registrati",
+    "footer": "Fatto con {{heart}} e frullati proteici — Armstrong",
+    "loadingAria": "Loading Armstrong"
+  },
+  "common": {
+    "loading": "Caricamento allenamenti...",
+    "cancel": "Annulla",
+    "confirm": "Conferma",
+    "save": "Salva",
+    "remove": "Rimuovi",
+    "keep": "Mantieni",
+    "close": "Chiudi",
+    "add": "Aggiungi",
+    "edit": "Modifica",
+    "delete": "Elimina",
+    "workout": "Allenamento",
+    "back": "Back",
+    "done": "Done",
+    "skip": "Skip",
+    "set_one": "set",
+    "set_other": "sets",
+    "exercise": "Exercise",
+    "notNow": "Not now",
+    "working": "Working...",
+    "enabling": "Enabling...",
+    "searching": "Searching...",
+    "days_one": "{{count}} day",
+    "days_other": "{{count}} days"
+  },
+  "time": {
+    "never": "never",
+    "secAgo_one": "1 sec ago",
+    "secAgo_other": "{{count}} secs ago",
+    "minAgo_one": "1 min ago",
+    "minAgo_other": "{{count}} mins ago",
+    "hourAgo_one": "1 hour ago",
+    "hourAgo_other": "{{count}} hours ago",
+    "dayAgo_one": "1 day ago",
+    "dayAgo_other": "{{count}} days ago",
+    "sec_one": "1 sec",
+    "sec_other": "{{count}} secs",
+    "min_one": "1 min",
+    "min_other": "{{count}} mins",
+    "hour_one": "1 hour",
+    "hour_other": "{{count}} hours",
+    "durationHoursMinutes": "{{hours}}h {{minutes}}m"
+  },
+  "workout": {
+    "push": "Giorno push",
+    "leg": "Giorno gambe",
+    "abs": "Giorno addominali",
+    "pull": "Giorno pull",
+    "pickTitle": "Scegli il tuo allenamento",
+    "chooseTitle": "Scegli il tuo allenamento",
+    "removeDayTitle": "Rimuovere il giorno di allenamento?",
+    "removeDayMessage": "{{name}} e tutti i suoi esercizi e la cronologia verranno eliminati definitivamente.",
+    "removeDayConfirm": "Rimuovi giorno",
+    "removeDayCancel": "Mantieni giorno",
+    "removeDayAria": "Remove {{name}}",
+    "addDay": "Aggiungi giorno",
+    "finish": "Termina allenamento",
+    "finishFull": "Finish workout",
+    "cancelWorkout": "Annulla allenamento",
+    "leaveTitle": "Uscire dall'allenamento?",
+    "leaveMessage": "I progressi di questa sessione andranno persi.",
+    "leaveConfirm": "Esci",
+    "leaveCancel": "Resta",
+    "restComplete": "Riposo finito — passa alla serie successiva!",
+    "restNotificationTitle": "Rest complete!",
+    "restNotificationBody": "{{label}} — time for your next set",
+    "setupBatch": "Configurazione rapida",
+    "setupManual": "Crea manualmente",
+    "setupTitle": "Configura {{name}}",
+    "setupPanel": "Setup",
+    "setupCloseAria": "Close setup options",
+    "setupHowAdd": "How would you like to add your exercises?",
+    "setupCancelAria": "Cancel setup",
+    "setupDescription": "Describe your whole program in plain text. Armstrong uses AI to build your exercise list for this day.",
+    "setupImportAll": "Import all",
+    "noMoves": "Nessun esercizio ancora.",
+    "noMovesHint": "No exercises yet. Add your first one below.",
+    "addMove": "Aggiungi esercizio",
+    "sessionTimer": "Sessione",
+    "lastLabel": "Last:",
+    "sessionLabel": "Session:",
+    "loading": "Loading workout...",
+    "notFound": "Workout not found.",
+    "backHome": "← Back home",
+    "noWorkoutSelected": "No workout selected.",
+    "dayNameAria": "Workout day name",
+    "exercisesTitle": "{{name}} — exercises",
+    "finishNoSetsConfirm": "No sets completed yet. Finish the day anyway?",
+    "cancelWithProgressConfirm": "Cancel this workout? All progress from this session will be lost.",
+    "cancelConfirm": "Cancel this workout?",
+    "leavePanelTitle": "Leave workout",
+    "leaveSaveOrCancel": "Save or cancel {{label}}?",
+    "leaveCompletedSets": "You've completed {{count}} {{setLabel}} this session.",
+    "leaveInProgress": "Your session is in progress.",
+    "leaveDescription": "Save your progress to pick up where you left off, or cancel to discard everything from this session.",
+    "saveAndGoHome": "Save workout & go home",
+    "cancelSession": "Cancel this session",
+    "keepTraining": "Keep training"
+  },
+  "addDay": {
+    "title": "Aggiungi giorno di allenamento",
+    "panelTitle": "New day",
+    "closeAria": "Close add day",
+    "heading": "Name your workout day",
+    "description": "Pick a label for this split. You can set up exercises after creating it.",
+    "nameLabel": "Nome del giorno",
+    "namePlaceholder": "es. Parte superiore",
+    "nameError": "Enter a name with at least 2 characters.",
+    "createDay": "Create day",
+    "submit": "Aggiungi giorno",
+    "subtitle": "New workout split"
+  },
+  "profile": {
+    "title": "Profilo",
+    "preferences": "Preferenze",
+    "language": "Lingua",
+    "languageHint": "Lingua dell'app. Si sincronizza tra dispositivi quando sei connesso.",
+    "weightUnit": "Unità di peso",
+    "weightUnitHint": "Per peso corporeo e volume in palestra.",
+    "advancedNutrition": "Nutrizione avanzata",
+    "advancedNutritionHint": "Traccia anche calorie e grassi nei pasti e nella cronologia.",
+    "checkingSession": "Checking your session...",
+    "cloudNotConfiguredIntro": "Cloud sync is not configured yet. Add",
+    "cloudNotConfiguredOutro": "to your environment (pointing at the Armstrong backend) to enable login and saved plans.",
+    "yourAccount": "Your account",
+    "signedInLabel": "Signed in as",
+    "syncedHint": "Your workouts, diet, and coach plans are saved to your account so you can pick up where you left off on any device.",
+    "signingOut": "Signing out...",
+    "clearEverything": "Clear everything?",
+    "clearEverythingMessage": "This will permanently delete all your workout history, diet logs, coach plans, and chat history from this device{{cloud}}.",
+    "clearEverythingCloud": " and your cloud account",
+    "cannotUndo": "This action cannot be undone.",
+    "clearEverythingConfirm": "Yes, clear everything",
+    "keepMyData": "Keep my data",
+    "freeUseHint": "The app is free to use without an account. Sign in when you want your workouts, diet, and plans saved and synced for later.",
+    "createAccountTitle": "Create account",
+    "passwordPlaceholder": "At least 6 characters",
+    "signingIn": "Signing in...",
+    "creatingAccount": "Creating account...",
+    "signInSync": "Sign in & sync",
+    "createAccountSync": "Create account & sync",
+    "personalRecords": "Personal records",
+    "oneRm": "1RM"
+  },
+  "auth": {
+    "account": "Account",
+    "signIn": "Accedi",
+    "signUp": "Registrati",
+    "signOut": "Esci",
+    "email": "Email",
+    "password": "Password",
+    "signedInAs": "Accesso come {{email}}",
+    "cloudSync": "Sincronizzazione cloud",
+    "cloudSyncHint": "Accedi per salvare allenamenti, nutrizione e preferenze.",
+    "clearData": "Cancella dati locali",
+    "clearDataHint": "Rimuove tutti gli allenamenti e i log da questo dispositivo.",
+    "clearDataTitle": "Cancellare tutti i dati locali?",
+    "clearDataMessage": "Non può essere annullato. Il backup cloud non è influenzato se sei connesso.",
+    "clearDataConfirm": "Cancella dati",
+    "notConfigured": "Backend non configurato — solo offline.",
+    "createAccount": "Create account",
+    "syncDevicesHint": "Pick up your saved workouts and diet plan on any device.",
+    "sessionError": "Could not start your session. Please try again.",
+    "genericError": "Something went wrong. Please try again.",
+    "cloudNotConfigured": "Cloud login is not configured on this build. You can still use Armstrong locally.",
+    "continueWithoutAccount": "Continue without account",
+    "orContinueWith": "Or continue with",
+    "continueGoogle": "Continue with Google",
+    "continueApple": "Continue with Apple",
+    "signInFailed": "Sign-in failed. Try again.",
+    "appleSignInFailed": "Apple sign-in failed. Try again.",
+    "signingInEllipsis": "Signing in…"
+  },
+  "history": {
+    "title": "Cronologia",
+    "noActivity": "Nessuna attività registrata ancora.",
+    "workouts": "Allenamenti",
+    "nutrition": "Nutrizione",
+    "viewLegend": "History view",
+    "activity": "Activity",
+    "calendar": "Calendar",
+    "activityLog": "activity log",
+    "emptyActivity": "No activity yet. Finish a workout or log a meal to see your history here.",
+    "statsTitle": "Activity",
+    "dayStreak": "Day streak",
+    "thisWeek": "This week",
+    "volumeUnit": "Volume ({{unit}})",
+    "workoutDay_one": "workout day",
+    "workoutDay_other": "workout days",
+    "mealLogDay_one": "meal log day",
+    "mealLogDay_other": "meal log days",
+    "legendWorkout": "Workout",
+    "legendFood": "Food",
+    "ariaWorkoutLogged": "workout logged",
+    "ariaMealLogged": "meal logged",
+    "ariaNoActivity": "no activity",
+    "dayDetails": "Day details",
+    "closeDayDetails": "Close day details",
+    "dailyTotals": "Daily totals",
+    "kcalTarget": "/ {{calories}} kcal target",
+    "macroTarget": "/ P {{proteinG}}g · C {{carbsG}}g target",
+    "nothingLoggedDay": "Nothing logged on this day yet.",
+    "session": "session",
+    "food": "Food",
+    "prevDay": "Previous day",
+    "nextDay": "Next day"
+  },
+  "nutrition": {
+    "title": "Nutrizione",
+    "today": "Oggi",
+    "logFood": "Registra cibo",
+    "plannedMeals": "Pasti pianificati",
+    "bodyWeight": "Peso corporeo",
+    "setupRequiredHint": "Set your daily nutrition targets first. Once saved, you can start logging meals and tracking intake against your goal.",
+    "yourStats": "Your stats",
+    "statsFormulaHint": "We use the Mifflin–St Jeor formula with your weight, height, age, and sex to estimate daily calories.",
+    "weightKg": "Weight (kg)",
+    "heightCm": "Height (cm)",
+    "age": "Age",
+    "sex": "Sex",
+    "sexError": "Select male or female for an accurate estimate.",
+    "nextGoalWeight": "Next: goal weight",
+    "goalWeight": "Goal weight",
+    "goalWeightHint": "Slide to your target weight. We'll set cut or bulk automatically and adjust your daily calories.",
+    "liveMacroPreview": "Live macro preview · {{goal}}",
+    "setGoalWeightError": "Set a goal weight to continue.",
+    "seeTargets": "See my targets",
+    "yourDailyTargets": "Your daily targets",
+    "targetsSummary": "Based on {{current}} kg → {{target}} kg goal ({{goal}}).",
+    "proteinHintCut": "Protein is set high for muscle (2.2 g/kg). Fat fills ~25% of calories; carbs cover the rest.",
+    "proteinHintBulk": "Protein is set high for muscle (2.0 g/kg). Fat fills ~25% of calories; carbs cover the rest.",
+    "saveTargets": "Save targets",
+    "noPlannedMeals": "No planned meals yet. Add your own below, or ask your coach for a meal plan.",
+    "markEaten": "Mark {{name}} as eaten",
+    "checkWhenEaten": "check when eaten",
+    "editEntry": "Edit {{name}}",
+    "removeEntry": "Remove {{name}}",
+    "noMealsLogged": "Nothing logged yet. Tap \"Add meal\" to log what you eat.",
+    "todaysIntake": "Today's intake",
+    "editTargets": "Edit targets",
+    "mealLog": "Meal log",
+    "addMeal": "Add meal",
+    "addPlannedMeal": "Add planned meal",
+    "logMeal": "Log meal",
+    "closeAddMeal": "Close add meal",
+    "whatDidYouEat": "What did you eat?",
+    "addFoodHint": "Search for a meal to auto-fill nutrition, or type any food name and enter protein yourself.",
+    "foodName": "Food name",
+    "foodNamePlaceholder": "e.g. Chicken rice bowl",
+    "foodNameError": "Enter a name with at least 2 characters.",
+    "caloriesKcal": "Calories (kcal)",
+    "proteinG": "Protein (g)",
+    "proteinRequired": "Protein is required.",
+    "carbsG": "Carbs (g)",
+    "fatG": "Fat (g)",
+    "addToLog": "Add to log",
+    "findFood": "Find food",
+    "closeFoodSearch": "Close food search",
+    "searchFoodsAria": "Search foods",
+    "searchFoodHint": "Pick a meal to auto-fill nutrition, or type your own name and press Enter.",
+    "searchMinChars": "Type at least 2 characters to search USDA foods.",
+    "searchFailed": "Food search failed. Try again.",
+    "noMatches": "No matches — press Enter to use \"{{query}}\"",
+    "addMyFood": "Add my food",
+    "editPlannedMeal": "Edit planned meal",
+    "closePlannedMeal": "Close planned meal",
+    "updateMeal": "Update this meal",
+    "planMeal": "Plan a meal",
+    "plannedMealHint": "Add a meal to your daily plan. Check it off when you eat it to count toward your intake.",
+    "meal": "Meal",
+    "pickMealSlot": "Pick a meal slot.",
+    "plannedFoodPlaceholder": "e.g. Greek yogurt bowl",
+    "saveChanges": "Save changes",
+    "addToPlan": "Add to plan",
+    "saveGoalWeight": "Save goal weight",
+    "goalLabel": "Goal {{weight}}",
+    "weight": "Weight",
+    "height": "Height",
+    "male": "Male",
+    "female": "Female",
+    "weightUnitLegend": "Weight unit",
+    "weightUnitHint": "Choose kg or lb once — change later in Profile if needed.",
+    "currentWeight": "Current weight",
+    "decreaseWeight": "Decrease weight by {{grams}} grams",
+    "increaseWeight": "Increase weight by {{grams}} grams",
+    "stepHint": "±50 g per tap",
+    "saveWeight": "Save weight",
+    "editWeight": "Edit weight",
+    "sinceStart": "since start",
+    "startingPoint": "Starting point",
+    "editWeightHint": "±50 g per tap · tap ✓ to save",
+    "toGoal": "to goal",
+    "goal": {
+      "bulk": "Bulk",
+      "cut": "Cut",
+      "maintain": "Maintain",
+      "plan": "plan"
+    },
+    "mealSlot": {
+      "breakfast": "Breakfast",
+      "lunch": "Lunch",
+      "dinner": "Dinner",
+      "snack": "Snack"
+    },
+    "macros": {
+      "calories": "Calories",
+      "protein": "Protein",
+      "carbs": "Carbs",
+      "fat": "Fat",
+      "kcalPerDay": "kcal / day",
+      "entryAdvanced": "{{calories}} kcal · P {{proteinG}}g · C {{carbsG}}g · F {{fatG}}g",
+      "entryBasic": "P {{proteinG}}g · C {{carbsG}}g",
+      "searchResult": "{{calories}} kcal · P {{proteinG}}g · C {{carbsG}}g · F {{fatG}}g · {{serving}}"
+    },
+    "coachApply": {
+      "describeDiet": "Added {{mealCount}} planned meals to your food tracker ({{proteinG}}g protein across the plan). Check off each meal when you eat it.",
+      "applyLabel": "Add to food tracker",
+      "previewMeal": "{{slot}}{{name}} — {{calories}} kcal, P {{proteinG}}g"
+    }
+  },
+  "coach": {
+    "title": "Coach",
+    "placeholder": "Chiedi al tuo coach...",
+    "send": "Invia",
+    "armstrongCoach": "Armstrong Coach",
+    "subtitle": "Training, diet plans, and bodybuilding advice",
+    "loading": "Loading...",
+    "clearChat": "Clear chat",
+    "connectTitle": "Connect your coach",
+    "connectIntro": "Armstrong Coach runs on Google Gemini Flash. Create a free API key at",
+    "connectMiddle": ", add NEXT_PUBLIC_GEMINI_API_KEY to .env.local, then restart the dev server.",
+    "emptyTitle": "Ask your coach",
+    "emptyCopy": "Get a meal plan or gym split, tweak exercises, or ask bodybuilding questions. Tap Add to Nutrition or Add to workout days when you're ready — or keep chatting to adjust.",
+    "messageAria": "Message to coach",
+    "sendAria": "Send message",
+    "applyCombinedNutritionWorkoutDays": "Add to Nutrition & workout days",
+    "applyCombinedNutritionWorkout": "Add to Nutrition & update workout",
+    "applyCombinedWorkoutDaysExercise": "Add to workout days & update exercise",
+    "savePlan": "Save plan",
+    "apply": "Apply",
+    "keepChatting": "Keep chatting",
+    "adjustCombined": "Want changes? Keep chatting — say what to adjust.",
+    "adjustDiet": "Allergies or want different foods? Keep chatting — say what to change.",
+    "adjustWorkout": "Want different exercises or days? Keep chatting.",
+    "dietSaveError": "That meal plan could not be saved. Ask the coach to try again.",
+    "gymSaveError": "That workout plan could not be applied. Ask the coach to try again.",
+    "workoutDayNotFound": "Could not find that workout day. Ask the coach to try again.",
+    "exerciseNotFound": "Could not find that exercise in your plan. Ask the coach to try again.",
+    "thinkingLabel": "Coach is thinking",
+    "unavailableTitle": "Coach unavailable",
+    "unavailableIntro": "Add NEXT_PUBLIC_GEMINI_API_KEY to",
+    "unavailableMiddle": "and restart the dev server to chat here.",
+    "addKeyHint": "Add your API key above to chat with the coach.",
+    "onboardingSubtitle": "Your personal fitness coach",
+    "startOver": "Start over",
+    "closeChat": "Close coach chat",
+    "settingUp": "Setting up your plans...",
+    "continueInApp": "Continue in app",
+    "onboardingPlaceholder": "Tell me your goal — e.g. I want to bulk, train 4 days, and hit my protein",
+    "applyWorkout": {
+      "add": "Added {{exercise}} to {{day}}.",
+      "remove": "Removed {{exercise}} from {{day}}.",
+      "replace": "Swapped {{from}} → {{to}} on {{day}}.",
+      "describeGym": "Added your {{dayCount}}-day plan ({{exerciseCount}} exercises) — {{dayNames}}. Open the Workouts tab to start training.",
+      "swapTo": "Swap to {{exercise}}",
+      "addExercise": "Add {{exercise}}",
+      "removeExercise": "Remove {{exercise}}",
+      "addToWorkoutDays": "Add to workout days",
+      "previewExercise": "{{name}} ({{sets}}×{{reps}})"
+    },
+    "errors": {
+      "overloaded": "Gemini is busy right now (high demand). Wait 10–20 seconds and send again — the app will auto-retry and switch to a backup model.",
+      "zeroQuota": "Free-tier quota is not active on your Google project. In Google AI Studio, open your project → Set up billing (free tier still costs $0). Then retry, or wait if you hit daily limits.",
+      "rateLimitSeconds": "Rate limit hit. Wait about {{seconds}}s and try again. Free tier has daily/minute caps.",
+      "rateLimit": "Rate limit hit on the free tier. Wait a minute and try again.",
+      "invalidKey": "Invalid API key. Check NEXT_PUBLIC_GEMINI_API_KEY in .env.local.",
+      "modelNotFound": "That Gemini model is no longer available. Remove NEXT_PUBLIC_GEMINI_MODEL from .env.local or set it to gemini-3.5-flash, then restart the dev server."
+    },
+    "thinking": {
+      "home": {
+        "0": "Reading our chat history...",
+        "1": "Checking what you just asked...",
+        "2": "Pulling context from earlier messages...",
+        "3": "Looking at your training split...",
+        "4": "Reviewing your push day...",
+        "5": "Reviewing your pull day...",
+        "6": "Reviewing your leg day...",
+        "7": "Scanning your custom workout days...",
+        "8": "Checking exercises on your plan...",
+        "9": "Reading your saved sets and rest times...",
+        "10": "Pulling up your workout log...",
+        "11": "Checking which days you trained recently...",
+        "12": "Looking at your recent sessions...",
+        "13": "Cross-referencing your question with your plan...",
+        "14": "Seeing if this affects a specific training day...",
+        "15": "Checking which exercise to swap...",
+        "16": "Reading your meal log...",
+        "17": "Checking what you logged today...",
+        "18": "Comparing your meals to your macro targets...",
+        "19": "Looking at your daily calorie target...",
+        "20": "Checking your protein goal...",
+        "21": "Reviewing your carbs and fats...",
+        "22": "Reading your nutrition profile...",
+        "23": "Checking your weight and body stats...",
+        "24": "Looking at your bulk or cut goal...",
+        "25": "Matching your stats to your question...",
+        "26": "Checking your height, age, and activity level...",
+        "27": "Connecting training and nutrition context...",
+        "28": "Making sure this fits your current split...",
+        "29": "Double-checking your plan before I reply...",
+        "30": "Almost ready..."
+      },
+      "early": {
+        "0": "Reviewing your goal...",
+        "1": "Checking your age and weight...",
+        "2": "Understanding what you want to achieve...",
+        "3": "Matching training to your experience level...",
+        "4": "Figuring out how many days you can train...",
+        "5": "Considering recovery between sessions...",
+        "6": "Looking at what equipment you likely have...",
+        "7": "Sketching the right training split for you...",
+        "8": "Weighing strength vs. muscle size for your goal...",
+        "9": "Almost ready to start building your plan..."
+      },
+      "plan": {
+        "0": "Designing your weekly split...",
+        "1": "Picking exercises for each training day...",
+        "2": "Setting sets, reps, and rest times...",
+        "3": "Adjusting volume to your body stats...",
+        "4": "Balancing push, pull, and recovery...",
+        "5": "Ordering exercises from compound to isolation...",
+        "6": "Tuning intensity for your goal...",
+        "7": "Adding warm-up and working sets...",
+        "8": "Double-checking muscle group balance...",
+        "9": "Writing notes for each training day...",
+        "10": "Putting your full plan together...",
+        "11": "Polishing the details — almost there..."
+      },
+      "diet": {
+        "0": "Calculating your protein target...",
+        "1": "Planning breakfast around your goal...",
+        "2": "Building a simple lunch...",
+        "3": "Adding dinner and snacks...",
+        "4": "Spreading protein across the day...",
+        "5": "Keeping meals easy to prep...",
+        "6": "Checking total daily macros...",
+        "7": "Adjusting for allergies if needed...",
+        "8": "Balancing calories with your goal...",
+        "9": "Finalizing your meal plan..."
+      },
+      "importing": {
+        "0": "Reading your coach conversation...",
+        "1": "Extracting your training days...",
+        "2": "Loading exercises into your split...",
+        "3": "Assigning stickers and day colors...",
+        "4": "Calculating your daily macros...",
+        "5": "Importing your meal plan...",
+        "6": "Setting up your nutrition...",
+        "7": "Mapping workouts to your calendar...",
+        "8": "Saving your profile...",
+        "9": "Preparing your dashboard...",
+        "10": "Finalizing your Armstrong plan..."
+      }
+    },
+    "voice": {
+      "rec": "REC",
+      "listening": "Listening… speak now",
+      "hint": "Tap stop when done — text goes in the box",
+      "stopRecording": "Stop recording",
+      "startRecording": "Start voice input",
+      "speakMessage": "Speak your message"
+    }
+  },
+  "modals": {
+    "warning": "Warning",
+    "resetting": "Resetting..."
+  },
+  "exercise": {
+    "searchTitle": "Find exercise",
+    "useExercise": "Use exercise",
+    "closeSearchAria": "Close exercise search",
+    "searchPlaceholder": "Search bodybuilding exercises",
+    "searchAria": "Search exercises",
+    "searchHint": "Pick a move below, or type your own name and press Enter.",
+    "searchFailed": "Exercise search failed. Try again.",
+    "noMatches": "No matches — press Enter to use \"{{query}}\"",
+    "aboutAria": "About {{name}}",
+    "removeAria": "Remove {{name}}",
+    "renameTitle": "Rename exercise",
+    "saveName": "Save name",
+    "addTitle": "Add exercise",
+    "namePlaceholder": "e.g. Bench Press",
+    "infoTitle": "Exercise info",
+    "closeInfoAria": "Close exercise info",
+    "loadingDetails": "Loading exercise details...",
+    "notFound": "Exercise details not found.",
+    "loadFailed": "Failed to load exercise details.",
+    "howToPerform": "How to perform",
+    "noInstructions": "No instructions available for this exercise yet."
+  },
+  "sets": {
+    "setHeader": "Set",
+    "previousHeader": "Previous",
+    "kgHeader": "kg",
+    "secHeader": "sec",
+    "repsHeader": "Reps",
+    "addSetAria": "Add set with {{rest}} rest",
+    "addSet": "Add Set ({{rest}})",
+    "deleteSetAria": "Delete set",
+    "weightAria": "Weight in kg for set {{index}}",
+    "holdTimeAria": "Hold time in seconds for set {{index}}",
+    "repsAria": "Reps for set {{index}}",
+    "completeAria": "Complete set {{index}}",
+    "completedUndoAria": "Set {{index}} completed — double-click to undo",
+    "restTimeAria": "Rest time",
+    "restEditAria": "Rest {{time}}. Click to edit."
+  },
+  "notifications": {
+    "restBannerTitle": "Get notified when rest is over",
+    "restBannerBody": "Enable notifications so Armstrong can alert you when your rest timer finishes — even if the app is in the background.",
+    "enable": "Enable notifications"
+  },
+  "sync": {
+    "panelTitle": "Sync",
+    "conflictTitle": "Keep your data from this device?",
+    "conflictMessage": "This device has workouts not yet in your account. What should we keep?",
+    "merge": "Combine both (recommended)",
+    "merging": "Combining…",
+    "useRemote": "Keep my account only",
+    "updating": "Updating…",
+    "useLocal": "Keep this device only",
+    "saving": "Saving…",
+    "mergeHint": "Combine merges both. Keeping one side deletes the other."
+  },
+  "welcome": {
+    "title": "Welcome",
+    "subtitle": "Choose how you want to start. Armstrong works offline — sign in later to sync.",
+    "recommended": "Recommended",
+    "makePlanTitle": "Armstrong, make a diet and exercise plan",
+    "makePlanCopy": "Answer a few questions and we will build your split, meals, and macros.",
+    "badgeInstant": "Instant",
+    "badgeFree": "Free",
+    "badgeDiet": "Diet plan",
+    "badgeExercise": "Exercise plan",
+    "havePlanTitle": "I already have a plan",
+    "havePlanCopy": "Jump straight into the app with the default workout days and nutrition tracking.",
+    "haveAccount": "I already have an account",
+    "onboardingProgressAria": "Onboarding progress",
+    "stepSr": "Step {{index}}{{done}}{{current}}",
+    "stepDone": ", completed",
+    "stepCurrent": ", current",
+    "statsTitle": "Tell us about you",
+    "statsCopy": "Weight, height, age, and sex shape your calorie targets and training volume.",
+    "nextGoal": "Next: Your goal →",
+    "goalTitle": "What are you working toward?",
+    "goalCopy": "Set your goal weight — we'll figure out cut or bulk from there and match your training to your level.",
+    "back": "← Back",
+    "nextTraining": "Next: Training →",
+    "programTitle": "Build your split",
+    "programCopy": "Choose how often you train, what you are optimizing for, and what equipment you have.",
+    "daysPerWeek": "Days per week",
+    "focus": "Focus",
+    "equipment": "Equipment",
+    "equipmentFullGym": "Full gym",
+    "equipmentHome": "Home",
+    "seeTimeline": "See your timeline →",
+    "timelineTitle": "You are on track",
+    "timelineCopy": "At about {{weeklyRate}} kg per week of {{goalLabel}}, you could reach roughly {{targetChange}} kg of change in about {{weeks}} weeks with consistent training and nutrition.",
+    "timelineHint": "This is an estimate based on your stats and experience — real results vary with sleep, adherence, and recovery.",
+    "startTraining": "Start training →",
+    "focusStrength": "Strength",
+    "focusHypertrophy": "Muscle size",
+    "focusBalanced": "Balanced",
+    "experienceAmateur": "New to tracking — simpler meals, machines, and full-body basics.",
+    "experienceIntermediate": "Consistent training — balanced splits and structured macros.",
+    "experienceAdvanced": "Years in the gym — higher volume, compound focus, meal timing.",
+    "experiencePro": "Competition-ready — peak volume, weak-point work, precision nutrition.",
+    "exercisePlanTitle": "Exercise Plan",
+    "exercisePlanDescription": "How would you like to add your workout plan?",
+    "dietPlanTitle": "Diet Plan",
+    "dietPlanDescription": "How would you like to add your meal plan?",
+    "plainTextTitle": "Plain text",
+    "plainTextCopy": "Paste your plan as text and we will import it for you.",
+    "manualTitle": "Add manually",
+    "manualCopy": "Build your plan step by step inside the app.",
+    "exercisePlanScreenTitle": "Exercise plan",
+    "exercisePlanPrompt": "Please describe or write your exercise program.",
+    "exercisePlanPlaceholder": "Push Day\nBench press 4x8 @ 80kg, 90s rest\nIncline dumbbell press 3x10\n\nPull Day\nBarbell row 4x8\nLat pulldown 3x12",
+    "dietPlanScreenTitle": "Diet plan",
+    "dietPlanPrompt": "Please describe or write your meal plan.",
+    "dietPlanPlaceholder": "Breakfast: Greek yogurt, berries, granola — 450 kcal, 35g protein\nLunch: Chicken breast, rice, broccoli — 650 kcal, 50g protein\nDinner: Salmon, sweet potato, greens — 600 kcal, 45g protein\nSnack: Protein shake — 200 kcal, 30g protein",
+    "yourPlanLabel": "Your plan",
+    "aiNotConfigured": "AI import needs NEXT_PUBLIC_GEMINI_API_KEY in your environment.",
+    "writePlanOrSkip": "Write your plan before continuing, or tap Skip.",
+    "buildingPlan": "Building your plan...",
+    "timelineChartAria": "Projected progress over {{weeks}} weeks",
+    "timelineToday": "Today",
+    "timelineWeek": "Week {{weeks}}"
+  },
+  "experience": {
+    "label": "Experience",
+    "ariaLabel": "Experience level from amateur to pro",
+    "presetsAria": "Experience presets",
+    "labels": {
+      "amateur": "Amateur",
+      "intermediate": "Intermediate",
+      "advanced": "Advanced",
+      "pro": "Pro"
+    },
+    "descriptions": {
+      "amateur": "New to tracking — simpler meals, machines, and full-body basics.",
+      "intermediate": "Consistent training — balanced splits and structured macros.",
+      "advanced": "Years in the gym — higher volume, compound focus, meal timing.",
+      "pro": "Competition-ready — peak volume, weak-point work, precision nutrition."
+    }
+  },
+  "share": {
+    "logged": "{{workoutName}} logged 💪",
+    "sets": "{{heroStat}} · {{count}} sets",
+    "share": "Share",
+    "preparing": "Preparing…",
+    "tryAgain": "Try again",
+    "dismiss": "Dismiss",
+    "shareTitle": "{{workoutName}} · Armstrong",
+    "totalVolume": "Total volume",
+    "newPr": "New PR",
+    "streak": "Streak",
+    "dayStreak": "{{count}} day streak",
+    "prValue": "{{name}} · {{weight}} kg"
+  },
+  "gym": {
+    "compareGyms": "Compare gyms",
+    "comparisonTitle": "Gym comparison",
+    "closeComparison": "Close comparison",
+    "away": "{{distance}} away",
+    "nearby": "Nearby",
+    "membership": "Membership",
+    "notListed": "Not listed —",
+    "checkSite": "check site",
+    "leastBusy": "Least busy",
+    "amenities": "Amenities",
+    "visitWebsite": "Visit website →",
+    "loadingDetail": "Reading each gym's website for prices & amenities…",
+    "loadingHint": "This can take up to a minute the first time.",
+    "enrichmentDisabled": "Live pricing & amenities aren't enabled on the server yet — showing distance and contact only.",
+    "disclaimer": "Prices & amenities are auto-gathered from each gym's website and may be incomplete or out of date. Always confirm with the gym."
+  },
+  "speech": {
+    "micDenied": "Microphone access denied. Allow mic permission in your browser.",
+    "noSpeech": "No speech detected. Try again.",
+    "noMic": "No microphone found.",
+    "network": "Speech recognition needs a network connection.",
+    "failed": "Could not use speech recognition. Try typing instead."
+  },
+  "saveReminder": {
+    "message": "Saved on this device only. Clear browser data or switch devices and you'll lose your workouts, plans, and history. Create an account to keep everything.",
+    "later": "Later"
+  },
+  "navigation": {
+    "blog": "Blog",
+    "dietPlanner": "Diet Planner",
+    "gymPlanner": "Gym Planner",
+    "gymFinder": "Gym Finder",
+    "app": "App",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "openApp": "Open App",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu",
+    "mainNav": "Main navigation",
+    "mobileNav": "Mobile navigation",
+    "footerNav": "Footer navigation",
+    "footerCopy": "© {{year}} Armstrong. Free AI fitness coach for bodybuilders who train with intent."
+  },
+  "landing": {
+    "hero": {
+      "kicker": "100% Free · No Credit Card",
+      "badge": "Free",
+      "headline": "One Sentence. Full Plan. Zero Cost.",
+      "subhead": "Tell Armstrong your goal — lean bulk, cut, 4-day split — and get a pro-grade training and nutrition plan instantly. Track every macro, log every PR, and chat with your AI fitness coach 24/7.",
+      "cta": "Generate My Free Plan",
+      "ctaHint": "Type one sentence about your goal — full workout & meal plan in minutes."
+    },
+    "tools": {
+      "sectionIndex": "01",
+      "sectionTitle": "Free Planning Tools",
+      "heading": "Diet & Gym Planners — No Signup",
+      "openPlanner": "Open planner →",
+      "diet": {
+        "title": "Free Diet Planner",
+        "tag": "Macro calculator",
+        "description": "Enter your stats and goal to get daily calories, protein, carbs, fats, and a full four-meal day — no signup."
+      },
+      "gym": {
+        "title": "Free Gym Planner",
+        "tag": "Split builder",
+        "description": "Pick days per week, equipment, and experience level. Get a complete workout split with sets, reps, and rest."
+      }
+    },
+    "howItWorks": {
+      "sectionIndex": "02",
+      "sectionTitle": "How It Works",
+      "srOnly": "Three-step AI workout generator process"
+    },
+    "steps": {
+      "01": {
+        "title": "Type Your Goal",
+        "copy": "Drop one sentence: “I want to lean bulk and only have 4 days a week.” That’s it — no forms, no fluff."
+      },
+      "02": {
+        "title": "Get Your Instant Plan",
+        "copy": "Armstrong builds your custom split, exercises, sets, and a free bodybuilding meal plan with precise macros — ready before your next session."
+      },
+      "03": {
+        "title": "Crush It with Your AI Coach",
+        "copy": "Log sets, hit PRs, track nutrition daily, and ask your 24/7 AI strength coach anything — right from your pocket."
+      }
+    },
+    "features": {
+      "sectionIndex": "03",
+      "sectionTitle": "Built for Serious Lifters",
+      "heading": "Your Free AI Fitness Coach, Meal Plan & Macro Tracker",
+      "generator": {
+        "tag": "Instant workout generator",
+        "title": "The One-Sentence Plan Generator",
+        "copy": "Skip the spreadsheet. Describe your physique goal, schedule, and equipment — Armstrong’s AI workout generator delivers a complete, periodized program built for bodybuilders."
+      },
+      "nutrition": {
+        "tag": "Macro tracking built in",
+        "title": "Smart Nutrition Calculator & Tracker",
+        "copy": "Dial in protein, carbs, and fats with a smart nutrition calculator that adapts to your training. Log meals daily and stay locked on your targets without a separate app."
+      },
+      "coach": {
+        "tag": "Always in your corner",
+        "title": "The 24/7 AI Strength Coach",
+        "copy": "Swap, progress, or deload — your AI fitness coach reads your logs and answers in real time. Unlimited guidance without the premium price tag of a human coach."
+      }
+    },
+    "risk": {
+      "sectionIndex": "04",
+      "sectionTitle": "No Risk. All Reward.",
+      "headline": "Explore Everything. Pay Nothing.",
+      "copy": "Test the full app — custom plans, macro tracking, AI coaching, workout logging — completely free. No credit card, no trial countdown, no paywall surprises.",
+      "bullets": {
+        "plans": "Free instant workout & meal plan generation",
+        "coach": "Unlimited AI coach conversations",
+        "macros": "Daily macro & nutrition tracking included"
+      }
+    },
+    "faq": {
+      "sectionIndex": "05",
+      "sectionTitle": "FAQ",
+      "srOnly": "Frequently asked questions about Armstrong AI fitness coach",
+      "free": {
+        "question": "Is Armstrong really free to use?",
+        "answer": "Yes. You can explore the entire app — generate plans, track macros, log workouts, and chat with the AI coach — without paying or entering a credit card."
+      },
+      "accuracy": {
+        "question": "How accurate is the AI fitness coach?",
+        "answer": "Armstrong analyzes your actual training logs, PRs, and nutrition data to give personalized recommendations — not generic templates. It adapts as you progress session by session."
+      },
+      "macros": {
+        "question": "Can I track my macros and nutrition daily?",
+        "answer": "Absolutely. Armstrong includes a smart nutrition calculator and daily food tracker so you can hit protein, carbs, and fat targets alongside your training plan."
+      },
+      "generator": {
+        "question": "How does the one-sentence workout generator work?",
+        "answer": "Describe your goal in plain English — goal, days per week, experience level, equipment. Armstrong’s AI builds a complete training split and meal plan tailored to your input in minutes."
+      },
+      "humanCoach": {
+        "question": "Do I still need a human coach?",
+        "answer": "Armstrong gives you 24/7 AI coaching, plan customization, and precision tracking at no cost. Many lifters use it as their primary coach; others pair it with occasional human check-ins."
+      }
+    },
+    "footerCta": {
+      "headline": "Your Free AI Fitness Coach Is Ready",
+      "copy": "Generate your custom bodybuilding plan in one sentence. Start tracking macros and crushing PRs today."
+    },
+    "download": {
+      "apple": "Download on Apple App Store",
+      "android": "Get it on Android (Google Play)",
+      "pwa": "Launch Web Version",
+      "comingSoon": "Coming soon",
+      "comingSoonAria": "{{label}} — coming soon"
+    },
+    "calloutPlan": {
+      "goal": "I want to gain weight",
+      "yourPlan": "Your plan",
+      "daysBadge": "3 days",
+      "yourDiet": "Your diet",
+      "kcalBadge": "3,200 kcal",
+      "days": {
+        "push": {
+          "label": "Push",
+          "detail": "Bench · OHP · Fly"
+        },
+        "pull": {
+          "label": "Pull",
+          "detail": "Rows · Pulldown · Curl"
+        },
+        "legs": {
+          "label": "Legs",
+          "detail": "Squat · RDL · Curl"
+        }
+      },
+      "meals": {
+        "chicken": "Chicken & rice",
+        "oats": "Oats & whey shake",
+        "beef": "Ground beef & sweet potato"
+      }
+    },
+    "preview": {
+      "backHome": "← Back home",
+      "pushDay": "Push",
+      "session": "session",
+      "rest": "Rest",
+      "set": "Set",
+      "prev": "Prev",
+      "kg": "kg",
+      "reps": "Reps",
+      "benchPress": "Bench Press",
+      "inclineDbPress": "Incline DB Press",
+      "overheadPress": "Overhead Press"
+    }
+  },
+  "planner": {
+    "common": {
+      "faq": "FAQ",
+      "openApp": "Open App",
+      "bodyStats": "Body stats",
+      "weight": "Weight",
+      "height": "Height",
+      "age": "Age",
+      "sex": "Sex",
+      "male": "Male",
+      "female": "Female",
+      "back": "← Back",
+      "yourStats": "Your stats",
+      "yourPlan": "Your plan",
+      "adjustInputs": "← Adjust inputs",
+      "stepsNav": "Planner steps",
+      "days": "{{count}} days"
+    },
+    "import": {
+      "default": "Add plan to app",
+      "opening": "Opening app…",
+      "workout": "Add workout split to app",
+      "meal": "Add meal plan to app"
+    },
+    "gym": {
+      "hero": {
+        "kicker": "Rule-Based · Built for You",
+        "badge": "Free",
+        "headline": "A Gym Split Built for Your Level",
+        "subhead": "Pick your days, goal, and equipment. Slide from amateur to pro and get a full weekly program — exercises, sets, reps, and rest — scaled to how you actually train."
+      },
+      "about": {
+        "title": "How the free gym planner works",
+        "copy": "Choose your training days, goal, and equipment. Three days defaults to full body, four to upper/lower, five to push/pull/legs plus upper/lower, and six to a double PPL rotation. Weekly volume, rest periods, and exercise complexity scale with the amateur-to-pro slider — so beginners get fewer movements and pros get higher set counts."
+      },
+      "steps": {
+        "buildSplit": "Build Your Split",
+        "program": "Program",
+        "yourSplit": "Your split",
+        "nextProgram": "Next: Program →",
+        "programSetup": "Program setup",
+        "daysPerWeek": "Days per week",
+        "focus": "Focus",
+        "equipment": "Equipment",
+        "fullGym": "Full gym",
+        "home": "Home",
+        "generate": "Generate workout split",
+        "faqSrOnly": "Gym planner frequently asked questions"
+      },
+      "focus": {
+        "strength": "Strength",
+        "hypertrophy": "Muscle size",
+        "balanced": "Balanced"
+      },
+      "preview": {
+        "label": "Live split preview",
+        "trainingDays": "{{count}} training days",
+        "setsPerWeek": "{{count}} sets / week",
+        "daySummary": "{{dayLabel}}: {{name}}",
+        "hint": "Generate to unlock full exercise lists with sets, reps, and rest."
+      },
+      "cta": {
+        "headline": "Execute Your Split in Armstrong",
+        "copy": "Log sets, track PRs, and sync your plan to the cloud — free, no credit card. Need macros too? <0>Try the free diet planner</0>.",
+        "dietPlanner": "Diet Planner"
+      },
+      "faq": {
+        "split": {
+          "question": "How does the gym planner choose my split?",
+          "answer": "Three days defaults to full body, four to upper/lower, five to PPL plus upper/lower, and six to a double PPL rotation. Volume and exercise count scale with your experience tier."
+        },
+        "slider": {
+          "question": "What is the amateur-to-pro slider?",
+          "answer": "It adjusts weekly volume, rest periods, and exercise complexity. Amateurs get fewer movements and longer rest; pros get higher set counts and advanced progression notes."
+        },
+        "home": {
+          "question": "Can I train at home with this plan?",
+          "answer": "Select home equipment and exercises swap to dumbbells, bands, and bodyweight alternatives while keeping the same split structure."
+        },
+        "track": {
+          "question": "How do I track this plan in Armstrong?",
+          "answer": "Open the app to log sets, hit PRs, and sync your plan to the cloud. The planner gives you the blueprint — the app is where you execute it."
+        }
+      },
+      "display": {
+        "setsPerWeek": "sets / week",
+        "weeklyVolume": "Weekly volume",
+        "tier": "{{level}} tier",
+        "progression": "Progression:",
+        "recovery": "Recovery:",
+        "exercises": "{{count}} exercises",
+        "minutes": "~{{count}} min",
+        "exercise": "Exercise",
+        "sets": "Sets",
+        "reps": "Reps",
+        "rest": "Rest",
+        "restSeconds": "{{seconds}}s"
+      }
+    },
+    "diet": {
+      "hero": {
+        "kicker": "Science-Based · Proven Formulas",
+        "badge": "Free",
+        "headline": "Your Macro Meal Plan in 60 Seconds",
+        "subhead": "Enter your stats, slide from amateur to pro, and get a full day of meals with calories, protein, carbs, and fats — built from proven formulas."
+      },
+      "about": {
+        "title": "How the free diet planner works",
+        "copy": "Armstrong uses the Mifflin–St Jeor equation for basal metabolic rate, applies a training activity factor, then sets protein, fat, and carbs for a lean bulk or cut. Meals are scaled to hit those targets with four structured slots per day. Slide the experience bar from amateur to pro for tighter meal-prep guidance and higher protein density."
+      },
+      "steps": {
+        "buildPlan": "Build Your Plan",
+        "goalLevel": "Goal & level",
+        "nextGoal": "Next: Goal & level →",
+        "goalWeight": "Goal weight & experience",
+        "generate": "Generate meal plan",
+        "faqSrOnly": "Diet planner frequently asked questions"
+      },
+      "preview": {
+        "label": "Live macro preview",
+        "kcal": "{{count}} kcal",
+        "protein": "P {{count}}g",
+        "carbs": "C {{count}}g",
+        "fat": "F {{count}}g",
+        "hint": "Finish the steps to unlock your full four-meal day with foods and tips."
+      },
+      "cta": {
+        "headline": "Log Every Macro in Armstrong",
+        "copy": "Your plan is the start. The app tracks meals, PRs, and progress — free, no credit card. Need a workout split too? <0>Try the free gym planner</0>.",
+        "gymPlanner": "Gym Planner"
+      },
+      "faq": {
+        "calculation": {
+          "question": "How is my diet plan calculated?",
+          "answer": "Armstrong uses the Mifflin–St Jeor equation for basal metabolic rate, applies a training activity factor, then sets protein, fat, and carbs for bulk or cut. Meals are scaled to hit those targets."
+        },
+        "tiers": {
+          "question": "What changes between amateur and pro tiers?",
+          "answer": "Higher tiers add protein density, meal-prep precision, and timing tips. Amateur plans favor simple repeatable meals; pro plans assume you weigh and log every ingredient."
+        },
+        "app": {
+          "question": "Can I use this meal plan in the Armstrong app?",
+          "answer": "Yes. Open the app to log these meals daily, track macros against your targets, and adjust as you progress."
+        },
+        "medical": {
+          "question": "Is this a medical nutrition plan?",
+          "answer": "No. This is general fitness guidance. Consult a registered dietitian for medical conditions, eating disorders, or clinical needs."
+        }
+      },
+      "display": {
+        "targets": "{{goal}} targets",
+        "kcalPerDay": "kcal / day",
+        "protein": "Protein",
+        "carbs": "Carbs",
+        "fat": "Fat",
+        "hydration": "Hydration:",
+        "liters": "{{count}}L",
+        "mealMacros": "Meal macros",
+        "mealKcal": "{{count}} kcal"
+      }
+    }
+  },
+  "gymFinder": {
+    "badge": "FREE TOOL",
+    "headline": "Find a gym near you",
+    "subhead": "Search by your location or a zip code to see nearby gyms, how far they are, and how to reach them. Then track every workout free in Armstrong.",
+    "toolSrOnly": "Gym finder",
+    "cta": {
+      "headline": "Found your gym? Track it in Armstrong",
+      "copy": "Log sets, track PRs, build your split, and sync to the cloud — free, no credit card."
+    },
+    "section": {
+      "title": "Gym finder",
+      "intro": "Find gyms near you — compare distance, ratings, and contact info.",
+      "notConfigured": "The gym finder needs the Armstrong backend configured (<0>NEXT_PUBLIC_API_URL</0>). It's not available in this build.",
+      "useLocation": "Use my location",
+      "placeholder": "Zip or city",
+      "search": "Search",
+      "searching": "Searching nearby gyms…",
+      "errorLoad": "Couldn't load nearby gyms. Please try again.",
+      "errorNotEnabled": "Gym search isn't enabled on the server yet. Check back soon.",
+      "errorLocation": "Couldn't get your location. Allow location access or search by area.",
+      "noResults": "No gyms found here. Try a wider area or a nearby city.",
+      "count_one": "{{count}} gym found",
+      "count_other": "{{count}} gyms found",
+      "compareHint": "Select 2–3 gyms to compare prices & amenities.",
+      "tip": "Tip: select gyms after searching to compare prices & amenities.",
+      "prev": "← Prev",
+      "next": "Next →",
+      "page": "Page {{current}} of {{total}}",
+      "directions": "Directions",
+      "call": "Call",
+      "website": "Website",
+      "compare": "Compare",
+      "selected": "Selected",
+      "addToCompare": "Add {{name}} to compare",
+      "removeFromCompare": "Remove {{name}} from compare",
+      "ratingAria": "{{rating}} of 10",
+      "clear": "Clear",
+      "pickOneMore": "Pick 1 more",
+      "compareCount": "Compare ({{count}})",
+      "compareError": "Couldn't compare these gyms. Please try again."
+    }
+  },
+  "keyboard": {
+    "keypadAria": "Numeric keypad",
+    "backspaceAria": "Backspace",
+    "hideCustomAria": "Hide custom keyboard and use device keyboard",
+    "increaseAria": "Increase value",
+    "decreaseAria": "Decrease value",
+    "done": "Done",
+    "next": "Next"
+  },
+  "batch": {
+    "importWorkout": "Import workout",
+    "describeBeforeImport": "Describe your workout before importing.",
+    "importFailed": "Import failed. Try again.",
+    "plainLanguageHint": "Type your whole program in plain language — sets, reps, weight, rest, holds. Armstrong uses AI to turn it into exercises for this day.",
+    "yourProgram": "Your program",
+    "parsing": "Parsing with AI..."
+  },
+  "aria": {
+    "bodyWeightTrend": "Body weight trend",
+    "homeSections": "Home sections",
+    "reorderExercise": "Reorder {{name}}"
+  },
+  "legal": {
+    "backLink": "← Armstrong",
+    "lastUpdated": "Last updated: {{date}}",
+    "privacy": {
+      "title": "Privacy Policy",
+      "metaDescription": "How Armstrong collects, uses, stores, and protects your data.",
+      "updated": "June 19, 2026",
+      "contact": "privacy@armstrong-fitness.com",
+      "intro": "This Privacy Policy explains how Armstrong (\"Armstrong\", \"we\", \"us\") collects, uses, and protects your information when you use our web app, mobile apps, and related services (the \"Service\"). By using the Service you agree to this policy.",
+      "sections": {
+        "noAccount": {
+          "heading": "1. Data you can use without an account",
+          "body": "Armstrong works without signing in. In that mode your workouts, diet logs, and settings are stored <strong>only on your device</strong> (browser <code>localStorage</code> or app storage) and are not sent to us."
+        },
+        "collect": {
+          "heading": "2. Information we collect",
+          "itemAccount": "<strong>Account information:</strong> your email address. If you sign in with email/password, we store a securely hashed password (bcrypt). If you sign in with Google or Apple, we receive your verified email and a stable provider identifier; we never receive your provider password.",
+          "itemFitness": "<strong>Fitness data you create:</strong> workouts, exercises, sets, weights, reps, sessions, diet/food logs, nutrition profile, and your chats with the AI coach.",
+          "itemTechnical": "<strong>Technical data:</strong> basic, largely anonymous usage and performance metrics to keep the Service reliable.",
+          "footer": "When you are signed in, the fitness data above is synced to your account so you can access it across devices."
+        },
+        "use": {
+          "heading": "3. How we use your information",
+          "itemSync": "Provide, sync, and secure your account and fitness data.",
+          "itemAi": "Generate AI coaching, workout, and diet suggestions you request.",
+          "itemOperate": "Operate, maintain, and improve the Service.",
+          "footer": "We do not sell your personal information."
+        },
+        "storage": {
+          "heading": "4. Where your data is stored",
+          "body": "Account and synced fitness data are stored in our backend database (PostgreSQL) hosted by our infrastructure providers. Data is transmitted over encrypted connections (HTTPS) and passwords are stored only as one-way hashes."
+        },
+        "thirdParty": {
+          "heading": "5. Third-party services",
+          "intro": "We share the minimum data needed with service providers that help run the Service:",
+          "itemSignIn": "<strong>Google & Apple</strong> — \"Sign in with\" authentication.",
+          "itemGemini": "<strong>Google (Gemini)</strong> — when you use the AI coach, your chat messages and relevant plan context are sent to Google to generate responses.",
+          "itemUsda": "<strong>USDA FoodData Central</strong> — food search queries you enter.",
+          "itemHosting": "<strong>Hosting & analytics providers</strong> — to serve the app and measure anonymous performance/usage.",
+          "footer": "These providers process data under their own privacy policies. We do not control, and are not responsible for, their practices."
+        },
+        "cookies": {
+          "heading": "6. Cookies and local storage",
+          "body": "We use your browser's local storage to keep you signed in (an authentication token) and to hold your app data. We do not use third-party advertising cookies."
+        },
+        "choices": {
+          "heading": "7. Your choices and rights",
+          "itemAccess": "<strong>Access & update:</strong> view and edit your data directly in the app.",
+          "itemDelete": "<strong>Delete:</strong> the \"Clear all data\" action in your profile permanently deletes your data from this device and your cloud account. You may also contact us to delete your account.",
+          "itemRights": "Depending on your location, you may have additional rights (access, correction, deletion, portability). Contact us to exercise them."
+        },
+        "retention": {
+          "heading": "8. Data retention",
+          "body": "We keep your account data while your account is active. When you delete your data or account, we remove it from our systems, except where retention is required by law."
+        },
+        "children": {
+          "heading": "9. Children",
+          "body": "The Service is not directed to children under 13 (or the minimum age in your jurisdiction). We do not knowingly collect their data."
+        },
+        "changes": {
+          "heading": "10. Changes to this policy",
+          "body": "We may update this policy. Material changes will be reflected by the \"Last updated\" date above; continued use means you accept the updated policy."
+        },
+        "contact": {
+          "heading": "11. Contact",
+          "body": "Questions or requests: <0>{{email}}</0>."
+        }
+      }
+    },
+    "terms": {
+      "title": "Terms of Service",
+      "metaDescription": "The terms that govern your use of Armstrong.",
+      "updated": "June 19, 2026",
+      "contact": "support@armstrong-fitness.com",
+      "intro": "These Terms of Service (\"Terms\") govern your use of Armstrong (the \"Service\"). By accessing or using the Service, you agree to these Terms. If you do not agree, do not use the Service.",
+      "sections": {
+        "eligibility": {
+          "heading": "1. Eligibility",
+          "body": "You must be at least 13 years old (or the minimum age in your jurisdiction) and able to form a binding contract to use the Service."
+        },
+        "account": {
+          "heading": "2. Your account",
+          "body": "You are responsible for activity under your account and for keeping your credentials secure. Provide accurate information and notify us of any unauthorized use."
+        },
+        "health": {
+          "heading": "3. Health & fitness disclaimer",
+          "body": "Armstrong provides general fitness and nutrition information, including AI-generated workout and diet suggestions. <strong>It is not medical advice and is not a substitute for professional guidance.</strong> Consult a qualified physician or professional before starting any exercise or nutrition program. You use the Service and follow any suggestions at your own risk. AI output may be inaccurate or incomplete — use your judgment."
+        },
+        "acceptableUse": {
+          "heading": "4. Acceptable use",
+          "intro": "You agree not to:",
+          "itemUnlawful": "Use the Service unlawfully or to harm others.",
+          "itemAbuse": "Attempt to access other users' data, disrupt, reverse-engineer, or abuse the Service or its rate limits.",
+          "itemContent": "Upload content you do not have the right to use."
+        },
+        "content": {
+          "heading": "5. Your content",
+          "body": "You retain ownership of the data you create (workouts, logs, chats). You grant us a limited license to store and process it solely to operate the Service for you, as described in our <0>Privacy Policy</0>."
+        },
+        "ip": {
+          "heading": "6. Intellectual property",
+          "body": "The Service, including its software, design, and content (excluding your data and third-party content), is owned by Armstrong and protected by applicable laws. We grant you a personal, non-transferable, revocable license to use it."
+        },
+        "thirdParty": {
+          "heading": "7. Third-party services",
+          "body": "The Service integrates third parties (e.g. Google, Apple, USDA). Your use of those features may be subject to their terms, and we are not responsible for them."
+        },
+        "disclaimers": {
+          "heading": "8. Disclaimers",
+          "body": "The Service is provided \"as is\" and \"as available\" without warranties of any kind, express or implied, including merchantability, fitness for a particular purpose, and non-infringement. We do not warrant the Service will be uninterrupted, error-free, or secure."
+        },
+        "liability": {
+          "heading": "9. Limitation of liability",
+          "body": "To the maximum extent permitted by law, Armstrong will not be liable for any indirect, incidental, special, consequential, or punitive damages, or for any loss of data, arising from your use of the Service."
+        },
+        "termination": {
+          "heading": "10. Termination",
+          "body": "You may stop using the Service and delete your data at any time. We may suspend or terminate access if you violate these Terms or to protect the Service."
+        },
+        "changes": {
+          "heading": "11. Changes",
+          "body": "We may update these Terms. Material changes are indicated by the \"Last updated\" date above; continued use means you accept the updated Terms."
+        },
+        "contact": {
+          "heading": "12. Contact",
+          "body": "Questions: <0>{{email}}</0>."
+        }
+      }
+    }
+  }
+}

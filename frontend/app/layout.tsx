@@ -2,8 +2,10 @@ import type { Metadata, Viewport } from "next";
 import { Barlow_Condensed, DM_Sans } from "next/font/google";
 import { AppShell } from "@/components/AppShell";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { DayStickerPreload } from "@/components/DayStickerPreload";
 import { NumericKeyboardProvider } from "@/contexts/NumericKeyboardContext";
 import { WebOnlyClientExtras } from "@/components/WebOnlyClientExtras";
+import { I18nProvider } from "@/contexts/I18nProvider";
 import { GymStoreProvider } from "@/hooks/useGymStore";
 import { getSiteUrl } from "@/lib/siteUrl";
 import { theme } from "@/lib/theme";
@@ -71,9 +73,12 @@ export default function RootLayout({
       <body>
         <AuthProvider>
           <GymStoreProvider>
-            <NumericKeyboardProvider>
-              <AppShell>{children}</AppShell>
-            </NumericKeyboardProvider>
+            <I18nProvider>
+              <NumericKeyboardProvider>
+                <DayStickerPreload />
+                <AppShell>{children}</AppShell>
+              </NumericKeyboardProvider>
+            </I18nProvider>
           </GymStoreProvider>
         </AuthProvider>
         <WebOnlyClientExtras />

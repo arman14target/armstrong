@@ -1,37 +1,46 @@
+"use client";
+
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { DownloadButtons } from "@/components/landing/DownloadButtons";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { LandingHeroCTA } from "@/components/landing/LandingHeroCTA";
 import { LandingHeroVisual } from "@/components/landing/LandingHeroVisual";
 import { NavigationHeader } from "@/components/NavigationHeader";
 import {
-  landingFeatures,
-  landingFaq,
-  landingFooterCta,
-  landingHero,
-  landingRiskReversal,
-  landingSteps,
-  landingTools,
+  getLandingFeatures,
+  getLandingFaq,
+  getLandingFooterCta,
+  getLandingHero,
+  getLandingRiskReversal,
+  getLandingSteps,
+  getLandingTools,
 } from "@/lib/landingContent";
 import { revealDelayStyle } from "@/lib/revealAnimation";
 import { SectionHead } from "@/components/ui/SectionHead";
 
-const accentBorder: Record<
-  (typeof landingFeatures)[number]["accent"],
-  string
-> = {
+const accentBorder = {
   cyan: "border-cyan/30 hover:border-cyan/60",
   magenta: "border-magenta/30 hover:border-magenta/60",
   green: "border-green/30 hover:border-green/60",
-};
+} as const;
 
-const accentText: Record<(typeof landingFeatures)[number]["accent"], string> = {
+const accentText = {
   cyan: "text-cyan",
   magenta: "text-magenta",
   green: "text-green",
-};
+} as const;
 
 export function LandingPage() {
+  const { t } = useTranslation();
+  const landingHero = getLandingHero(t);
+  const landingTools = getLandingTools(t);
+  const landingSteps = getLandingSteps(t);
+  const landingFeatures = getLandingFeatures(t);
+  const landingRiskReversal = getLandingRiskReversal(t);
+  const landingFaq = getLandingFaq(t);
+  const landingFooterCta = getLandingFooterCta(t);
+
   return (
     <div className="landing-shell">
       <div className="reveal-hidden" data-reveal="scroll">
@@ -58,19 +67,18 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Free planners */}
       <section className="landing-section" aria-labelledby="tools-heading">
         <div
           className="reveal-hidden"
           data-reveal="scroll"
           style={revealDelayStyle(0)}
         >
-          <SectionHead index="01" title="Free Planning Tools" />
+          <SectionHead index={t("landing.tools.sectionIndex")} title={t("landing.tools.sectionTitle")} />
           <h2
             id="tools-heading"
             className="mb-[var(--space-section)] max-w-2xl font-display text-2xl tracking-wide text-heading uppercase sm:mb-[var(--space-section-lg)] sm:text-3xl"
           >
-            Diet & Gym Planners — No Signup
+            {t("landing.tools.heading")}
           </h2>
         </div>
         <div className="landing-benefits">
@@ -98,24 +106,23 @@ export function LandingPage() {
                 href={tool.href}
                 className={`text-sm font-semibold tracking-wide uppercase ${accentText[tool.accent]} hover:text-heading`}
               >
-                Open planner →
+                {t("landing.tools.openPlanner")}
               </Link>
             </article>
           ))}
         </div>
       </section>
 
-      {/* How It Works */}
       <section className="landing-section" aria-labelledby="how-heading">
         <div
           className="reveal-hidden"
           data-reveal="scroll"
           style={revealDelayStyle(0)}
         >
-          <SectionHead index="02" title="How It Works" />
+          <SectionHead index={t("landing.howItWorks.sectionIndex")} title={t("landing.howItWorks.sectionTitle")} />
         </div>
         <h2 id="how-heading" className="sr-only">
-          Three-step AI workout generator process
+          {t("landing.howItWorks.srOnly")}
         </h2>
         <ol className="landing-steps">
           {landingSteps.map((item, index) => (
@@ -141,19 +148,18 @@ export function LandingPage() {
         </ol>
       </section>
 
-      {/* Core Features */}
       <section className="landing-section" aria-labelledby="features-heading">
         <div
           className="reveal-hidden"
           data-reveal="scroll"
           style={revealDelayStyle(0)}
         >
-          <SectionHead index="03" title="Built for Serious Lifters" />
+          <SectionHead index={t("landing.features.sectionIndex")} title={t("landing.features.sectionTitle")} />
           <h2
             id="features-heading"
             className="mb-[var(--space-section)] max-w-2xl font-display text-2xl tracking-wide text-heading uppercase sm:mb-[var(--space-section-lg)] sm:text-3xl"
           >
-            Your Free AI Fitness Coach, Meal Plan & Macro Tracker
+            {t("landing.features.heading")}
           </h2>
         </div>
         <div className="landing-benefits">
@@ -180,14 +186,13 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Risk Reversal */}
       <section className="landing-section" aria-labelledby="risk-heading">
         <div
           className="reveal-hidden"
           data-reveal="scroll"
           style={revealDelayStyle(0)}
         >
-          <SectionHead index="04" title="No Risk. All Reward." />
+          <SectionHead index={t("landing.risk.sectionIndex")} title={t("landing.risk.sectionTitle")} />
         </div>
         <div
           className="landing-risk-reversal reveal-hidden"
@@ -211,16 +216,15 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* FAQ */}
       <section className="landing-section" aria-labelledby="faq-heading">
         <div
           className="reveal-hidden"
           data-reveal="scroll"
           style={revealDelayStyle(0)}
         >
-          <SectionHead index="05" title="FAQ" />
+          <SectionHead index={t("landing.faq.sectionIndex")} title={t("landing.faq.sectionTitle")} />
           <h2 id="faq-heading" className="sr-only">
-            Frequently asked questions about Armstrong AI fitness coach
+            {t("landing.faq.srOnly")}
           </h2>
         </div>
         <div className="landing-faq">
@@ -240,7 +244,6 @@ export function LandingPage() {
         </div>
       </section>
 
-      {/* Footer CTA */}
       <section className="landing-footer-cta" aria-labelledby="footer-cta">
         <div
           className="landing-footer-cta__inner reveal-hidden"

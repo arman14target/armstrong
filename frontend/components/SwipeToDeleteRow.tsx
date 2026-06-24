@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { TrashIcon } from "@/components/icons/ActionIcons";
 import { cn } from "@/lib/cn";
 
@@ -24,6 +25,7 @@ export function SwipeToDeleteRow({
   children,
   className,
 }: SwipeToDeleteRowProps) {
+  const { t } = useTranslation();
   const [offset, setOffset] = useState(0);
   const [dragging, setDragging] = useState(false);
   const startXRef = useRef(0);
@@ -173,14 +175,14 @@ export function SwipeToDeleteRow({
     <div className={cn("set-swipe-row", className)}>
       <button
         type="button"
-        aria-label="Delete set"
+        aria-label={t("sets.deleteSetAria")}
         onClick={handleDeleteClick}
         className="set-swipe-row__delete"
         style={{ opacity: revealProgress }}
       >
         <TrashIcon />
         <span className="text-[10px] font-semibold uppercase tracking-wide">
-          Delete
+          {t("common.delete")}
         </span>
       </button>
 

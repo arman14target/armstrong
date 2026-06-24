@@ -2,3 +2,6 @@
 # pose backdrop preview artifact
 pose-preview.png
 bench-preview.png
+
+# i18n translation cache (local only)
+lib/i18n/locales/.translate-cache.json

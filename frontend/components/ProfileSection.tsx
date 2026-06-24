@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { AppleSignInButton } from "@/components/AppleSignInButton";
@@ -57,6 +58,7 @@ export function ProfileSection({
   onClearData,
   openSignupRequestId = 0,
 }: ProfileSectionProps) {
+  const { t } = useTranslation();
   const {
     configured,
     googleConfigured,
@@ -102,14 +104,14 @@ export function ProfileSection({
       }
 
       if (!userId) {
-        setError("Could not start your session. Please try again.");
+        setError(t("auth.sessionError"));
         return;
       }
 
       await onAuthSuccess(userId, mode);
       setPassword("");
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError(t("auth.genericError"));
     } finally {
       setSubmitting(false);
     }
@@ -124,7 +126,7 @@ export function ProfileSection({
       return;
     }
     if (!result.userId) {
-      setError("Could not start your session. Please try again.");
+      setError(t("auth.sessionError"));
       return;
     }
     await onAuthSuccess(result.userId, "sign-in");
@@ -172,20 +174,19 @@ export function ProfileSection({
 
   if (loading) {
     return (
-      <TerminalWindow title="Profile">
-        <p className="text-sm text-dim">Checking your session...</p>
+      <TerminalWindow title={t("profile.title")}>
+        <p className="text-sm text-dim">{t("profile.checkingSession")}</p>
       </TerminalWindow>
     );
   }
 
   if (!configured) {
     return (
-      <TerminalWindow title="Profile">
+      <TerminalWindow title={t("profile.title")}>
         <p className="text-sm leading-relaxed text-dim">
-          Cloud sync is not configured yet. Add{" "}
-          <span className="text-cyan">NEXT_PUBLIC_API_URL</span> to your
-          environment (pointing at the Armstrong backend) to enable login and
-          saved plans.
+          {t("profile.cloudNotConfiguredIntro")}{" "}
+          <span className="text-cyan">NEXT_PUBLIC_API_URL</span>{" "}
+          {t("profile.cloudNotConfiguredOutro")}
         </p>
       </TerminalWindow>
     );
@@ -194,16 +195,15 @@ export function ProfileSection({
   if (user) {
     return (
       <>
-        <TerminalWindow title="Your account">
+        <TerminalWindow title={t("profile.yourAccount")}>
           <div className="stack-md">
             <div>
-              <p className="text-xs uppercase tracking-wide text-dim">Signed in as</p>
+              <p className="text-xs uppercase tracking-wide text-dim">{t("profile.signedInLabel")}</p>
               <p className="mt-1 text-sm text-heading">{user.email}</p>
             </div>
 
             <p className="text-sm leading-relaxed text-dim">
-              Your workouts, diet, and coach plans are saved to your account so
-              you can pick up where you left off on any device.
+              {t("profile.syncedHint")}
             </p>
 
             <div className="flex flex-col gap-[var(--space-gap)] sm:flex-row">
@@ -213,7 +213,7 @@ export function ProfileSection({
                 onClick={handleSignOut}
                 disabled={signingOut}
               >
-                {signingOut ? "Signing out..." : "Sign out"}
+                {signingOut ? t("profile.signingOut") : t("auth.signOut")}
               </CyberButton>
               <CyberButton
                 variant="magenta"
@@ -221,7 +221,7 @@ export function ProfileSection({
                 onClick={() => setShowClearModal(true)}
                 disabled={clearing}
               >
-                Clear all data
+                {t("auth.clearData")}
               </CyberButton>
             </div>
           </div>
@@ -229,19 +229,19 @@ export function ProfileSection({
 
         <ConfirmModal
           open={showClearModal}
-          title="Clear everything?"
+          title={t("profile.clearEverything")}
           message={
             <>
-              This will permanently delete all your workout history, diet logs,
-              coach plans, and chat history from this device
-              {user ? " and your cloud account" : ""}.
+              {t("profile.clearEverythingMessage", {
+                cloud: user ? t("profile.clearEverythingCloud") : "",
+              })}
               <span className="mt-[var(--space-gap)] block font-semibold text-magenta">
-                This action cannot be undone.
+                {t("profile.cannotUndo")}
               </span>
             </>
           }
-          confirmLabel="Yes, clear everything"
-          cancelLabel="Keep my data"
+          confirmLabel={t("profile.clearEverythingConfirm")}
+          cancelLabel={t("profile.keepMyData")}
           confirming={clearing}
           onConfirm={handleClearConfirm}
           onCancel={() => setShowClearModal(false)}
@@ -251,11 +251,10 @@ export function ProfileSection({
   }
 
   return (
-    <TerminalWindow title={mode === "sign-in" ? "Sign in" : "Create account"}>
+    <TerminalWindow title={mode === "sign-in" ? t("auth.signIn") : t("profile.createAccountTitle")}>
       <div className="stack-md">
         <p className="text-sm leading-relaxed text-dim">
-          The app is free to use without an account. Sign in when you want your
-          workouts, diet, and plans saved and synced for later.
+          {t("profile.freeUseHint")}
         </p>
 
         <div className="grid grid-cols-2 gap-1 rounded-cyber border border-line p-1">
@@ -274,7 +273,7 @@ export function ProfileSection({
                   : "text-dim hover:text-heading",
               )}
             >
-              {m === "sign-in" ? "Sign in" : "Sign up"}
+              {m === "sign-in" ? t("auth.signIn") : t("auth.signUp")}
             </button>
           ))}
         </div>
@@ -309,7 +308,7 @@ export function ProfileSection({
               value={password}
               onChange={(event) => setPassword(event.target.value)}
               className="auth-field__input"
-              placeholder="At least 6 characters"
+              placeholder={t("profile.passwordPlaceholder")}
             />
           </label>
 
@@ -327,11 +326,11 @@ export function ProfileSection({
           >
             {submitting
               ? mode === "sign-in"
-                ? "Signing in..."
-                : "Creating account..."
+                ? t("profile.signingIn")
+                : t("profile.creatingAccount")
               : mode === "sign-in"
-                ? "Sign in & sync"
-                : "Create account & sync"}
+                ? t("profile.signInSync")
+                : t("profile.createAccountSync")}
           </CyberButton>
         </form>
 
@@ -340,7 +339,7 @@ export function ProfileSection({
             <div className="flex items-center gap-3">
               <div className="h-px flex-1 bg-line" />
               <span className="text-[11px] uppercase tracking-wide text-dim">
-                or continue with
+                {t("auth.orContinueWith")}
               </span>
               <div className="h-px flex-1 bg-line" />
             </div>

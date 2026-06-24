@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import type { NutritionSex } from "@/lib/nutrition";
 import {
@@ -31,6 +32,7 @@ export function NutritionBodyStatsSliders({
   weightUnit,
   idPrefix = "nutrition",
 }: NutritionBodyStatsSlidersProps) {
+  const { t } = useTranslation();
   const [heightUnit, setHeightUnit] = useState<HeightUnit>("cm");
 
   const weightDisplay =
@@ -48,7 +50,7 @@ export function NutritionBodyStatsSliders({
     <div className="stack-md">
       <div className="planner-field">
         <div className="planner-field__head">
-          <label htmlFor={`${idPrefix}-weight`}>Weight</label>
+          <label htmlFor={`${idPrefix}-weight`}>{t("nutrition.weight")}</label>
         </div>
         <p className="planner-field__value">
           {formatWeight(values.weightKg, weightUnit)}
@@ -66,7 +68,7 @@ export function NutritionBodyStatsSliders({
 
       <div className="planner-field">
         <div className="planner-field__head">
-          <label htmlFor={`${idPrefix}-height`}>Height</label>
+          <label htmlFor={`${idPrefix}-height`}>{t("nutrition.height")}</label>
           <div className="planner-unit-toggle">
             {(["cm", "ft"] as const).map((unit) => (
               <button
@@ -98,7 +100,7 @@ export function NutritionBodyStatsSliders({
 
       <div className="planner-field">
         <div className="planner-field__head">
-          <label htmlFor={`${idPrefix}-age`}>Age</label>
+          <label htmlFor={`${idPrefix}-age`}>{t("nutrition.age")}</label>
           <span className="planner-field__value-inline">{values.age}</span>
         </div>
         <input
@@ -115,7 +117,7 @@ export function NutritionBodyStatsSliders({
       </div>
 
       <fieldset className="planner-segment">
-        <legend>Sex</legend>
+        <legend>{t("nutrition.sex")}</legend>
         <div className="planner-segment__options">
           {(["male", "female"] as const).map((sex) => (
             <button
@@ -124,7 +126,7 @@ export function NutritionBodyStatsSliders({
               className={values.sex === sex ? "is-active" : undefined}
               onClick={() => onChange({ ...values, sex })}
             >
-              {sex === "male" ? "Male" : "Female"}
+              {t(`nutrition.${sex}`)}
             </button>
           ))}
         </div>

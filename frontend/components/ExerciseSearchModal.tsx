@@ -7,6 +7,7 @@ import {
   type FormEvent,
   type KeyboardEvent as ReactKeyboardEvent,
 } from "react";
+import { useTranslation } from "react-i18next";
 import { CloseIcon, InfoIcon } from "@/components/icons/ActionIcons";
 import { ExerciseInfoModal } from "@/components/ExerciseInfoModal";
 import { CyberButton } from "@/components/ui/CyberButton";
@@ -35,11 +36,14 @@ interface ExerciseSearchModalProps {
 export function ExerciseSearchModal({
   open,
   initialValue = "",
-  title = "Find exercise",
-  confirmLabel = "Use exercise",
+  title,
+  confirmLabel,
   onConfirm,
   onClose,
 }: ExerciseSearchModalProps) {
+  const { t } = useTranslation();
+  const resolvedTitle = title ?? t("exercise.searchTitle");
+  const resolvedConfirmLabel = confirmLabel ?? t("exercise.useExercise");
   const [query, setQuery] = useState(initialValue);
   const [suggestions, setSuggestions] = useState<ExerciseSearchResult[]>([]);
   const [searching, setSearching] = useState(false);
@@ -100,7 +104,7 @@ export function ExerciseSearchModal({
           setSearchError(
             error instanceof Error
               ? error.message
-              : "Exercise search failed. Try again.",
+              : t("exercise.searchFailed"),
           );
         })
         .finally(() => {
@@ -136,7 +140,7 @@ export function ExerciseSearchModal({
           setSearchError(
             error instanceof Error
               ? error.message
-              : "Exercise search failed. Try again.",
+              : t("exercise.searchFailed"),
           );
         })
         .finally(() => {
@@ -149,7 +153,7 @@ export function ExerciseSearchModal({
     return () => {
       window.clearTimeout(timeoutId);
     };
-  }, [open, query]);
+  }, [open, query, t]);
 
   if (!open) {
     return null;
@@ -208,11 +212,11 @@ export function ExerciseSearchModal({
             id="exercise-search-title"
             className="ml-[var(--space-inline)] tracking-wide text-cyan"
           >
-            {title}
+            {resolvedTitle}
           </span>
         </div>
         <IconButton
-          label="Close exercise search"
+          label={t("exercise.closeSearchAria")}
           variant="ghost"
           className="size-8"
           onClick={onClose}
@@ -232,20 +236,20 @@ export function ExerciseSearchModal({
             value={query}
             onChange={(event) => setQuery(event.target.value)}
             onKeyDown={handleInputKeyDown}
-            placeholder="Search bodybuilding exercises"
+            placeholder={t("exercise.searchPlaceholder")}
             autoComplete="off"
             enterKeyHint="done"
             className="cyber-input min-h-12 w-full"
-            aria-label="Search exercises"
+            aria-label={t("exercise.searchAria")}
           />
           <p className="mt-2 text-xs text-dim">
-            Pick a move below, or type your own name and press Enter.
+            {t("exercise.searchHint")}
           </p>
         </div>
 
         <div className="min-h-0 flex-1 overflow-y-auto px-[var(--space-page-x)] py-[var(--space-gap)]">
           {searching ? (
-            <p className="px-1 py-2 text-sm text-dim">Searching...</p>
+            <p className="px-1 py-2 text-sm text-dim">{t("common.searching")}</p>
           ) : searchError ? (
             <p className="px-1 py-2 text-sm text-dim">{searchError}</p>
           ) : suggestions.length > 0 ? (
@@ -273,7 +277,7 @@ export function ExerciseSearchModal({
                     </button>
                     <div className="flex shrink-0 items-center pr-2">
                       <IconButton
-                        label={`About ${result.name}`}
+                        label={t("exercise.aboutAria", { name: result.name })}
                         variant="ghost"
                         className="size-8"
                         onClick={() => setInfoSlug(result.id)}
@@ -287,7 +291,7 @@ export function ExerciseSearchModal({
             </ul>
           ) : (
             <p className="px-1 py-2 text-sm text-dim">
-              No matches — press Enter to use &ldquo;{trimmedQuery}&rdquo;
+              {t("exercise.noMatches", { query: trimmedQuery })}
             </p>
           )}
         </div>
@@ -299,7 +303,7 @@ export function ExerciseSearchModal({
             className="w-full min-h-12"
             disabled={!trimmedQuery}
           >
-            {confirmLabel}
+            {resolvedConfirmLabel}
           </CyberButton>
         </div>
       </form>

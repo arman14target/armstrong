@@ -1,8 +1,15 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { useGymStore } from "@/hooks/useGymStore";
 import { cn } from "@/lib/cn";
+import {
+  LOCALE_LABELS,
+  SUPPORTED_LOCALES,
+  type AppLocale,
+} from "@/lib/i18n/locales";
+import { resolveAppLocale } from "@/lib/i18n/detectLocale";
 import type { WeightUnit } from "@/lib/types";
 
 function SegToggle<T extends string>({
@@ -42,20 +49,43 @@ function SegToggle<T extends string>({
 }
 
 export function ProfilePreferences() {
-  const { data, setWeightUnit, setAdvancedNutrition } = useGymStore();
+  const { t } = useTranslation();
+  const { data, setWeightUnit, setAdvancedNutrition, setLocale } = useGymStore();
   const unit: WeightUnit = data.weightUnit ?? "kg";
   const advanced = data.advancedNutrition === true;
+  const locale = resolveAppLocale(data.locale);
 
   return (
-    <TerminalWindow title="Preferences">
+    <TerminalWindow title={t("profile.preferences")}>
       <div className="stack-md">
         <div className="flex flex-wrap items-center justify-between gap-3">
+          <div className="min-w-0 flex-1">
+            <p className="text-sm text-heading">{t("profile.language")}</p>
+            <p className="mt-0.5 text-xs text-dim">{t("profile.languageHint")}</p>
+          </div>
+          <label className="shrink-0">
+            <span className="sr-only">{t("profile.language")}</span>
+            <select
+              value={locale}
+              onChange={(event) => setLocale(event.target.value as AppLocale)}
+              className="cyber-input max-w-[11rem] py-1.5 text-xs"
+            >
+              {SUPPORTED_LOCALES.map((code) => (
+                <option key={code} value={code}>
+                  {LOCALE_LABELS[code]}
+                </option>
+              ))}
+            </select>
+          </label>
+        </div>
+
+        <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line pt-3">
           <div>
-            <p className="text-sm text-heading">Weight unit</p>
-            <p className="mt-0.5 text-xs text-dim">Used for body weight and gym volume.</p>
+            <p className="text-sm text-heading">{t("profile.weightUnit")}</p>
+            <p className="mt-0.5 text-xs text-dim">{t("profile.weightUnitHint")}</p>
           </div>
           <SegToggle
-            ariaLabel="Weight unit"
+            ariaLabel={t("profile.weightUnit")}
             options={[
               { value: "kg", label: "kg" },
               { value: "lb", label: "lb" },
@@ -67,9 +97,9 @@ export function ProfilePreferences() {
 
         <div className="flex items-start justify-between gap-3 border-t border-line pt-3">
           <div>
-            <p className="text-sm text-heading">Advanced nutrition</p>
+            <p className="text-sm text-heading">{t("profile.advancedNutrition")}</p>
             <p className="mt-0.5 text-xs text-dim">
-              Also track calories and fat across meal logging and history.
+              {t("profile.advancedNutritionHint")}
             </p>
           </div>
           <label className="flex shrink-0 cursor-pointer items-center gap-2">

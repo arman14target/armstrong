@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { t } from "@/lib/i18n/t";
 
 type SpeechRecognitionInstance = {
   continuous: boolean;
@@ -33,17 +34,17 @@ function formatSpeechError(code: string): string {
   switch (code) {
     case "not-allowed":
     case "service-not-allowed":
-      return "Microphone access denied. Allow mic permission in your browser.";
+      return t("speech.micDenied");
     case "no-speech":
-      return "No speech detected. Try again.";
+      return t("speech.noSpeech");
     case "audio-capture":
-      return "No microphone found.";
+      return t("speech.noMic");
     case "network":
-      return "Speech recognition needs a network connection.";
+      return t("speech.network");
     case "aborted":
       return "";
     default:
-      return "Could not use speech recognition. Try typing instead.";
+      return t("speech.failed");
   }
 }
 
@@ -154,7 +155,7 @@ export function useSpeechToText(onTranscript: (text: string) => void) {
 
       measure();
     } catch {
-      setError("Microphone access denied. Allow mic permission in your browser.");
+      setError(t("speech.micDenied"));
     }
   }, []);
 

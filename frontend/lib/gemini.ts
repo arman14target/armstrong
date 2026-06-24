@@ -1,4 +1,5 @@
 import { ApiError, GoogleGenAI } from "@google/genai";
+import { t } from "@/lib/i18n/t";
 
 /** Flash models — latest first. Deprecated IDs are skipped automatically on 404. */
 export const FREE_TIER_MODELS = [
@@ -151,29 +152,29 @@ export function formatCoachError(error: unknown): string {
   const raw = getErrorMessage(error);
 
   if (isOverloadedError(error)) {
-    return "Gemini is busy right now (high demand). Wait 10–20 seconds and send again — the app will auto-retry and switch to a backup model.";
+    return t("coach.errors.overloaded");
   }
 
   if (isZeroQuotaError(error)) {
-    return "Free-tier quota is not active on your Google project. In Google AI Studio, open your project → Set up billing (free tier still costs $0). Then retry, or wait if you hit daily limits.";
+    return t("coach.errors.zeroQuota");
   }
 
   if (isQuotaError(error)) {
     const retryMatch = raw.match(/retry in ([\d.]+)s/i);
     if (retryMatch) {
       const seconds = Math.ceil(Number.parseFloat(retryMatch[1]));
-      return `Rate limit hit. Wait about ${seconds}s and try again. Free tier has daily/minute caps.`;
+      return t("coach.errors.rateLimitSeconds", { seconds });
     }
 
-    return "Rate limit hit on the free tier. Wait a minute and try again.";
+    return t("coach.errors.rateLimit");
   }
 
   if (raw.includes("API key not valid") || raw.includes("API_KEY_INVALID")) {
-    return "Invalid API key. Check NEXT_PUBLIC_GEMINI_API_KEY in .env.local.";
+    return t("coach.errors.invalidKey");
   }
 
   if (isModelNotFoundError(error)) {
-    return "That Gemini model is no longer available. Remove NEXT_PUBLIC_GEMINI_MODEL from .env.local or set it to gemini-3.5-flash, then restart the dev server.";
+    return t("coach.errors.modelNotFound");
   }
 
   return raw;

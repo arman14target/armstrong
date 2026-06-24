@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { renderShareCard } from "@/lib/share/renderShareCard";
@@ -20,10 +21,12 @@ export function ShareWorkoutButton({
   summary,
   onShared,
   className,
-  children = "Share",
+  children,
 }: ShareWorkoutButtonProps) {
+  const { t } = useTranslation();
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState(false);
+  const label = children ?? t("share.share");
 
   const handleShare = async () => {
     if (busy) {
@@ -36,7 +39,7 @@ export function ShareWorkoutButton({
       const fileName = `armstrong-${summary.dateISO.slice(0, 10)}`;
       const result = await shareWorkoutImage(blob, {
         fileName,
-        title: `${summary.workoutName} · Armstrong`,
+        title: t("share.shareTitle", { workoutName: summary.workoutName }),
         text: summary.heroStat.value,
       });
       if (result !== "cancelled") {
@@ -56,7 +59,7 @@ export function ShareWorkoutButton({
       onClick={handleShare}
       disabled={busy}
     >
-      {busy ? "Preparing…" : error ? "Try again" : children}
+      {busy ? t("share.preparing") : error ? t("share.tryAgain") : label}
     </CyberButton>
   );
 }
