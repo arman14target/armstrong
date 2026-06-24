@@ -50,7 +50,9 @@ Backend (run in `backend/`):
 - `npm run prisma:migrate` — create/apply a dev migration
 - `npm run build` — `nest build` to `dist/`
 
-Whole stack: `docker compose up --build` (Postgres + API + static web). No test framework is configured.
+Whole stack (production images): `docker compose up --build` (Postgres + API + static web behind nginx, web on :8080). No test framework is configured.
+
+Local dev with **hot reload**: `docker compose -f docker-compose.dev.yml up` — bind-mounts source and runs the dev servers (`next dev` on **:3000**, app at `/app`; `nest --watch` on **:4000**), so edits reload without an image rebuild. `node_modules` live in named volumes (install runs once, then is skipped); browser→API is `http://localhost:4000`, overriding `frontend/.env.local`. Stop the prod stack first (both bind `:4000`). Admin is omitted to stay lean.
 
 ## Architecture
 
