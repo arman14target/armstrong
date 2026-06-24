@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { CloseIcon } from "@/components/icons/ActionIcons";
 import { DaySticker } from "@/components/icons/DaySticker";
 import { IconButton } from "@/components/ui/IconButton";
@@ -32,6 +33,7 @@ export function DayButton({
   onSetupClick,
   onRemove,
 }: DayButtonProps) {
+  const { t } = useTranslation();
   const displaySticker = stickerForDayIndex(iconIndex);
   const lastWorkoutAgo = useTimeAgo(lastCompletedAt);
 
@@ -53,11 +55,11 @@ export function DayButton({
       </p>
       <div className="text-[10px] leading-tight text-dim">
         <p>
-          <span className="text-green">Last:</span> {lastWorkoutAgo}
+          <span className="text-green">{t("workout.lastLabel")}</span> {lastWorkoutAgo}
         </p>
         {lastSessionDurationSeconds !== undefined ? (
           <p>
-            <span className="text-green">Session:</span>{" "}
+            <span className="text-green">{t("workout.sessionLabel")}</span>{" "}
             {formatDuration(lastSessionDurationSeconds)}
           </p>
         ) : null}
@@ -83,7 +85,7 @@ export function DayButton({
   return (
     <div className="relative">
       <IconButton
-        label={`Remove ${label}`}
+        label={t("workout.removeDayAria", { name: label })}
         variant="ghost"
         className="absolute -top-2 -right-2 z-10 size-6 rounded-full border-white/35 bg-bg text-white shadow-[0_2px_8px_rgba(0,0,0,0.45)] hover:border-white hover:bg-bg hover:text-white"
         onClick={(event) => {

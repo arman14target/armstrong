@@ -1,6 +1,7 @@
 import { Capacitor } from "@capacitor/core";
 import { LocalNotifications } from "@capacitor/local-notifications";
 import { withBasePath } from "@/lib/basePath";
+import { t } from "@/lib/i18n/t";
 
 const REST_NOTIFICATION_ID = 9001;
 const REST_NOTIFICATION_SOUND = "rest-alert.wav";
@@ -113,7 +114,7 @@ async function scheduleNativeRestNotification(
       notifications: [
         {
           id: REST_NOTIFICATION_ID,
-          title: "Rest complete!",
+          title: t("workout.restNotificationTitle"),
           body,
           ...NATIVE_REST_NOTIFICATION_ALERT,
           schedule: { at, allowWhileIdle: true },
@@ -140,7 +141,7 @@ export async function showRestNotification(body: string): Promise<void> {
       notifications: [
         {
           id: REST_NOTIFICATION_ID,
-          title: "Rest complete!",
+          title: t("workout.restNotificationTitle"),
           body,
           ...NATIVE_REST_NOTIFICATION_ALERT,
         },
@@ -165,14 +166,14 @@ export async function showRestNotification(body: string): Promise<void> {
   try {
     if ("serviceWorker" in navigator) {
       const registration = await navigator.serviceWorker.ready;
-      await registration.showNotification("Rest complete!", options);
+      await registration.showNotification(t("workout.restNotificationTitle"), options);
       return;
     }
   } catch {
     // Fall through to the Notification constructor.
   }
 
-  new Notification("Rest complete!", options);
+  new Notification(t("workout.restNotificationTitle"), options);
 }
 
 export function notifyRestComplete(endsAt: string, body: string): void {

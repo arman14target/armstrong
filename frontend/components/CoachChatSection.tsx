@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { CoachChatMicButton } from "@/components/CoachChatMicButton";
 import { CoachChatThinkingMessage } from "@/components/CoachChatThinkingMessage";
@@ -104,22 +105,25 @@ function getPendingActionKinds(
   return kinds;
 }
 
-function getCombinedApplyLabel(kinds: CoachActionKind[]): string {
+function getCombinedApplyLabel(
+  kinds: CoachActionKind[],
+  t: (key: string) => string,
+): string {
   const hasDiet = kinds.includes("diet");
   const hasGym = kinds.includes("gym");
   const hasWorkout = kinds.includes("workout");
 
   if (hasDiet && hasGym) {
-    return "Add to Nutrition & workout days";
+    return t("coach.applyCombinedNutritionWorkoutDays");
   }
   if (hasDiet && hasWorkout) {
-    return "Add to Nutrition & update workout";
+    return t("coach.applyCombinedNutritionWorkout");
   }
   if (hasGym && hasWorkout) {
-    return "Add to workout days & update exercise";
+    return t("coach.applyCombinedWorkoutDaysExercise");
   }
 
-  return "Save plan";
+  return t("coach.savePlan");
 }
 
 function markActionsResolved(
@@ -160,11 +164,13 @@ function SendIcon() {
 }
 
 function SetupPanel() {
+  const { t } = useTranslation();
+
   return (
     <div className="onboarding-coach-modal__setup">
-      <p className="onboarding-coach-modal__setup-title">Connect your coach</p>
+      <p className="onboarding-coach-modal__setup-title">{t("coach.connectTitle")}</p>
       <p className="onboarding-coach-modal__setup-copy">
-        Armstrong Coach runs on Google Gemini Flash. Create a free API key at{" "}
+        {t("coach.connectIntro")}{" "}
         <a
           href="https://aistudio.google.com/apikey"
           target="_blank"
@@ -173,8 +179,7 @@ function SetupPanel() {
         >
           aistudio.google.com/apikey
         </a>
-        , add <code>NEXT_PUBLIC_GEMINI_API_KEY</code> to <code>.env.local</code>,
-        then restart the dev server.
+        {t("coach.connectMiddle")}
       </p>
     </div>
   );
@@ -234,6 +239,7 @@ function CoachMessageActions({
   onConfirm,
   onError,
 }: CoachMessageActionsProps) {
+  const { t } = useTranslation();
   const actions = parseCoachActions(message.content);
   const useCombinedButton = pendingKinds.length > 1;
 
@@ -242,7 +248,7 @@ function CoachMessageActions({
 
     if (pendingKinds.includes("diet") && actions.dietPlan) {
       if (!canApplyDietPlan(actions.dietPlan)) {
-        onError("That meal plan could not be saved. Ask the coach to try again.");
+        onError(t("coach.dietSaveError"));
         return;
       }
       onApplyDietPlan(actions.dietPlan);
@@ -251,7 +257,7 @@ function CoachMessageActions({
 
     if (pendingKinds.includes("gym") && actions.gymPlan) {
       if (!canApplyGymPlan(actions.gymPlan)) {
-        onError("That workout plan could not be applied. Ask the coach to try again.");
+        onError(t("coach.gymSaveError"));
         return;
       }
       onApplyGymPlan(actions.gymPlan);
@@ -262,8 +268,8 @@ function CoachMessageActions({
       if (!canApplyWorkoutChange(appData, actions.workoutChange)) {
         const errorMessage =
           actions.workoutChange.action === "add"
-            ? "Could not find that workout day. Ask the coach to try again."
-            : "Could not find that exercise in your plan. Ask the coach to try again.";
+            ? t("coach.workoutDayNotFound")
+            : t("coach.exerciseNotFound");
         onError(errorMessage);
         return;
       }
@@ -282,14 +288,14 @@ function CoachMessageActions({
   };
 
   const applyLabel = useCombinedButton
-    ? getCombinedApplyLabel(pendingKinds)
+    ? getCombinedApplyLabel(pendingKinds, t)
     : pendingKinds[0] === "diet"
       ? getDietPlanApplyLabel()
       : pendingKinds[0] === "gym"
         ? getGymPlanApplyLabel()
         : actions.workoutChange
           ? getWorkoutChangeApplyLabel(actions.workoutChange)
-          : "Apply";
+          : t("coach.apply");
 
   return (
     <div className="coach-message-actions stack-sm">
@@ -307,10 +313,10 @@ function CoachMessageActions({
 
       <p className="text-xs text-dim">
         {useCombinedButton
-          ? "Want changes? Keep chatting — say what to adjust."
+          ? t("coach.adjustCombined")
           : pendingKinds.includes("diet")
-            ? "Allergies or want different foods? Keep chatting — say what to change."
-            : "Want different exercises or days? Keep chatting."}
+            ? t("coach.adjustDiet")
+            : t("coach.adjustWorkout")}
       </p>
 
       <div className="flex flex-wrap gap-2">
@@ -326,7 +332,7 @@ function CoachMessageActions({
           className="min-h-[2.75rem] flex-1 px-4"
           onClick={handleDismiss}
         >
-          Keep chatting
+          {t("coach.keepChatting")}
         </CyberButton>
       </div>
     </div>
@@ -348,6 +354,7 @@ export function CoachChatSection({
   onApplyDietPlan,
   onApplyGymPlan,
 }: CoachChatSectionProps) {
+  const { t } = useTranslation();
   const [messages, setMessages] = useState<CoachChatMessage[]>([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
@@ -493,8 +500,8 @@ export function CoachChatSection({
               <CoachIcon />
             </div>
             <div>
-              <h2 className="onboarding-coach-modal__title">Armstrong Coach</h2>
-              <p className="onboarding-coach-modal__subtitle">Loading...</p>
+              <h2 className="onboarding-coach-modal__title">{t("coach.armstrongCoach")}</h2>
+              <p className="onboarding-coach-modal__subtitle">{t("coach.loading")}</p>
             </div>
           </div>
         </header>
@@ -515,9 +522,9 @@ export function CoachChatSection({
             <CoachIcon />
           </div>
           <div>
-            <h2 className="onboarding-coach-modal__title">Armstrong Coach</h2>
+            <h2 className="onboarding-coach-modal__title">{t("coach.armstrongCoach")}</h2>
             <p className="onboarding-coach-modal__subtitle">
-              Training, diet plans, and bodybuilding advice
+              {t("coach.subtitle")}
             </p>
           </div>
         </div>
@@ -528,7 +535,7 @@ export function CoachChatSection({
               onClick={handleClear}
               className="onboarding-coach-modal__restart"
             >
-              Clear chat
+              {t("coach.clearChat")}
             </button>
           </div>
         ) : null}
@@ -544,12 +551,9 @@ export function CoachChatSection({
             <div className="onboarding-coach-modal__thread">
               {messages.length === 0 ? (
                 <div className="coach-chat-empty">
-                  <p className="coach-chat-empty__title">Ask your coach</p>
+                  <p className="coach-chat-empty__title">{t("coach.emptyTitle")}</p>
                   <p className="coach-chat-empty__copy">
-                    Get a meal plan or gym split, tweak exercises, or ask
-                    bodybuilding questions. Tap Add to Nutrition or Add to
-                    workout days when you&apos;re ready — or keep chatting to
-                    adjust.
+                    {t("coach.emptyCopy")}
                   </p>
                 </div>
               ) : (
@@ -614,10 +618,10 @@ export function CoachChatSection({
                   }
                 }}
                 rows={2}
-                placeholder="Ask about training, meals, your plan..."
+                placeholder={t("coach.placeholder")}
                 disabled={loading}
                 className="onboarding-coach-modal__input"
-                aria-label="Message to coach"
+                aria-label={t("coach.messageAria")}
               />
               <CoachChatMicButton
                 disabled={loading}
@@ -628,7 +632,7 @@ export function CoachChatSection({
                 type="submit"
                 disabled={loading || !input.trim()}
                 className="onboarding-coach-modal__send"
-                aria-label="Send message"
+                aria-label={t("coach.sendAria")}
               >
                 <SendIcon />
               </button>

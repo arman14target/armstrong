@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { NavigationHeader } from "@/components/NavigationHeader";
 import { ExperienceBar } from "@/components/planner/ExperienceBar";
@@ -13,24 +14,34 @@ import { CyberButton } from "@/components/ui/CyberButton";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { useGymStore } from "@/hooks/useGymStore";
 import {
-  dietPlannerAbout,
-  dietPlannerFaq,
-  dietPlannerHero,
+  getDietPlannerAbout,
+  getDietPlannerFaq,
+  getDietPlannerHero,
 } from "@/lib/planner/dietContent";
 import {
   DEFAULT_DIET_INPUTS,
   generateDietPlan,
   type DietPlanInputs,
 } from "@/lib/planner/dietPlan";
-import { EXPERIENCE_DESCRIPTIONS } from "@/lib/planner/experience";
 
 type Step = "stats" | "goal" | "plan";
 
+const STEP_LABELS: Record<Step, string> = {
+  stats: "planner.common.yourStats",
+  goal: "planner.diet.steps.goalLevel",
+  plan: "planner.common.yourPlan",
+};
+
 export function DietPlannerPage() {
+  const { t } = useTranslation();
   const { importDietPlanner } = useGymStore();
   const [step, setStep] = useState<Step>("stats");
   const [inputs, setInputs] = useState<DietPlanInputs>(DEFAULT_DIET_INPUTS);
   const [planKey, setPlanKey] = useState(0);
+
+  const dietPlannerHero = getDietPlannerHero(t);
+  const dietPlannerAbout = getDietPlannerAbout(t);
+  const dietPlannerFaq = getDietPlannerFaq(t);
 
   const livePreview = useMemo(() => generateDietPlan(inputs), [inputs]);
 
@@ -74,16 +85,16 @@ export function DietPlannerPage() {
       </section>
 
       <section className="planner-page__tool" aria-labelledby="diet-planner-tool">
-        <SectionHead index="01" title="Build Your Plan" />
+        <SectionHead index="01" title={t("planner.diet.steps.buildPlan")} />
 
         <div className="planner-shell">
-          <nav className="planner-steps" aria-label="Planner steps">
+          <nav className="planner-steps" aria-label={t("planner.common.stepsNav")}>
             {(["stats", "goal", "plan"] as const).map((s, i) => (
               <span
                 key={s}
                 className={`planner-steps__item${step === s ? " planner-steps__item--active" : ""}${(["stats", "goal", "plan"].indexOf(step) > i ? " planner-steps__item--done" : "")}`}
               >
-                {i + 1}. {s === "stats" ? "Your stats" : s === "goal" ? "Goal & level" : "Your plan"}
+                {i + 1}. {t(STEP_LABELS[s])}
               </span>
             ))}
           </nav>
@@ -93,7 +104,7 @@ export function DietPlannerPage() {
               {step === "stats" ? (
                 <div className="planner-form stack-md">
                   <h2 id="diet-planner-tool" className="planner-panel__title">
-                    Body stats
+                    {t("planner.common.bodyStats")}
                   </h2>
 
                   <NutritionBodyStatsSliders
@@ -106,14 +117,14 @@ export function DietPlannerPage() {
                   />
 
                   <CyberButton variant="cyan" onClick={() => setStep("goal")}>
-                    Next: Goal & level →
+                    {t("planner.diet.steps.nextGoal")}
                   </CyberButton>
                 </div>
               ) : null}
 
               {step === "goal" ? (
                 <div className="planner-form stack-md">
-                  <h2 className="planner-panel__title">Goal weight & experience</h2>
+                  <h2 className="planner-panel__title">{t("planner.diet.steps.goalWeight")}</h2>
 
                   <GoalWeightSlider
                     currentWeightKg={inputs.weightKg}
@@ -129,14 +140,14 @@ export function DietPlannerPage() {
                     value={inputs.experience}
                     onChange={(experience) => setInputs((prev) => ({ ...prev, experience }))}
                   />
-                  <p className="planner-hint">{EXPERIENCE_DESCRIPTIONS[inputs.experience]}</p>
+                  <p className="planner-hint">{t(`experience.descriptions.${inputs.experience}`)}</p>
 
                   <div className="planner-form__actions">
                     <CyberButton variant="magenta" onClick={() => setStep("stats")}>
-                      ← Back
+                      {t("planner.common.back")}
                     </CyberButton>
                     <CyberButton variant="cyan" onClick={generatePlan}>
-                      Generate meal plan
+                      {t("planner.diet.steps.generate")}
                     </CyberButton>
                   </div>
                 </div>
@@ -146,10 +157,10 @@ export function DietPlannerPage() {
                 <div className="stack-md">
                   <ImportPlanButton
                     onImport={handleImportToApp}
-                    label="Add meal plan to app"
+                    label={t("planner.import.meal")}
                   />
                   <CyberButton variant="magenta" onClick={() => setStep("goal")}>
-                    ← Adjust inputs
+                    {t("planner.common.adjustInputs")}
                   </CyberButton>
                 </div>
               ) : null}
@@ -167,16 +178,16 @@ export function DietPlannerPage() {
                 />
               ) : (
                 <div className="planner-preview">
-                  <p className="planner-preview__label">Live macro preview</p>
-                  <p className="planner-preview__calories">{livePreview.targets.dailyCalories} kcal</p>
-                  <div className="planner-preview__macros">
-                    <span>P {livePreview.targets.proteinG}g</span>
-                    <span>C {livePreview.targets.carbsG}g</span>
-                    <span>F {livePreview.targets.fatG}g</span>
-                  </div>
-                  <p className="planner-hint">
-                    Finish the steps to unlock your full four-meal day with foods and tips.
+                  <p className="planner-preview__label">{t("planner.diet.preview.label")}</p>
+                  <p className="planner-preview__calories">
+                    {t("planner.diet.preview.kcal", { count: livePreview.targets.dailyCalories })}
                   </p>
+                  <div className="planner-preview__macros">
+                    <span>{t("planner.diet.preview.protein", { count: livePreview.targets.proteinG })}</span>
+                    <span>{t("planner.diet.preview.carbs", { count: livePreview.targets.carbsG })}</span>
+                    <span>{t("planner.diet.preview.fat", { count: livePreview.targets.fatG })}</span>
+                  </div>
+                  <p className="planner-hint">{t("planner.diet.preview.hint")}</p>
                 </div>
               )}
             </div>
@@ -185,9 +196,9 @@ export function DietPlannerPage() {
       </section>
 
       <section className="landing-section" aria-labelledby="diet-faq-heading">
-        <SectionHead index="02" title="FAQ" />
+        <SectionHead index="02" title={t("planner.common.faq")} />
         <h2 id="diet-faq-heading" className="sr-only">
-          Diet planner frequently asked questions
+          {t("planner.diet.steps.faqSrOnly")}
         </h2>
         <div className="landing-faq">
           {dietPlannerFaq.map((item) => (
@@ -202,22 +213,22 @@ export function DietPlannerPage() {
       <section className="landing-footer-cta" aria-labelledby="diet-cta">
         <div className="landing-footer-cta__inner">
           <h2 id="diet-cta" className="font-display text-2xl tracking-[2px] text-heading uppercase sm:text-3xl">
-            Log Every Macro in Armstrong
+            {t("planner.diet.cta.headline")}
           </h2>
           <p className="max-w-lg text-base text-dim sm:text-lg">
-            Your plan is the start. The app tracks meals, PRs, and progress — free, no credit card.
-            Need a workout split too?{" "}
-            <Link href="/gym-planner/" className="text-cyan hover:text-heading">
-              Try the free gym planner
-            </Link>
-            .
+            <Trans
+              i18nKey="planner.diet.cta.copy"
+              components={[
+                <Link key="gym" href="/gym-planner/" className="text-cyan hover:text-heading" />,
+              ]}
+            />
           </p>
           <div className="flex flex-wrap gap-3">
             <CyberButton href="/app/" variant="cyan">
-              Open App
+              {t("planner.common.openApp")}
             </CyberButton>
             <CyberButton href="/gym-planner/" variant="magenta">
-              Gym Planner
+              {t("planner.diet.cta.gymPlanner")}
             </CyberButton>
           </div>
         </div>

@@ -45,3 +45,7 @@ export function isDayEquipmentSticker(
 export function dayStickerImageSrc(sticker: DayEquipmentSticker): string {
   return withBasePath(DAY_STICKER_IMAGE_PATH[sticker]);
 }
+
+export function allDayStickerImageSrcs(): string[] {
+  return DAY_EQUIPMENT_STICKERS.map((sticker) => dayStickerImageSrc(sticker));
+}

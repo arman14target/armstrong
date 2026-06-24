@@ -1,3 +1,5 @@
+import { t } from "@/lib/i18n/t";
+
 export interface ImportExercise {
   name: string;
   sets: number;
@@ -148,19 +150,19 @@ function focusSuffix(exercises: ImportExercise[]): string | null {
   const names = exercises.map((exercise) => exercise.name.toLowerCase());
 
   if (names.some((name) => name.includes("chest") || name.includes("bench"))) {
-    return "Chest Focus";
+    return t("onboarding.focusChest");
   }
   if (names.some((name) => name.includes("shoulder") || name.includes("ohp"))) {
-    return "Shoulders Focus";
+    return t("onboarding.focusShoulders");
   }
   if (names.some((name) => name.includes("back") || name.includes("row"))) {
-    return "Back Focus";
+    return t("onboarding.focusBack");
   }
   if (names.some((name) => name.includes("squat") || name.includes("quad"))) {
-    return "Quads Focus";
+    return t("onboarding.focusQuads");
   }
   if (names.some((name) => name.includes("hamstring") || name.includes("rdl"))) {
-    return "Posterior Chain";
+    return t("onboarding.focusPosterior");
   }
 
   return null;

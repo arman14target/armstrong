@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { useGymStore } from "@/hooks/useGymStore";
 import { cn } from "@/lib/cn";
@@ -8,6 +9,7 @@ import type { WeightUnit } from "@/lib/types";
 import { formatWeight } from "@/lib/weight";
 
 export function ProfileDashboard() {
+  const { t } = useTranslation();
   const { data } = useGymStore();
 
   const unit: WeightUnit = data.weightUnit ?? "kg";
@@ -16,7 +18,7 @@ export function ProfileDashboard() {
   return (
     <div className="stack-md">
       {prs.length > 0 && (
-        <TerminalWindow title="Personal records">
+        <TerminalWindow title={t("profile.personalRecords")}>
           <ul className="stack-sm">
             {prs.slice(0, 8).map((pr, i) => (
               <li
@@ -46,7 +48,7 @@ export function ProfileDashboard() {
                     <span className="text-xs text-dim"> × {pr.repsAtBest}</span>
                   </span>
                   <span className="text-[10px] uppercase tracking-wide text-dim">
-                    1RM {formatWeight(pr.estimated1RmKg, unit)}
+                    {t("profile.oneRm")} {formatWeight(pr.estimated1RmKg, unit)}
                   </span>
                 </span>
               </li>

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { WorkoutBatchEditor } from "@/components/WorkoutBatchEditor";
 import { CloseIcon } from "@/components/icons/ActionIcons";
 import { IconButton } from "@/components/ui/IconButton";
@@ -30,6 +31,7 @@ export function WorkoutSetupModal({
   onImport,
   onCancel,
 }: WorkoutSetupModalProps) {
+  const { t } = useTranslation();
   const batch = getSetupBatch(label);
 
   useEffect(() => {
@@ -77,11 +79,11 @@ export function WorkoutSetupModal({
           <div className="inline-flex min-w-0 items-center">
             <PanelDot />
             <span className="ml-[var(--space-inline)] tracking-wide text-cyan">
-              Setup
+              {t("workout.setupPanel")}
             </span>
           </div>
           <IconButton
-            label="Cancel setup"
+            label={t("workout.setupCancelAria")}
             variant="ghost"
             className="size-8"
             onClick={onCancel}
@@ -95,17 +97,16 @@ export function WorkoutSetupModal({
             id="workout-setup-title"
             className="font-display text-lg tracking-wide text-heading"
           >
-            Set up {label}
+            {t("workout.setupTitle", { name: label })}
           </h2>
           <p className="mt-[var(--space-gap)] text-sm leading-relaxed text-dim">
-            Describe your whole program in plain text. Armstrong uses AI to
-            build your exercise list for this day.
+            {t("workout.setupDescription")}
           </p>
 
           <div className="mt-[var(--space-gap-md)] rounded-cyber border border-line bg-bg/50 p-[var(--space-panel)]">
             <WorkoutBatchEditor
               batch={batch}
-              importLabel="Import all"
+              importLabel={t("workout.setupImportAll")}
               onImport={onImport}
             />
           </div>

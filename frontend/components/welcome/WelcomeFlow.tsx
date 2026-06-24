@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { DietPlanScreen } from "@/components/welcome/DietPlanScreen";
 import { ExercisePlanScreen } from "@/components/welcome/ExercisePlanScreen";
 import { PlainTextPlanScreen } from "@/components/welcome/PlainTextPlanScreen";
@@ -33,6 +34,7 @@ interface WelcomeFlowProps {
 }
 
 export function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
+  const { t } = useTranslation();
   const {
     importWelcomePlan,
     applyCoachGymPlan,
@@ -119,15 +121,9 @@ export function WelcomeFlow({ onComplete }: WelcomeFlowProps) {
 
       {view === "exercise-plain-text" ? (
         <PlainTextPlanScreen
-          title="Exercise plan"
-          prompt="Please describe or write your exercise program."
-          placeholder={`Push Day
-Bench press 4x8 @ 80kg, 90s rest
-Incline dumbbell press 3x10
-
-Pull Day
-Barbell row 4x8
-Lat pulldown 3x12`}
+          title={t("welcome.exercisePlanScreenTitle")}
+          prompt={t("welcome.exercisePlanPrompt")}
+          placeholder={t("welcome.exercisePlanPlaceholder")}
           onSubmit={handleExerciseTextSubmit}
           onSkip={() => goToDietPlainText("exercise-plain-text")}
           onBack={() => setView("exercise-plan")}
@@ -136,12 +132,9 @@ Lat pulldown 3x12`}
 
       {view === "diet-plain-text" ? (
         <PlainTextPlanScreen
-          title="Diet plan"
-          prompt="Please describe or write your meal plan."
-          placeholder={`Breakfast: Greek yogurt, berries, granola — 450 kcal, 35g protein
-Lunch: Chicken breast, rice, broccoli — 650 kcal, 50g protein
-Dinner: Salmon, sweet potato, greens — 600 kcal, 45g protein
-Snack: Protein shake — 200 kcal, 30g protein`}
+          title={t("welcome.dietPlanScreenTitle")}
+          prompt={t("welcome.dietPlanPrompt")}
+          placeholder={t("welcome.dietPlanPlaceholder")}
           onSubmit={handleDietTextSubmit}
           onSkip={() => finishWithTextPlans(pendingGymPlan, null)}
           onBack={() => setView(dietPlainTextBackView)}

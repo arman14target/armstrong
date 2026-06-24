@@ -1,13 +1,13 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CheckIcon } from "@/components/icons/ActionIcons";
 import { PanelDot } from "@/components/ui/PanelDot";
 import { formatTime, useCountdown } from "@/hooks/useCountdown";
 import { cn } from "@/lib/cn";
 
 const DEMO_REST_SECONDS = 8;
-const BENCH_EXERCISE = "Bench Press";
 
 interface PreviewSet {
   weight: string;
@@ -21,32 +21,6 @@ interface PreviewExercise {
   sets: PreviewSet[];
 }
 
-const pushDayExercises: PreviewExercise[] = [
-  {
-    name: BENCH_EXERCISE,
-    sets: [
-      { weight: "80", reps: "8", previous: "77.5 × 8", completed: true },
-      { weight: "80", reps: "8", previous: "77.5 × 7", completed: true },
-      { weight: "80", reps: "8", previous: "75 × 8" },
-    ],
-  },
-  {
-    name: "Incline DB Press",
-    sets: [
-      { weight: "28", reps: "10", previous: "26 × 10", completed: true },
-      { weight: "28", reps: "10", previous: "26 × 9" },
-      { weight: "28", reps: "10", previous: "24 × 10" },
-    ],
-  },
-  {
-    name: "Overhead Press",
-    sets: [
-      { weight: "40", reps: "8", previous: "37.5 × 8" },
-      { weight: "40", reps: "8", previous: "37.5 × 7" },
-    ],
-  },
-];
-
 function LandingPreviewRestTimer({
   endsAt,
   durationSeconds,
@@ -56,6 +30,7 @@ function LandingPreviewRestTimer({
   durationSeconds: number;
   onComplete: () => void;
 }) {
+  const { t } = useTranslation();
   const remaining = useCountdown(endsAt, onComplete);
 
   if (remaining <= 0) {
@@ -79,7 +54,7 @@ function LandingPreviewRestTimer({
         style={{ width: `${progress * 100}%` }}
       />
       <div className="landing-preview-rest__label">
-        <span>Rest</span>
+        <span>{t("landing.preview.rest")}</span>
         <span className="landing-preview-rest__time">{formatTime(remaining)}</span>
       </div>
     </div>
@@ -123,16 +98,19 @@ function PreviewSetRow({
 
 function PreviewExerciseCard({
   exercise,
+  benchExerciseName,
   set3Complete,
   restEndsAt,
   onRestComplete,
 }: {
   exercise: PreviewExercise;
+  benchExerciseName: string;
   set3Complete: boolean;
   restEndsAt: string | null;
   onRestComplete: () => void;
 }) {
-  const isBench = exercise.name === BENCH_EXERCISE;
+  const { t } = useTranslation();
+  const isBench = exercise.name === benchExerciseName;
   const sets = exercise.sets.map((set, index) =>
     isBench && index === 2 ? { ...set, completed: set3Complete } : set,
   );
@@ -150,10 +128,10 @@ function PreviewExerciseCard({
       </header>
       <div className="landing-preview-card__body">
         <div className="landing-preview-set landing-preview-set--head">
-          <span>Set</span>
-          <span>Prev</span>
-          <span>kg</span>
-          <span>Reps</span>
+          <span>{t("landing.preview.set")}</span>
+          <span>{t("landing.preview.prev")}</span>
+          <span>{t("landing.preview.kg")}</span>
+          <span>{t("landing.preview.reps")}</span>
           <span aria-hidden />
         </div>
         {sets.map((set, index) => (
@@ -178,6 +156,38 @@ function PreviewExerciseCard({
 }
 
 export function LandingWorkoutPreview() {
+  const { t } = useTranslation();
+  const benchExerciseName = t("landing.preview.benchPress");
+
+  const pushDayExercises = useMemo<PreviewExercise[]>(
+    () => [
+      {
+        name: benchExerciseName,
+        sets: [
+          { weight: "80", reps: "8", previous: "77.5 × 8", completed: true },
+          { weight: "80", reps: "8", previous: "77.5 × 7", completed: true },
+          { weight: "80", reps: "8", previous: "75 × 8" },
+        ],
+      },
+      {
+        name: t("landing.preview.inclineDbPress"),
+        sets: [
+          { weight: "28", reps: "10", previous: "26 × 10", completed: true },
+          { weight: "28", reps: "10", previous: "26 × 9" },
+          { weight: "28", reps: "10", previous: "24 × 10" },
+        ],
+      },
+      {
+        name: t("landing.preview.overheadPress"),
+        sets: [
+          { weight: "40", reps: "8", previous: "37.5 × 8" },
+          { weight: "40", reps: "8", previous: "37.5 × 7" },
+        ],
+      },
+    ],
+    [benchExerciseName, t],
+  );
+
   const [set3Complete, setSet3Complete] = useState(false);
   const [restEndsAt, setRestEndsAt] = useState<string | null>(null);
 
@@ -195,12 +205,12 @@ export function LandingWorkoutPreview() {
 
   return (
     <div className="landing-preview">
-      <p className="landing-preview__back">← Back home</p>
+      <p className="landing-preview__back">{t("landing.preview.backHome")}</p>
 
       <div className="landing-preview__sticky">
-        <h2 className="landing-preview__day">Push</h2>
+        <h2 className="landing-preview__day">{t("landing.preview.pushDay")}</h2>
         <div className="landing-preview__timer">
-          <span className="landing-preview__timer-label">session</span>
+          <span className="landing-preview__timer-label">{t("landing.preview.session")}</span>
           <span className="landing-preview__timer-value">42:18</span>
         </div>
       </div>
@@ -210,6 +220,7 @@ export function LandingWorkoutPreview() {
           <PreviewExerciseCard
             key={exercise.name}
             exercise={exercise}
+            benchExerciseName={benchExerciseName}
             set3Complete={set3Complete}
             restEndsAt={restEndsAt}
             onRestComplete={handleRestComplete}

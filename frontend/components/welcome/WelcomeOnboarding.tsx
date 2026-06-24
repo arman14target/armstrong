@@ -1,32 +1,47 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ExperienceBar } from "@/components/planner/ExperienceBar";
 import { GoalWeightSlider } from "@/components/nutrition/GoalWeightSlider";
 import { NutritionBodyStatsSliders } from "@/components/nutrition/NutritionBodyStatsSliders";
 import { WeightUnitPicker } from "@/components/nutrition/WeightUnitPicker";
 import { CyberButton } from "@/components/ui/CyberButton";
-import { EXPERIENCE_DESCRIPTIONS } from "@/lib/planner/experience";
 import { estimateGoalTimeline } from "@/lib/planner/goalTimeline";
 import {
   DEFAULT_WELCOME_INPUTS,
   type WelcomePlanInputs,
 } from "@/lib/planner/welcomePlan";
 import {
-  GYM_FOCUS_LABELS,
   GYM_FOCUS_OPTIONS,
   type DaysPerWeek,
   type GymEquipment,
+  type GymFocus,
 } from "@/lib/planner/gymPlan";
+import type { ExperienceLevel } from "@/lib/planner/experience";
 import type { WeightUnit } from "@/lib/types";
 import { GoalTimelineChart } from "@/components/welcome/GoalTimelineChart";
 import { WelcomeBackButton } from "@/components/welcome/WelcomeBackButton";
 import { WelcomeBrand } from "@/components/welcome/WelcomeBrand";
 import { WelcomeStepProgress } from "@/components/welcome/WelcomeStepProgress";
+import { touchNavHandlers } from "@/lib/touchNav";
 
 type OnboardingStep = "stats" | "goal" | "program" | "timeline";
 
 const STEPS: OnboardingStep[] = ["stats", "goal", "program", "timeline"];
+
+const EXPERIENCE_KEYS: Record<ExperienceLevel, string> = {
+  amateur: "welcome.experienceAmateur",
+  intermediate: "welcome.experienceIntermediate",
+  advanced: "welcome.experienceAdvanced",
+  pro: "welcome.experiencePro",
+};
+
+const FOCUS_KEYS: Record<GymFocus, string> = {
+  strength: "welcome.focusStrength",
+  hypertrophy: "welcome.focusHypertrophy",
+  balanced: "welcome.focusBalanced",
+};
 
 interface WelcomeOnboardingProps {
   onBack: () => void;
@@ -34,6 +49,7 @@ interface WelcomeOnboardingProps {
 }
 
 export function WelcomeOnboarding({ onBack, onComplete }: WelcomeOnboardingProps) {
+  const { t } = useTranslation();
   const [step, setStep] = useState<OnboardingStep>("stats");
   const [inputs, setInputs] = useState<WelcomePlanInputs>(DEFAULT_WELCOME_INPUTS);
 
@@ -62,10 +78,8 @@ export function WelcomeOnboarding({ onBack, onComplete }: WelcomeOnboardingProps
       <div className="welcome-panel welcome-onboarding__panel">
         {step === "stats" ? (
           <div className="planner-form stack-md">
-            <h2 className="welcome-panel__title">Tell us about you</h2>
-            <p className="welcome-panel__copy">
-              Weight, height, age, and sex shape your calorie targets and training volume.
-            </p>
+            <h2 className="welcome-panel__title">{t("welcome.statsTitle")}</h2>
+            <p className="welcome-panel__copy">{t("welcome.statsCopy")}</p>
 
             <NutritionBodyStatsSliders
               values={inputs}
@@ -81,19 +95,16 @@ export function WelcomeOnboarding({ onBack, onComplete }: WelcomeOnboardingProps
               }
             />
 
-            <CyberButton variant="cyan" onClick={() => setStep("goal")}>
-              Next: Your goal →
+            <CyberButton variant="cyan" {...touchNavHandlers(() => setStep("goal"))}>
+              {t("welcome.nextGoal")}
             </CyberButton>
           </div>
         ) : null}
 
         {step === "goal" ? (
           <div className="planner-form stack-md">
-            <h2 className="welcome-panel__title">What are you working toward?</h2>
-            <p className="welcome-panel__copy">
-              Set your goal weight — we&apos;ll figure out cut or bulk from there and
-              match your training to your level.
-            </p>
+            <h2 className="welcome-panel__title">{t("welcome.goalTitle")}</h2>
+            <p className="welcome-panel__copy">{t("welcome.goalCopy")}</p>
 
             <GoalWeightSlider
               currentWeightKg={inputs.weightKg}
@@ -109,14 +120,14 @@ export function WelcomeOnboarding({ onBack, onComplete }: WelcomeOnboardingProps
               value={inputs.experience}
               onChange={(experience) => setInputs((prev) => ({ ...prev, experience }))}
             />
-            <p className="planner-hint">{EXPERIENCE_DESCRIPTIONS[inputs.experience]}</p>
+            <p className="planner-hint">{t(EXPERIENCE_KEYS[inputs.experience])}</p>
 
             <div className="planner-form__actions">
-              <CyberButton variant="magenta" onClick={() => setStep("stats")}>
-                ← Back
+              <CyberButton variant="magenta" {...touchNavHandlers(() => setStep("stats"))}>
+                {t("welcome.back")}
               </CyberButton>
-              <CyberButton variant="cyan" onClick={() => setStep("program")}>
-                Next: Training →
+              <CyberButton variant="cyan" {...touchNavHandlers(() => setStep("program"))}>
+                {t("welcome.nextTraining")}
               </CyberButton>
             </div>
           </div>
@@ -124,13 +135,11 @@ export function WelcomeOnboarding({ onBack, onComplete }: WelcomeOnboardingProps
 
         {step === "program" ? (
           <div className="planner-form stack-md">
-            <h2 className="welcome-panel__title">Build your split</h2>
-            <p className="welcome-panel__copy">
-              Choose how often you train, what you are optimizing for, and what equipment you have.
-            </p>
+            <h2 className="welcome-panel__title">{t("welcome.programTitle")}</h2>
+            <p className="welcome-panel__copy">{t("welcome.programCopy")}</p>
 
             <fieldset className="planner-segment">
-              <legend>Days per week</legend>
+              <legend>{t("welcome.daysPerWeek")}</legend>
               <div className="planner-segment__options planner-segment__options--wrap">
                 {([3, 4, 5, 6] as const).map((days) => (
                   <button
@@ -141,14 +150,14 @@ export function WelcomeOnboarding({ onBack, onComplete }: WelcomeOnboardingProps
                       setInputs((prev) => ({ ...prev, daysPerWeek: days as DaysPerWeek }))
                     }
                   >
-                    {days} days
+                    {t("common.days", { count: days })}
                   </button>
                 ))}
               </div>
             </fieldset>
 
             <fieldset className="planner-segment">
-              <legend>Focus</legend>
+              <legend>{t("welcome.focus")}</legend>
               <div className="planner-segment__options">
                 {GYM_FOCUS_OPTIONS.map((focus) => (
                   <button
@@ -157,21 +166,21 @@ export function WelcomeOnboarding({ onBack, onComplete }: WelcomeOnboardingProps
                     className={inputs.focus === focus ? "is-active" : undefined}
                     onClick={() => setInputs((prev) => ({ ...prev, focus }))}
                   >
-                    {GYM_FOCUS_LABELS[focus]}
+                    {t(FOCUS_KEYS[focus])}
                   </button>
                 ))}
               </div>
             </fieldset>
 
             <fieldset className="planner-segment">
-              <legend>Equipment</legend>
+              <legend>{t("welcome.equipment")}</legend>
               <div className="planner-segment__options">
                 {(
                   [
-                    ["full_gym", "Full gym"],
-                    ["home", "Home"],
+                    ["full_gym", "welcome.equipmentFullGym"],
+                    ["home", "welcome.equipmentHome"],
                   ] as const
-                ).map(([equipment, label]) => (
+                ).map(([equipment, labelKey]) => (
                   <button
                     key={equipment}
                     type="button"
@@ -180,18 +189,18 @@ export function WelcomeOnboarding({ onBack, onComplete }: WelcomeOnboardingProps
                       setInputs((prev) => ({ ...prev, equipment: equipment as GymEquipment }))
                     }
                   >
-                    {label}
+                    {t(labelKey)}
                   </button>
                 ))}
               </div>
             </fieldset>
 
             <div className="planner-form__actions">
-              <CyberButton variant="magenta" onClick={() => setStep("goal")}>
-                ← Back
+              <CyberButton variant="magenta" {...touchNavHandlers(() => setStep("goal"))}>
+                {t("welcome.back")}
               </CyberButton>
-              <CyberButton variant="cyan" onClick={() => setStep("timeline")}>
-                See your timeline →
+              <CyberButton variant="cyan" {...touchNavHandlers(() => setStep("timeline"))}>
+                {t("welcome.seeTimeline")}
               </CyberButton>
             </div>
           </div>
@@ -199,27 +208,26 @@ export function WelcomeOnboarding({ onBack, onComplete }: WelcomeOnboardingProps
 
         {step === "timeline" ? (
           <div className="stack-md">
-            <h2 className="welcome-panel__title">You are on track</h2>
+            <h2 className="welcome-panel__title">{t("welcome.timelineTitle")}</h2>
             <p className="welcome-panel__copy">
-              At about {estimate.weeklyRateKg} kg per week of {estimate.goalLabel}, you could
-              reach roughly {estimate.targetChangeKg} kg of change in about{" "}
-              <strong className="text-cyan">{estimate.weeks} weeks</strong> with consistent
-              training and nutrition.
+              {t("welcome.timelineCopy", {
+                weeklyRate: estimate.weeklyRateKg,
+                goalLabel: estimate.goalLabel,
+                targetChange: estimate.targetChangeKg,
+                weeks: estimate.weeks,
+              })}
             </p>
 
             <GoalTimelineChart estimate={estimate} />
 
-            <p className="planner-hint">
-              This is an estimate based on your stats and experience — real results vary with
-              sleep, adherence, and recovery.
-            </p>
+            <p className="planner-hint">{t("welcome.timelineHint")}</p>
 
             <div className="planner-form__actions">
-              <CyberButton variant="magenta" onClick={() => setStep("program")}>
-                ← Back
+              <CyberButton variant="magenta" {...touchNavHandlers(() => setStep("program"))}>
+                {t("welcome.back")}
               </CyberButton>
-              <CyberButton variant="cyan" onClick={() => onComplete(inputs)}>
-                Start training →
+              <CyberButton variant="cyan" {...touchNavHandlers(() => onComplete(inputs))}>
+                {t("welcome.startTraining")}
               </CyberButton>
             </div>
           </div>

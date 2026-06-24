@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import {
   PlanEntryChoiceScreen,
   type PlanEntryChoiceScreenProps,
@@ -11,10 +12,12 @@ type DietPlanScreenProps = Omit<
 >;
 
 export function DietPlanScreen(props: DietPlanScreenProps) {
+  const { t } = useTranslation();
+
   return (
     <PlanEntryChoiceScreen
-      title="Diet Plan"
-      description="How would you like to add your meal plan?"
+      title={t("welcome.dietPlanTitle")}
+      description={t("welcome.dietPlanDescription")}
       {...props}
     />
   );

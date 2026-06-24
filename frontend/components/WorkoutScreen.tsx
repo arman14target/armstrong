@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AddMoveForm } from "@/components/AddMoveForm";
 import { ExerciseReorderList } from "@/components/ExerciseReorderList";
 import {
@@ -37,6 +38,7 @@ interface WorkoutScreenProps {
 
 export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
   const router = useRouter();
+  const { t } = useTranslation();
   const {
     data,
     hydrated,
@@ -206,9 +208,7 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
     const completedSetCount = session?.completedSetIds.length ?? 0;
 
     if (completedSetCount === 0) {
-      const confirmed = window.confirm(
-        "No sets completed yet. Finish the day anyway?",
-      );
+      const confirmed = window.confirm(t("workout.finishNoSetsConfirm"));
       if (!confirmed) {
         return;
       }
@@ -218,7 +218,7 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
     finishDay(workoutId);
     setShowLeaveModal(false);
     router.push(APP_ROUTE);
-  }, [finishDay, router, session?.completedSetIds.length, workoutId]);
+  }, [finishDay, router, session?.completedSetIds.length, t, workoutId]);
 
   const handleCancelSessionAndLeave = useCallback(() => {
     cancelRestNotification();
@@ -239,7 +239,7 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
 
   const label = getWorkoutLabel(data, workoutId);
   const isCustomDay = !isBuiltinWorkoutType(workoutId);
-  const restNotificationBody = `${label} — time for your next set`;
+  const restNotificationBody = t("workout.restNotificationBody", { label });
 
   useEffect(() => {
     if (!editingDayName) {
@@ -338,7 +338,7 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
   if (!hydrated) {
     return (
       <main className="page-shell--center">
-        <p className="animate-blink text-sm text-green">Loading workout...</p>
+        <p className="animate-blink text-sm text-green">{t("workout.loading")}</p>
       </main>
     );
   }
@@ -346,13 +346,13 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
   if (!isValidWorkoutId(data, workoutId) || !workout) {
     return (
       <main className="page-shell--center stack-md text-center">
-        <p className="text-sm text-magenta">Workout not found.</p>
+        <p className="text-sm text-magenta">{t("workout.notFound")}</p>
         <button
           type="button"
           onClick={() => router.push(APP_ROUTE)}
           className="text-sm text-cyan transition-colors hover:text-magenta"
         >
-          ← Back home
+          {t("workout.backHome")}
         </button>
       </main>
     );
@@ -370,7 +370,7 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
           onClick={handleLeaveRequest}
           className="min-h-9 px-3 text-xs text-white transition-colors hover:text-dim"
         >
-          ← Back home
+          {t("workout.backHome")}
         </button>
         {!headerStuck ? (
           <FinishWorkoutButton
@@ -408,7 +408,7 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
                   setEditingDayName(false);
                 }
               }}
-              aria-label="Workout day name"
+              aria-label={t("workout.dayNameAria")}
               className="workout-sticky-bar__label min-w-0 flex-1 truncate rounded border border-cyan/35 bg-bg/80 px-2 py-1 font-display text-sm tracking-[1px] text-heading uppercase outline-none focus:border-cyan"
               autoFocus
             />
@@ -455,10 +455,8 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
 
       <section className="stack-lg">
         {workout.moves.length === 0 ? (
-          <TerminalWindow title={`${label} — exercises`}>
-            <p className="text-dim">
-              No exercises yet. Add your first one below.
-            </p>
+          <TerminalWindow title={t("workout.exercisesTitle", { name: label })}>
+            <p className="text-dim">{t("workout.noMovesHint")}</p>
           </TerminalWindow>
         ) : (
           <ExerciseReorderList

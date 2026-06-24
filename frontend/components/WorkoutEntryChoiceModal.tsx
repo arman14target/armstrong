@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { CloseIcon } from "@/components/icons/ActionIcons";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { IconButton } from "@/components/ui/IconButton";
@@ -21,6 +22,7 @@ export function WorkoutEntryChoiceModal({
   onManual,
   onClose,
 }: WorkoutEntryChoiceModalProps) {
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!open) {
@@ -67,11 +69,11 @@ export function WorkoutEntryChoiceModal({
           <div className="inline-flex min-w-0 items-center">
             <PanelDot />
             <span className="ml-[var(--space-inline)] tracking-wide text-cyan">
-              Setup
+              {t("workout.setupPanel")}
             </span>
           </div>
           <IconButton
-            label="Close setup options"
+            label={t("workout.setupCloseAria")}
             variant="ghost"
             className="size-8"
             onClick={onClose}
@@ -85,18 +87,18 @@ export function WorkoutEntryChoiceModal({
             id="workout-entry-choice-title"
             className="font-display text-lg tracking-wide text-heading"
           >
-            Set up {label}
+            {t("workout.setupTitle", { name: label })}
           </h2>
           <p className="mt-[var(--space-gap)] text-sm leading-relaxed text-dim">
-            How would you like to add your exercises?
+            {t("workout.setupHowAdd")}
           </p>
 
           <div className="mt-[var(--space-gap-md)] stack-sm">
             <CyberButton variant="green" className="w-full" onClick={onBatch}>
-              Batch entry
+              {t("workout.setupBatch")}
             </CyberButton>
             <CyberButton variant="cyan" className="w-full" onClick={onManual}>
-              Manual entry
+              {t("workout.setupManual")}
             </CyberButton>
           </div>
         </div>

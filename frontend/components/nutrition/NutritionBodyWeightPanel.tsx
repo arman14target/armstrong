@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useEffect, useMemo, useState } from "react";
 import { CheckIcon, PencilIcon } from "@/components/icons/ActionIcons";
 import { GoalWeightSlider } from "@/components/nutrition/GoalWeightSlider";
@@ -19,6 +20,7 @@ interface NutritionBodyWeightPanelProps {
 }
 
 export function NutritionBodyWeightPanel({ profile }: NutritionBodyWeightPanelProps) {
+  const { t } = useTranslation();
   const { data, logBodyWeight, setTargetWeight } = useGymStore();
   const [editingWeight, setEditingWeight] = useState(false);
   const [draftKg, setDraftKg] = useState(profile.weightKg);
@@ -77,11 +79,11 @@ export function NutritionBodyWeightPanel({ profile }: NutritionBodyWeightPanelPr
   return (
     <div className="stack-sm rounded-cyber border border-line bg-bg/30 p-[var(--space-panel)]">
       <div className="flex items-center justify-between gap-2">
-        <h3 className="font-display text-sm tracking-wide text-heading">Body weight</h3>
+        <h3 className="font-display text-sm tracking-wide text-heading">{t("nutrition.bodyWeight")}</h3>
         {editingGoal ? (
           <div className="flex items-center gap-1">
             <IconButton
-              label="Save goal weight"
+              label={t("nutrition.saveGoalWeight")}
               variant="green"
               className="size-7 shadow-[0_0_12px_color-mix(in_srgb,var(--color-green)_50%,transparent)] ring-1 ring-green/40"
               onClick={handleSaveGoal}
@@ -93,7 +95,7 @@ export function NutritionBodyWeightPanel({ profile }: NutritionBodyWeightPanelPr
               onClick={() => setEditingGoal(false)}
               className="px-1.5 text-[10px] text-dim hover:text-heading"
             >
-              Cancel
+              {t("common.cancel")}
             </button>
           </div>
         ) : (
@@ -102,7 +104,7 @@ export function NutritionBodyWeightPanel({ profile }: NutritionBodyWeightPanelPr
             onClick={handleEditGoal}
             className="inline-flex items-center gap-1 rounded-cyber border border-line px-2 py-0.5 text-[10px] text-dim transition-colors hover:border-primary/40 hover:text-primary"
           >
-            <span>Goal {formatBodyWeight(targetWeightKg, unit)}</span>
+            <span>{t("nutrition.goalLabel", { weight: formatBodyWeight(targetWeightKg, unit) })}</span>
             <PencilIcon className="size-3" />
           </button>
         )}

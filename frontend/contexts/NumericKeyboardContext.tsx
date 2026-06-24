@@ -18,6 +18,7 @@ import {
   writeNativeKeyboardPreference,
 } from "@/lib/nativeKeyboardPreference";
 import { cn } from "@/lib/cn";
+import { t } from "@/lib/i18n/t";
 
 export interface NumericKeyboardSession {
   value: string;
@@ -211,7 +212,7 @@ function NumericKeyboardPanel({
       ref={panelRef}
       className="numeric-keyboard"
       role="group"
-      aria-label="Numeric keypad"
+      aria-label={t("keyboard.keypadAria")}
       onPointerDown={preventFocusSteal}
     >
       <div className="numeric-keyboard__body">
@@ -248,7 +249,7 @@ function NumericKeyboardPanel({
             type="button"
             className="numeric-keyboard__key"
             onClick={handleBackspace}
-            aria-label="Backspace"
+            aria-label={t("keyboard.backspaceAria")}
           >
             ⌫
           </button>
@@ -258,7 +259,7 @@ function NumericKeyboardPanel({
           <button
             type="button"
             className="numeric-keyboard__side-key numeric-keyboard__side-key--native"
-            aria-label="Hide custom keyboard and use device keyboard"
+            aria-label={t("keyboard.hideCustomAria")}
             onClick={handleUseNativeKeyboard}
           >
             <span className="numeric-keyboard__native-icon">
@@ -269,7 +270,7 @@ function NumericKeyboardPanel({
           <button
             type="button"
             className="numeric-keyboard__side-key numeric-keyboard__side-key--plus"
-            aria-label="Increase value"
+            aria-label={t("keyboard.increaseAria")}
             onClick={() => session.onIncrement?.()}
           >
             +
@@ -277,7 +278,7 @@ function NumericKeyboardPanel({
           <button
             type="button"
             className="numeric-keyboard__side-key numeric-keyboard__side-key--minus"
-            aria-label="Decrease value"
+            aria-label={t("keyboard.decreaseAria")}
             onClick={() => session.onDecrement?.()}
           >
             −
@@ -290,7 +291,7 @@ function NumericKeyboardPanel({
             )}
             onClick={handleNext}
           >
-            Next
+            {t("keyboard.next")}
           </button>
         </div>
       </div>

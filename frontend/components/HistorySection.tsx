@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useMemo, useState } from "react";
 import {
   CalendarDayDetailModal,
@@ -95,6 +96,7 @@ function ActivityDayRow({
 }
 
 export function HistorySection({ data }: HistorySectionProps) {
+  const { t } = useTranslation();
   const [view, setView] = useState<HistoryView>("activity");
   const [selectedDateKey, setSelectedDateKey] = useState<string | null>(null);
 
@@ -125,21 +127,21 @@ export function HistorySection({ data }: HistorySectionProps) {
     <>
       <div className="stack-md">
         <fieldset className="planner-segment history-section__tabs">
-          <legend className="sr-only">History view</legend>
+          <legend className="sr-only">{t("history.viewLegend")}</legend>
           <div className="planner-segment__options history-section__tab-options">
             <button
               type="button"
               className={view === "activity" ? "is-active" : undefined}
               onClick={() => setView("activity")}
             >
-              Activity
+              {t("history.activity")}
             </button>
             <button
               type="button"
               className={view === "calendar" ? "is-active" : undefined}
               onClick={() => setView("calendar")}
             >
-              Calendar
+              {t("history.calendar")}
             </button>
           </div>
         </fieldset>
@@ -147,11 +149,10 @@ export function HistorySection({ data }: HistorySectionProps) {
         {view === "activity" ? (
           <div className="stack-md">
             <ActivityStatsPanel />
-            <TerminalWindow title="activity log">
+            <TerminalWindow title={t("history.activityLog")}>
               {daySummaries.length === 0 ? (
                 <p className="activity-history__empty">
-                  No activity yet. Finish a workout or log a meal to see your
-                  history here.
+                  {t("history.emptyActivity")}
                 </p>
               ) : (
                 <ul className="activity-history__list">

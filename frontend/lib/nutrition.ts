@@ -1,3 +1,5 @@
+import { t } from "@/lib/i18n/t";
+
 export type NutritionGoal = "bulk" | "cut" | "maintain";
 export type NutritionSex = "male" | "female";
 
@@ -151,13 +153,7 @@ export function createNutritionProfile(inputs: NutritionInputs): NutritionProfil
 }
 
 export function formatGoalLabel(goal: NutritionGoal): string {
-  if (goal === "bulk") {
-    return "Bulk";
-  }
-  if (goal === "maintain") {
-    return "Maintain";
-  }
-  return "Cut";
+  return t(`nutrition.goal.${goal}`);
 }
 
 export type MealSlot = "breakfast" | "lunch" | "dinner" | "snack";
@@ -227,12 +223,7 @@ export function sumPlannedMealNutrition(entries: FoodEntry[]): DailyNutritionTot
 }
 
 export function formatMealSlotLabel(slot: MealSlot): string {
-  return {
-    breakfast: "Breakfast",
-    lunch: "Lunch",
-    dinner: "Dinner",
-    snack: "Snack",
-  }[slot];
+  return t(`nutrition.mealSlot.${slot}`);
 }
 
 export function createPlannedFoodEntry(
@@ -262,10 +253,18 @@ export function formatFoodEntryMacros(
   advanced = false,
 ): string {
   if (advanced) {
-    return `${entry.calories} kcal · P ${entry.proteinG}g · C ${entry.carbsG}g · F ${entry.fatG}g`;
+    return t("nutrition.macros.entryAdvanced", {
+      calories: entry.calories,
+      proteinG: entry.proteinG,
+      carbsG: entry.carbsG,
+      fatG: entry.fatG,
+    });
   }
 
-  return `P ${entry.proteinG}g · C ${entry.carbsG}g`;
+  return t("nutrition.macros.entryBasic", {
+    proteinG: entry.proteinG,
+    carbsG: entry.carbsG,
+  });
 }
 
 export function formatDailyMacroSummary(
@@ -273,10 +272,18 @@ export function formatDailyMacroSummary(
   advanced = false,
 ): string {
   if (advanced) {
-    return `${totals.calories} kcal · P ${totals.proteinG}g · C ${totals.carbsG}g · F ${totals.fatG}g`;
+    return t("nutrition.macros.entryAdvanced", {
+      calories: totals.calories,
+      proteinG: totals.proteinG,
+      carbsG: totals.carbsG,
+      fatG: totals.fatG,
+    });
   }
 
-  return `P ${totals.proteinG}g · C ${totals.carbsG}g`;
+  return t("nutrition.macros.entryBasic", {
+    proteinG: totals.proteinG,
+    carbsG: totals.carbsG,
+  });
 }
 
 export function formatProfileMacroTargets(
@@ -284,10 +291,18 @@ export function formatProfileMacroTargets(
   advanced = false,
 ): string {
   if (advanced) {
-    return `${profile.dailyCalories} kcal · P ${profile.proteinG}g · C ${profile.carbsG}g · F ${profile.fatG}g`;
+    return t("nutrition.macros.entryAdvanced", {
+      calories: profile.dailyCalories,
+      proteinG: profile.proteinG,
+      carbsG: profile.carbsG,
+      fatG: profile.fatG,
+    });
   }
 
-  return `P ${profile.proteinG}g · C ${profile.carbsG}g`;
+  return t("nutrition.macros.entryBasic", {
+    proteinG: profile.proteinG,
+    carbsG: profile.carbsG,
+  });
 }
 
 export function getFoodDatesForMonth(

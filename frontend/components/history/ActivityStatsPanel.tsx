@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { useGymStore } from "@/hooks/useGymStore";
 import { cn } from "@/lib/cn";
@@ -56,6 +57,7 @@ function compactNumber(value: number): string {
 }
 
 export function ActivityStatsPanel() {
+  const { t } = useTranslation();
   const { data } = useGymStore();
   const unit: WeightUnit = data.weightUnit ?? "kg";
 
@@ -63,22 +65,22 @@ export function ActivityStatsPanel() {
   const stats = lifetimeStats(data.workoutDayLog, data.workoutCompletionDates);
 
   return (
-    <TerminalWindow title="Activity" dotVariant="green">
+    <TerminalWindow title={t("history.statsTitle")} dotVariant="green">
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
         <StatTile
-          label="Day streak"
+          label={t("history.dayStreak")}
           value={streak > 0 ? `${streak}🔥` : "0"}
           accent="magenta"
           glow={streak > 0}
         />
         <StatTile
-          label="This week"
+          label={t("history.thisWeek")}
           value={String(stats.workoutsThisWeek)}
           accent="green"
         />
-        <StatTile label="Workouts" value={String(stats.totalWorkouts)} />
+        <StatTile label={t("history.workouts")} value={String(stats.totalWorkouts)} />
         <StatTile
-          label={`Volume (${unit})`}
+          label={t("history.volumeUnit", { unit })}
           value={
             stats.totalVolumeKg > 0
               ? compactNumber(kgToDisplay(stats.totalVolumeKg, unit))

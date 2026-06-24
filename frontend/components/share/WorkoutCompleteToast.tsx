@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useGymStore } from "@/hooks/useGymStore";
 import { ShareWorkoutButton } from "@/components/share/ShareWorkoutButton";
 import { IconButton } from "@/components/ui/IconButton";
@@ -10,6 +11,7 @@ import { IconButton } from "@/components/ui/IconButton";
  * Reads the transient `lastFinishedSummary` from the store.
  */
 export function WorkoutCompleteToast() {
+  const { t } = useTranslation();
   const { lastFinishedSummary, clearFinishedSummary } = useGymStore();
 
   if (!lastFinishedSummary) {
@@ -25,10 +27,10 @@ export function WorkoutCompleteToast() {
     >
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-semibold text-heading">
-          {workoutName} logged 💪
+          {t("share.logged", { workoutName })}
         </p>
         <p className="truncate text-xs text-dim">
-          {heroStat.value} · {totalSets} sets
+          {t("share.sets", { heroStat: heroStat.value, count: totalSets })}
         </p>
       </div>
       <ShareWorkoutButton
@@ -37,7 +39,7 @@ export function WorkoutCompleteToast() {
         className="shrink-0"
       />
       <IconButton
-        label="Dismiss"
+        label={t("share.dismiss")}
         variant="ghost"
         onClick={clearFinishedSummary}
         className="shrink-0"

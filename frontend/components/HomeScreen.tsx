@@ -1,7 +1,8 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { AddDayButton } from "@/components/AddDayButton";
 import { AddDayModal } from "@/components/AddDayModal";
 import { RevealOnScroll } from "@/components/effects/RevealOnScroll";
@@ -28,7 +29,7 @@ import { SectionHead } from "@/components/ui/SectionHead";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
 import { useGymStore } from "@/hooks/useGymStore";
 import { cn } from "@/lib/cn";
-import { WORKOUT_LABELS, WORKOUT_TYPES } from "@/lib/types";
+import { WORKOUT_TYPES } from "@/lib/types";
 import {
   countLoggedWorkouts,
   getWorkoutLabel,
@@ -37,19 +38,8 @@ import {
 import { OPEN_PROFILE_SIGNUP_EVENT } from "@/lib/localSaveReminder";
 import { setWorkoutSetupIntent } from "@/lib/workoutSetupIntent";
 
-const homeTabs: Array<{
-  id: HomeTab;
-  label: string;
-  icon: typeof DumbbellIcon;
-}> = [
-  { id: "workout", label: "Workout", icon: DumbbellIcon },
-  { id: "food-tracker", label: "Nutrition", icon: FoodIcon },
-  { id: "history", label: "History", icon: HistoryIcon },
-  { id: "coach", label: "Coach", icon: CoachIcon },
-  { id: "profile", label: "Profile", icon: ProfileIcon },
-];
-
 export function HomeScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
   const { data, hydrated, resetAll, syncAfterAuth, addCustomDay, removeCustomDay, saveNutritionProfile, addFoodEntry, addPlannedFoodEntry, updatePlannedFoodEntry, removeFoodEntry, applyCoachWorkoutChange, applyCoachGymPlan, applyCoachDietPlan, togglePlannedMealComplete } =
     useGymStore();
@@ -58,6 +48,22 @@ export function HomeScreen() {
   const [entryChoiceId, setEntryChoiceId] = useState<string | null>(null);
   const [removeDayId, setRemoveDayId] = useState<string | null>(null);
   const [profileSignupRequestId, setProfileSignupRequestId] = useState(0);
+
+  const homeTabs = useMemo(
+    () =>
+      [
+        { id: "workout" as const, label: t("nav.workout"), icon: DumbbellIcon },
+        { id: "food-tracker" as const, label: t("nav.nutrition"), icon: FoodIcon },
+        { id: "history" as const, label: t("nav.history"), icon: HistoryIcon },
+        { id: "coach" as const, label: t("nav.coach"), icon: CoachIcon },
+        { id: "profile" as const, label: t("nav.profile"), icon: ProfileIcon },
+      ] satisfies Array<{
+        id: HomeTab;
+        label: string;
+        icon: typeof DumbbellIcon;
+      }>,
+    [t],
+  );
 
   useEffect(() => {
     const openProfileSignup = () => {
@@ -131,7 +137,7 @@ export function HomeScreen() {
   if (!hydrated) {
     return (
       <main className="page-shell--center">
-        <p className="animate-blink text-sm text-green">Loading your workouts...</p>
+        <p className="animate-blink text-sm text-green">{t("common.loading")}</p>
       </main>
     );
   }
@@ -148,15 +154,15 @@ export function HomeScreen() {
       <div className="home-screen__tab-content">
       {activeTab === "workout" ? (
         <RevealOnScroll>
-          <SectionHead title="Pick Your Workout" />
-          <TerminalWindow title="Choose your workout">
+          <SectionHead title={t("workout.pickTitle")} />
+          <TerminalWindow title={t("workout.chooseTitle")}>
             <div className="grid grid-cols-2 gap-[var(--space-gap-md)]">
               {!data.coachPlanActive
                 ? WORKOUT_TYPES.map((type, index) => (
                     <DayButton
                       key={type}
                       workoutId={type}
-                      label={WORKOUT_LABELS[type]}
+                      label={getWorkoutLabel(data, type)}
                       iconIndex={index}
                       lastCompletedAt={data.workouts[type].lastCompletedAt}
                       lastSessionDurationSeconds={
@@ -193,14 +199,14 @@ export function HomeScreen() {
 
       {activeTab === "history" ? (
         <RevealOnScroll>
-          <SectionHead title="History" />
+          <SectionHead title={t("history.title")} />
           <HistorySection data={data} />
         </RevealOnScroll>
       ) : null}
 
       {activeTab === "food-tracker" ? (
         <RevealOnScroll>
-          <SectionHead title="Nutrition" />
+          <SectionHead title={t("nutrition.title")} />
           <FoodTrackerSection
             profile={data.nutritionProfile}
             foodLog={data.foodLog ?? {}}
@@ -228,7 +234,7 @@ export function HomeScreen() {
 
       {activeTab === "profile" ? (
         <RevealOnScroll>
-          <SectionHead title="Profile" />
+          <SectionHead title={t("profile.title")} />
           <div className="stack-md">
             <ProfilePreferences />
             <ProfileDashboard />
@@ -251,19 +257,17 @@ export function HomeScreen() {
                 className="text-2xl tracking-[2px] sm:text-4xl lg:text-5xl"
               />
               <p className="mt-1 text-xs text-dim sm:text-sm">
-                Train hard. Track everything.
+                {t("brand.tagline")}
               </p>
             </div>
           </section>
 
           <footer className="home-screen__footer stack-md text-center">
             <p className="text-xs tracking-wide text-dim">
-              {completedCount}
-              <span className="text-cyan">+</span> logged
+              {t("brand.logged", { count: completedCount })}
             </p>
             <p className="text-xs tracking-wide text-dim">
-              Built with <span className="text-magenta">♥</span> and protein shakes
-              — Armstrong
+              {t("brand.footer", { heart: "♥" })}
             </p>
           </footer>
         </>
@@ -288,16 +292,10 @@ export function HomeScreen() {
 
       <ConfirmModal
         open={Boolean(removeDayId)}
-        title="Remove workout day?"
-        message={
-          <>
-            This will permanently delete{" "}
-            <span className="text-magenta">{removeDayLabel}</span> and all of its
-            exercises and history.
-          </>
-        }
-        confirmLabel="Remove day"
-        cancelLabel="Keep day"
+        title={t("workout.removeDayTitle")}
+        message={t("workout.removeDayMessage", { name: removeDayLabel })}
+        confirmLabel={t("workout.removeDayConfirm")}
+        cancelLabel={t("workout.removeDayCancel")}
         onConfirm={handleRemoveDayConfirm}
         onCancel={() => setRemoveDayId(null)}
       />

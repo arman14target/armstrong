@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { ExerciseDemoAnimation } from "@/components/ExerciseDemoAnimation";
 import { CloseIcon } from "@/components/icons/ActionIcons";
 import { IconButton } from "@/components/ui/IconButton";
@@ -22,6 +23,7 @@ export function ExerciseInfoModal({
   slug,
   onClose,
 }: ExerciseInfoModalProps) {
+  const { t } = useTranslation();
   const [detail, setDetail] = useState<ExerciseDetail | null>(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -43,7 +45,7 @@ export function ExerciseInfoModal({
         }
 
         if (!result) {
-          setError("Exercise details not found.");
+          setError(t("exercise.notFound"));
           return;
         }
 
@@ -57,7 +59,7 @@ export function ExerciseInfoModal({
         setError(
           loadError instanceof Error
             ? loadError.message
-            : "Failed to load exercise details.",
+            : t("exercise.loadFailed"),
         );
       })
       .finally(() => {
@@ -69,7 +71,7 @@ export function ExerciseInfoModal({
     return () => {
       cancelled = true;
     };
-  }, [open, slug]);
+  }, [open, slug, t]);
 
   useEffect(() => {
     if (!open) {
@@ -95,7 +97,7 @@ export function ExerciseInfoModal({
     return null;
   }
 
-  const title = detail?.name ?? "Exercise info";
+  const title = detail?.name ?? t("exercise.infoTitle");
 
   return (
     <div
@@ -126,7 +128,7 @@ export function ExerciseInfoModal({
             </span>
           </div>
           <IconButton
-            label="Close exercise info"
+            label={t("exercise.closeInfoAria")}
             variant="ghost"
             className="size-8"
             onClick={onClose}
@@ -137,7 +139,7 @@ export function ExerciseInfoModal({
 
         <div className="modal-body stack-md">
           {loading ? (
-            <p className="text-sm text-dim">Loading exercise details...</p>
+            <p className="text-sm text-dim">{t("exercise.loadingDetails")}</p>
           ) : error ? (
             <p className="text-sm text-dim">{error}</p>
           ) : detail ? (
@@ -160,7 +162,7 @@ export function ExerciseInfoModal({
               {detail.instructions.length > 0 ? (
                 <div>
                   <h3 className="text-sm font-medium tracking-wide text-heading">
-                    How to perform
+                    {t("exercise.howToPerform")}
                   </h3>
                   <ol className="mt-2 list-decimal space-y-2 pl-5 text-sm leading-relaxed text-dim">
                     {detail.instructions.map((step, index) => (
@@ -170,7 +172,7 @@ export function ExerciseInfoModal({
                 </div>
               ) : (
                 <p className="text-sm text-dim">
-                  No instructions available for this exercise yet.
+                  {t("exercise.noInstructions")}
                 </p>
               )}
             </>

@@ -1,3 +1,6 @@
+import type { TFunction } from "i18next";
+import enUS from "@/lib/i18n/locales/en-US.json";
+
 export const landingSeo = {
   title: "Free AI Fitness Coach & Bodybuilding Meal Plan | Armstrong",
   description:
@@ -28,113 +31,100 @@ export const landingSeo = {
   ],
 } as const;
 
-export const landingHero = {
-  kicker: "100% Free · No Credit Card",
-  badge: "Free",
-  headline: "One Sentence. Full Plan. Zero Cost.",
-  subhead:
-    "Tell Armstrong your goal — lean bulk, cut, 4-day split — and get a pro-grade training and nutrition plan instantly. Track every macro, log every PR, and chat with your AI fitness coach 24/7.",
-  cta: "Generate My Free Plan",
-  ctaHint: "Type one sentence about your goal — full workout & meal plan in minutes.",
+const LANDING_FAQ_IDS = [
+  "free",
+  "accuracy",
+  "macros",
+  "generator",
+  "humanCoach",
+] as const;
+
+const LANDING_STEP_IDS = ["01", "02", "03"] as const;
+
+const LANDING_FEATURE_IDS = ["generator", "nutrition", "coach"] as const;
+
+const LANDING_TOOL_IDS = ["diet", "gym"] as const;
+
+const LANDING_RISK_BULLET_IDS = ["plans", "coach", "macros"] as const;
+
+const LANDING_FEATURE_ACCENTS = {
+  generator: "cyan",
+  nutrition: "green",
+  coach: "magenta",
 } as const;
 
-export const landingSteps = [
-  {
-    step: "01",
-    title: "Type Your Goal",
-    copy: "Drop one sentence: “I want to lean bulk and only have 4 days a week.” That’s it — no forms, no fluff.",
-  },
-  {
-    step: "02",
-    title: "Get Your Instant Plan",
-    copy: "Armstrong builds your custom split, exercises, sets, and a free bodybuilding meal plan with precise macros — ready before your next session.",
-  },
-  {
-    step: "03",
-    title: "Crush It with Your AI Coach",
-    copy: "Log sets, hit PRs, track nutrition daily, and ask your 24/7 AI strength coach anything — right from your pocket.",
-  },
-] as const;
-
-export const landingFeatures = [
-  {
-    tag: "Instant workout generator",
-    title: "The One-Sentence Plan Generator",
-    copy: "Skip the spreadsheet. Describe your physique goal, schedule, and equipment — Armstrong’s AI workout generator delivers a complete, periodized program built for bodybuilders.",
-    accent: "cyan" as const,
-  },
-  {
-    tag: "Macro tracking built in",
-    title: "Smart Nutrition Calculator & Tracker",
-    copy: "Dial in protein, carbs, and fats with a smart nutrition calculator that adapts to your training. Log meals daily and stay locked on your targets without a separate app.",
-    accent: "green" as const,
-  },
-  {
-    tag: "Always in your corner",
-    title: "The 24/7 AI Strength Coach",
-    copy: "Swap, progress, or deload — your AI fitness coach reads your logs and answers in real time. Unlimited guidance without the premium price tag of a human coach.",
-    accent: "magenta" as const,
-  },
-] as const;
-
-export const landingRiskReversal = {
-  headline: "Explore Everything. Pay Nothing.",
-  copy: "Test the full app — custom plans, macro tracking, AI coaching, workout logging — completely free. No credit card, no trial countdown, no paywall surprises.",
-  bullets: [
-    "Free instant workout & meal plan generation",
-    "Unlimited AI coach conversations",
-    "Daily macro & nutrition tracking included",
-  ],
+const LANDING_TOOL_ACCENTS = {
+  diet: "green",
+  gym: "cyan",
 } as const;
 
-export const landingFaq = [
-  {
-    question: "Is Armstrong really free to use?",
-    answer:
-      "Yes. You can explore the entire app — generate plans, track macros, log workouts, and chat with the AI coach — without paying or entering a credit card.",
-  },
-  {
-    question: "How accurate is the AI fitness coach?",
-    answer:
-      "Armstrong analyzes your actual training logs, PRs, and nutrition data to give personalized recommendations — not generic templates. It adapts as you progress session by session.",
-  },
-  {
-    question: "Can I track my macros and nutrition daily?",
-    answer:
-      "Absolutely. Armstrong includes a smart nutrition calculator and daily food tracker so you can hit protein, carbs, and fat targets alongside your training plan.",
-  },
-  {
-    question: "How does the one-sentence workout generator work?",
-    answer:
-      "Describe your goal in plain English — goal, days per week, experience level, equipment. Armstrong’s AI builds a complete training split and meal plan tailored to your input in minutes.",
-  },
-  {
-    question: "Do I still need a human coach?",
-    answer:
-      "Armstrong gives you 24/7 AI coaching, plan customization, and precision tracking at no cost. Many lifters use it as their primary coach; others pair it with occasional human check-ins.",
-  },
-] as const;
-
-export const landingFooterCta = {
-  headline: "Your Free AI Fitness Coach Is Ready",
-  copy: "Generate your custom bodybuilding plan in one sentence. Start tracking macros and crushing PRs today.",
+const LANDING_TOOL_HREFS = {
+  diet: "/diet-planner/",
+  gym: "/gym-planner/",
 } as const;
 
-export const landingTools = [
-  {
-    title: "Free Diet Planner",
-    href: "/diet-planner/",
-    tag: "Macro calculator",
-    description:
-      "Enter your stats and goal to get daily calories, protein, carbs, fats, and a full four-meal day — no signup.",
-    accent: "green" as const,
-  },
-  {
-    title: "Free Gym Planner",
-    href: "/gym-planner/",
-    tag: "Split builder",
-    description:
-      "Pick days per week, equipment, and experience level. Get a complete workout split with sets, reps, and rest.",
-    accent: "cyan" as const,
-  },
-] as const;
+export function getLandingHero(t: TFunction) {
+  return {
+    kicker: t("landing.hero.kicker"),
+    badge: t("landing.hero.badge"),
+    headline: t("landing.hero.headline"),
+    subhead: t("landing.hero.subhead"),
+    cta: t("landing.hero.cta"),
+    ctaHint: t("landing.hero.ctaHint"),
+  };
+}
+
+export function getLandingSteps(t: TFunction) {
+  return LANDING_STEP_IDS.map((id) => ({
+    step: id,
+    title: t(`landing.steps.${id}.title`),
+    copy: t(`landing.steps.${id}.copy`),
+  }));
+}
+
+export function getLandingFeatures(t: TFunction) {
+  return LANDING_FEATURE_IDS.map((id) => ({
+    tag: t(`landing.features.${id}.tag`),
+    title: t(`landing.features.${id}.title`),
+    copy: t(`landing.features.${id}.copy`),
+    accent: LANDING_FEATURE_ACCENTS[id],
+  }));
+}
+
+export function getLandingRiskReversal(t: TFunction) {
+  return {
+    headline: t("landing.risk.headline"),
+    copy: t("landing.risk.copy"),
+    bullets: LANDING_RISK_BULLET_IDS.map((id) => t(`landing.risk.bullets.${id}`)),
+  };
+}
+
+export function getLandingFaq(t: TFunction) {
+  return LANDING_FAQ_IDS.map((id) => ({
+    question: t(`landing.faq.${id}.question`),
+    answer: t(`landing.faq.${id}.answer`),
+  }));
+}
+
+export function getLandingFooterCta(t: TFunction) {
+  return {
+    headline: t("landing.footerCta.headline"),
+    copy: t("landing.footerCta.copy"),
+  };
+}
+
+export function getLandingTools(t: TFunction) {
+  return LANDING_TOOL_IDS.map((id) => ({
+    title: t(`landing.tools.${id}.title`),
+    href: LANDING_TOOL_HREFS[id],
+    tag: t(`landing.tools.${id}.tag`),
+    description: t(`landing.tools.${id}.description`),
+    accent: LANDING_TOOL_ACCENTS[id],
+  }));
+}
+
+/** Default-locale FAQ for JSON-LD schema (server components). */
+export const landingFaq = LANDING_FAQ_IDS.map((id) => ({
+  question: enUS.landing.faq[id].question,
+  answer: enUS.landing.faq[id].answer,
+}));

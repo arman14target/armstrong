@@ -10,6 +10,7 @@ import {
   type NutritionProfile,
 } from "@/lib/nutrition";
 import { toLocalDateKey } from "@/lib/workoutCalendar";
+import { t } from "@/lib/i18n/t";
 
 export const DIET_PLAN_PREFIX = "[[DIET_PLAN:";
 export const DIET_PLAN_SUFFIX = "]]";
@@ -230,18 +231,28 @@ export function applyDietPlan(
 export function describeDietPlan(plan: CoachDietPlan): string {
   const mealCount = plan.meals.length;
   const totalProtein = plan.meals.reduce((sum, meal) => sum + meal.proteinG, 0);
-  return `Added ${mealCount} planned meals to your food tracker (${totalProtein}g protein across the plan). Check off each meal when you eat it.`;
+  return t("nutrition.coachApply.describeDiet", {
+    mealCount,
+    proteinG: totalProtein,
+  });
 }
 
 export function getDietPlanApplyLabel(): string {
-  return "Add to food tracker";
+  return t("nutrition.coachApply.applyLabel");
 }
 
 export function formatDietPlanPreview(plan: CoachDietPlan): string {
   return plan.meals
     .map((meal) => {
-      const slot = meal.mealSlot ? `${formatMealSlotLabel(meal.mealSlot)}: ` : "";
-      return `${slot}${meal.name} — ${meal.calories} kcal, P ${meal.proteinG}g`;
+      const slot = meal.mealSlot
+        ? `${formatMealSlotLabel(meal.mealSlot)}: `
+        : "";
+      return t("nutrition.coachApply.previewMeal", {
+        slot,
+        name: meal.name,
+        calories: meal.calories,
+        proteinG: meal.proteinG,
+      });
     })
     .join("\n");
 }

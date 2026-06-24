@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
 import { CloseIcon } from "@/components/icons/ActionIcons";
 import {
@@ -74,6 +75,7 @@ export function PlannedFoodModal({
   onSave,
   onClose,
 }: PlannedFoodModalProps) {
+  const { t } = useTranslation();
   const isEditing = initialEntry !== undefined;
   const [name, setName] = useState("");
   const [calories, setCalories] = useState("");
@@ -190,11 +192,11 @@ export function PlannedFoodModal({
             <div className="inline-flex min-w-0 items-center">
               <PanelDot />
               <span className="ml-[var(--space-inline)] tracking-wide text-cyan">
-                {isEditing ? "Edit planned meal" : "Add planned meal"}
+                {isEditing ? t("nutrition.editPlannedMeal") : t("nutrition.addPlannedMeal")}
               </span>
             </div>
             <IconButton
-              label="Close planned meal"
+              label={t("nutrition.closePlannedMeal")}
               variant="ghost"
               className="size-8"
               onClick={onClose}
@@ -208,15 +210,14 @@ export function PlannedFoodModal({
               id="planned-food-title"
               className="font-display text-lg tracking-wide text-heading"
             >
-              {isEditing ? "Update this meal" : "Plan a meal"}
+              {isEditing ? t("nutrition.updateMeal") : t("nutrition.planMeal")}
             </h2>
             <p className="mt-[var(--space-gap)] text-sm leading-relaxed text-dim">
-              Add a meal to your daily plan. Check it off when you eat it to count
-              toward your intake.
+              {t("nutrition.plannedMealHint")}
             </p>
 
             <div className="mt-[var(--space-gap-md)]">
-              <FieldLabel required>Meal</FieldLabel>
+              <FieldLabel required>{t("nutrition.meal")}</FieldLabel>
               <div className="grid grid-cols-2 gap-2">
                 {MEAL_SLOTS.map((slot) => (
                   <button
@@ -241,13 +242,13 @@ export function PlannedFoodModal({
               </div>
               {errors.mealSlot ? (
                 <p className="mt-1 text-xs text-magenta" role="alert">
-                  Pick a meal slot.
+                  {t("nutrition.pickMealSlot")}
                 </p>
               ) : null}
             </div>
 
             <div className="mt-[var(--space-gap)] block">
-              <FieldLabel required>Food name</FieldLabel>
+              <FieldLabel required>{t("nutrition.foodName")}</FieldLabel>
               <button
                 type="button"
                 onClick={() => setFoodSearchOpen(true)}
@@ -257,17 +258,17 @@ export function PlannedFoodModal({
                   errors.name && "border-magenta/60",
                 )}
               >
-                {name.trim() || "e.g. Greek yogurt bowl"}
+                {name.trim() || t("nutrition.plannedFoodPlaceholder")}
               </button>
               {errors.name ? (
                 <p className="mt-1 text-xs text-magenta" role="alert">
-                  Enter a name with at least 2 characters.
+                  {t("nutrition.foodNameError")}
                 </p>
               ) : null}
             </div>
 
             <label className={cn("mt-[var(--space-gap)] block", !advancedNutrition && "sr-only")}>
-              <FieldLabel>Calories (kcal)</FieldLabel>
+              <FieldLabel>{t("nutrition.caloriesKcal")}</FieldLabel>
               <input
                 type="number"
                 inputMode="decimal"
@@ -287,7 +288,7 @@ export function PlannedFoodModal({
               )}
             >
               <label className="block">
-                <FieldLabel required>Protein (g)</FieldLabel>
+                <FieldLabel required>{t("nutrition.proteinG")}</FieldLabel>
                 <input
                   type="number"
                   inputMode="decimal"
@@ -309,12 +310,12 @@ export function PlannedFoodModal({
                 />
                 {errors.proteinG ? (
                   <p className="mt-1 text-xs text-magenta" role="alert">
-                    Protein is required.
+                    {t("nutrition.proteinRequired")}
                   </p>
                 ) : null}
               </label>
               <label className="block">
-                <FieldLabel>Carbs (g)</FieldLabel>
+                <FieldLabel>{t("nutrition.carbsG")}</FieldLabel>
                 <input
                   type="number"
                   inputMode="decimal"
@@ -327,7 +328,7 @@ export function PlannedFoodModal({
               </label>
               {advancedNutrition ? (
                 <label className="block">
-                  <FieldLabel>Fat (g)</FieldLabel>
+                  <FieldLabel>{t("nutrition.fatG")}</FieldLabel>
                   <input
                     type="number"
                     inputMode="decimal"
@@ -343,10 +344,10 @@ export function PlannedFoodModal({
 
             <div className="mt-[var(--space-section)] stack-sm">
               <CyberButton variant="green" className="w-full" onClick={handleSubmit}>
-                {isEditing ? "Save changes" : "Add to plan"}
+                {isEditing ? t("nutrition.saveChanges") : t("nutrition.addToPlan")}
               </CyberButton>
               <CyberButton variant="cyan" className="w-full" onClick={onClose}>
-                Cancel
+                {t("common.cancel")}
               </CyberButton>
             </div>
           </div>

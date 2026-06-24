@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { NumericKeyboardInput } from "@/components/NumericKeyboardInput";
 import { RestTimer } from "@/components/RestTimer";
 import { formatTime } from "@/hooks/useCountdown";
@@ -23,13 +24,15 @@ export function SetRestDivider({
   onRestSecondsChange,
   onRestComplete,
 }: SetRestDividerProps) {
+  const { t } = useTranslation();
   const isTouchDevice = useTouchDevice();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState(formatTime(restSeconds));
   const inputRef = useRef<HTMLInputElement>(null);
+  const formattedRest = formatTime(restSeconds);
 
   const startEditing = () => {
-    setDraft(isTouchDevice ? String(restSeconds) : formatTime(restSeconds));
+    setDraft(isTouchDevice ? String(restSeconds) : formattedRest);
     setEditing(true);
   };
 
@@ -120,16 +123,16 @@ export function SetRestDivider({
             }
           }}
           className="set-rest-divider__input"
-          aria-label="Rest time"
+          aria-label={t("sets.restTimeAria")}
         />
       ) : (
         <button
           type="button"
           className="set-rest-divider__time"
           onClick={startEditing}
-          aria-label={`Rest ${formatTime(restSeconds)}. Click to edit.`}
+          aria-label={t("sets.restEditAria", { time: formattedRest })}
         >
-          {formatTime(restSeconds)}
+          {formattedRest}
         </button>
       )}
       <span className="set-rest-divider__line" aria-hidden />

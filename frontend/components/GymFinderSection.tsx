@@ -1,6 +1,7 @@
 "use client";
 
 import { useMemo, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { CheckIcon, MapPinIcon } from "@/components/icons/ActionIcons";
 import { GymCompareModal } from "@/components/GymCompareModal";
 import { CyberButton } from "@/components/ui/CyberButton";
@@ -28,10 +29,11 @@ const PAGE_SIZE = 6;
 const MAX_COMPARE = 3;
 
 function StarRating({ rating }: { rating: number }) {
-  // Foursquare rates 0–10; show as 0–5 stars.
+  const { t } = useTranslation();
   const stars = Math.round((rating / 10) * 5);
+
   return (
-    <span className="text-xs text-primary" aria-label={`${rating} of 10`}>
+    <span className="text-xs text-primary" aria-label={t("gymFinder.section.ratingAria", { rating })}>
       {"★".repeat(stars)}
       <span className="text-line">{"★".repeat(5 - stars)}</span>
       <span className="ml-1 text-dim">{rating.toFixed(1)}</span>
@@ -52,6 +54,7 @@ function GymCard({
   disabled: boolean;
   onToggleSelect: () => void;
 }) {
+  const { t } = useTranslation();
   const distance = formatDistance(gym.distanceMeters, unit);
   const price = formatPriceTier(gym.priceTier);
 
@@ -71,7 +74,9 @@ function GymCard({
           disabled={disabled && !selected}
           aria-pressed={selected}
           aria-label={
-            selected ? `Remove ${gym.name} from compare` : `Add ${gym.name} to compare`
+            selected
+              ? t("gymFinder.section.removeFromCompare", { name: gym.name })
+              : t("gymFinder.section.addToCompare", { name: gym.name })
           }
           className={cn(
             "inline-flex shrink-0 items-center gap-1.5 rounded-full border px-2 py-1 text-[11px] font-medium uppercase tracking-wide transition-colors",
@@ -89,7 +94,7 @@ function GymCard({
           >
             {selected && <CheckIcon className="size-3" />}
           </span>
-          {selected ? "Selected" : "Compare"}
+          {selected ? t("gymFinder.section.selected") : t("gymFinder.section.compare")}
         </button>
         {distance && (
           <span className="inline-flex shrink-0 items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
@@ -126,14 +131,14 @@ function GymCard({
           rel="noopener noreferrer"
           className="rounded-cyber border border-primary/30 bg-primary/10 px-2.5 py-1 text-[11px] text-primary transition-colors hover:bg-primary/20"
         >
-          Directions
+          {t("gymFinder.section.directions")}
         </a>
         {gym.tel && (
           <a
             href={`tel:${gym.tel}`}
             className="rounded-cyber border border-line px-2.5 py-1 text-[11px] text-dim transition-colors hover:text-heading"
           >
-            Call
+            {t("gymFinder.section.call")}
           </a>
         )}
         {gym.website && (
@@ -143,7 +148,7 @@ function GymCard({
             rel="noopener noreferrer"
             className="rounded-cyber border border-line px-2.5 py-1 text-[11px] text-dim transition-colors hover:text-heading"
           >
-            Website
+            {t("gymFinder.section.website")}
           </a>
         )}
       </div>
@@ -152,6 +157,7 @@ function GymCard({
 }
 
 export function GymFinderSection() {
+  const { t } = useTranslation();
   const unit: DistanceUnit = localeDistanceUnit();
 
   const [gyms, setGyms] = useState<Gym[] | null>(null);
@@ -186,7 +192,7 @@ export function GymFinderSection() {
     try {
       setCompareResult(await compareGyms(selected));
     } catch {
-      setCompareError("Couldn't compare these gyms. Please try again.");
+      setCompareError(t("gymFinder.section.compareError"));
     } finally {
       setComparing(false);
     }
@@ -200,11 +206,12 @@ export function GymFinderSection() {
 
   if (!isApiConfigured()) {
     return (
-      <TerminalWindow title="Gym finder">
+      <TerminalWindow title={t("gymFinder.section.title")}>
         <p className="text-sm leading-relaxed text-dim">
-          The gym finder needs the Armstrong backend configured
-          (<span className="text-cyan">NEXT_PUBLIC_API_URL</span>). It&apos;s not
-          available in this build.
+          <Trans
+            i18nKey="gymFinder.section.notConfigured"
+            components={[<span key="env" className="text-cyan" />]}
+          />
         </p>
       </TerminalWindow>
     );
@@ -219,13 +226,13 @@ export function GymFinderSection() {
     try {
       const result = await fn();
       if (!result.configured) {
-        setError("Gym search isn't enabled on the server yet. Check back soon.");
+        setError(t("gymFinder.section.errorNotEnabled"));
         setGyms(null);
         return;
       }
       setGyms(result.gyms);
     } catch {
-      setError("Couldn't load nearby gyms. Please try again.");
+      setError(t("gymFinder.section.errorLoad"));
       setGyms(null);
     } finally {
       setLoading(false);
@@ -238,9 +245,7 @@ export function GymFinderSection() {
       const coords = await getCurrentCoords();
       await run(() => fetchGymsByCoords(coords));
     } catch {
-      setError(
-        "Couldn't get your location. Allow location access or search by area.",
-      );
+      setError(t("gymFinder.section.errorLocation"));
     }
   };
 
@@ -251,168 +256,163 @@ export function GymFinderSection() {
 
   return (
     <>
-    <TerminalWindow title="Gym finder">
-      <div className="stack-md">
-        <p className="text-sm leading-relaxed text-dim">
-          Find gyms near you — compare distance, ratings, and contact info.
-        </p>
+      <TerminalWindow title={t("gymFinder.section.title")}>
+        <div className="stack-md">
+          <p className="text-sm leading-relaxed text-dim">
+            {t("gymFinder.section.intro")}
+          </p>
 
-        <div className="flex flex-col gap-2 sm:flex-row">
-          {isGeolocationAvailable() && (
+          <div className="flex flex-col gap-2 sm:flex-row">
+            {isGeolocationAvailable() && (
+              <CyberButton
+                variant="green"
+                className="sm:w-auto"
+                onClick={useMyLocation}
+                disabled={loading}
+              >
+                <MapPinIcon className="mr-1.5 size-4" />
+                {t("gymFinder.section.useLocation")}
+              </CyberButton>
+            )}
+            <div className="flex flex-1 gap-2">
+              <input
+                type="text"
+                value={place}
+                onChange={(e) => setPlace(e.target.value)}
+                onKeyDown={(e) => e.key === "Enter" && searchPlace()}
+                placeholder={t("gymFinder.section.placeholder")}
+                className="min-w-0 flex-1 rounded-cyber border border-line bg-bg/40 px-3 py-2 text-sm text-heading placeholder:text-dim/70 focus:border-primary/50 focus:outline-none"
+              />
+              <CyberButton
+                variant="cyan"
+                onClick={searchPlace}
+                disabled={loading || place.trim() === ""}
+              >
+                {t("gymFinder.section.search")}
+              </CyberButton>
+            </div>
+          </div>
+
+          {loading && <p className="text-sm text-dim">{t("gymFinder.section.searching")}</p>}
+          {error && (
+            <p className="text-sm text-magenta" role="alert">
+              {error}
+            </p>
+          )}
+
+          {!loading && gyms !== null && gyms.length === 0 && (
+            <p className="text-sm text-dim">{t("gymFinder.section.noResults")}</p>
+          )}
+
+          {!loading && gyms !== null && gyms.length > 0 && (
+            <>
+              <p className="text-[11px] uppercase tracking-wide text-dim">
+                {t("gymFinder.section.count", { count: gyms.length })}
+              </p>
+
+              <p className="-mt-1 text-[11px] text-dim">
+                {t("gymFinder.section.compareHint")}
+              </p>
+
+              <ul className="grid gap-2.5 sm:grid-cols-2">
+                {pageGyms.map((gym) => (
+                  <GymCard
+                    key={gym.id || gym.name}
+                    gym={gym}
+                    unit={unit}
+                    selected={isSelected(gym.id)}
+                    disabled={selected.length >= MAX_COMPARE}
+                    onToggleSelect={() => toggleSelect(gym)}
+                  />
+                ))}
+              </ul>
+
+              {totalPages > 1 && (
+                <div className="flex items-center justify-between gap-2 pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setPage((p) => Math.max(0, p - 1))}
+                    disabled={page === 0}
+                    className="rounded-cyber border border-line px-3 py-1.5 text-xs text-dim transition-colors enabled:hover:text-heading disabled:opacity-40"
+                  >
+                    {t("gymFinder.section.prev")}
+                  </button>
+                  <span className="text-xs text-dim">
+                    {t("gymFinder.section.page", { current: page + 1, total: totalPages })}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setPage((p) => Math.min(totalPages - 1, p + 1))
+                    }
+                    disabled={page >= totalPages - 1}
+                    className="rounded-cyber border border-line px-3 py-1.5 text-xs text-dim transition-colors enabled:hover:text-heading disabled:opacity-40"
+                  >
+                    {t("gymFinder.section.next")}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
+
+          {!loading && !searched && (
+            <p className="text-[11px] text-dim">{t("gymFinder.section.tip")}</p>
+          )}
+
+          {selected.length > 0 && <div className="h-16" aria-hidden="true" />}
+        </div>
+      </TerminalWindow>
+
+      {selected.length > 0 && (
+        <div className="fixed inset-x-0 bottom-0 z-40 border-t border-primary/40 bg-panel/95 px-3 pb-[max(0.625rem,env(safe-area-inset-bottom))] pt-2.5 shadow-[0_-8px_24px_rgba(0,0,0,0.45)] backdrop-blur-md">
+          <div className="mx-auto flex max-w-3xl items-center gap-2">
+            <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
+              {selected.map((g) => (
+                <span
+                  key={g.id}
+                  className="inline-flex max-w-[8rem] items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[11px] text-primary"
+                >
+                  <span className="truncate">{g.name}</span>
+                  <button
+                    type="button"
+                    onClick={() => toggleSelect(g)}
+                    aria-label={t("gymFinder.section.removeFromCompare", { name: g.name })}
+                    className="shrink-0 text-primary/70 hover:text-primary"
+                  >
+                    ×
+                  </button>
+                </span>
+              ))}
+              <button
+                type="button"
+                onClick={() => setSelected([])}
+                className="text-[11px] text-dim hover:text-heading"
+              >
+                {t("gymFinder.section.clear")}
+              </button>
+            </div>
             <CyberButton
               variant="green"
-              className="sm:w-auto"
-              onClick={useMyLocation}
-              disabled={loading}
+              className="shrink-0"
+              onClick={runCompare}
+              disabled={selected.length < 2}
             >
-              <MapPinIcon className="mr-1.5 size-4" />
-              Use my location
-            </CyberButton>
-          )}
-          <div className="flex flex-1 gap-2">
-            <input
-              type="text"
-              value={place}
-              onChange={(e) => setPlace(e.target.value)}
-              onKeyDown={(e) => e.key === "Enter" && searchPlace()}
-              placeholder="Zip or city"
-              className="min-w-0 flex-1 rounded-cyber border border-line bg-bg/40 px-3 py-2 text-sm text-heading placeholder:text-dim/70 focus:border-primary/50 focus:outline-none"
-            />
-            <CyberButton
-              variant="cyan"
-              onClick={searchPlace}
-              disabled={loading || place.trim() === ""}
-            >
-              Search
+              {selected.length < 2
+                ? t("gymFinder.section.pickOneMore")
+                : t("gymFinder.section.compareCount", { count: selected.length })}
             </CyberButton>
           </div>
         </div>
+      )}
 
-        {loading && <p className="text-sm text-dim">Searching nearby gyms…</p>}
-        {error && (
-          <p className="text-sm text-magenta" role="alert">
-            {error}
-          </p>
-        )}
-
-        {!loading && gyms !== null && gyms.length === 0 && (
-          <p className="text-sm text-dim">
-            No gyms found here. Try a wider area or a nearby city.
-          </p>
-        )}
-
-        {!loading && gyms !== null && gyms.length > 0 && (
-          <>
-            <p className="text-[11px] uppercase tracking-wide text-dim">
-              {gyms.length} gym{gyms.length === 1 ? "" : "s"} found
-            </p>
-
-            <p className="-mt-1 text-[11px] text-dim">
-              Select 2–3 gyms to compare prices &amp; amenities.
-            </p>
-
-            <ul className="grid gap-2.5 sm:grid-cols-2">
-              {pageGyms.map((gym) => (
-                <GymCard
-                  key={gym.id || gym.name}
-                  gym={gym}
-                  unit={unit}
-                  selected={isSelected(gym.id)}
-                  disabled={selected.length >= MAX_COMPARE}
-                  onToggleSelect={() => toggleSelect(gym)}
-                />
-              ))}
-            </ul>
-
-            {totalPages > 1 && (
-              <div className="flex items-center justify-between gap-2 pt-1">
-                <button
-                  type="button"
-                  onClick={() => setPage((p) => Math.max(0, p - 1))}
-                  disabled={page === 0}
-                  className="rounded-cyber border border-line px-3 py-1.5 text-xs text-dim transition-colors enabled:hover:text-heading disabled:opacity-40"
-                >
-                  ← Prev
-                </button>
-                <span className="text-xs text-dim">
-                  Page {page + 1} of {totalPages}
-                </span>
-                <button
-                  type="button"
-                  onClick={() =>
-                    setPage((p) => Math.min(totalPages - 1, p + 1))
-                  }
-                  disabled={page >= totalPages - 1}
-                  className="rounded-cyber border border-line px-3 py-1.5 text-xs text-dim transition-colors enabled:hover:text-heading disabled:opacity-40"
-                >
-                  Next →
-                </button>
-              </div>
-            )}
-          </>
-        )}
-
-        {!loading && !searched && (
-          <p className="text-[11px] text-dim">
-            Tip: select gyms after searching to compare prices &amp; amenities.
-          </p>
-        )}
-
-        {/* Spacer so the fixed action bar never hides the last cards. */}
-        {selected.length > 0 && <div className="h-16" aria-hidden="true" />}
-      </div>
-    </TerminalWindow>
-
-    {/* Always-visible action bar while selecting — fixed to the viewport so it's
-        reachable on mobile without scrolling. */}
-    {selected.length > 0 && (
-      <div className="fixed inset-x-0 bottom-0 z-40 border-t border-primary/40 bg-panel/95 px-3 pb-[max(0.625rem,env(safe-area-inset-bottom))] pt-2.5 shadow-[0_-8px_24px_rgba(0,0,0,0.45)] backdrop-blur-md">
-        <div className="mx-auto flex max-w-3xl items-center gap-2">
-          <div className="flex min-w-0 flex-1 flex-wrap items-center gap-1.5">
-            {selected.map((g) => (
-              <span
-                key={g.id}
-                className="inline-flex max-w-[8rem] items-center gap-1 rounded-full border border-primary/30 bg-primary/10 px-2 py-0.5 text-[11px] text-primary"
-              >
-                <span className="truncate">{g.name}</span>
-                <button
-                  type="button"
-                  onClick={() => toggleSelect(g)}
-                  aria-label={`Remove ${g.name}`}
-                  className="shrink-0 text-primary/70 hover:text-primary"
-                >
-                  ×
-                </button>
-              </span>
-            ))}
-            <button
-              type="button"
-              onClick={() => setSelected([])}
-              className="text-[11px] text-dim hover:text-heading"
-            >
-              Clear
-            </button>
-          </div>
-          <CyberButton
-            variant="green"
-            className="shrink-0"
-            onClick={runCompare}
-            disabled={selected.length < 2}
-          >
-            {selected.length < 2 ? "Pick 1 more" : `Compare (${selected.length})`}
-          </CyberButton>
-        </div>
-      </div>
-    )}
-
-    <GymCompareModal
-      open={compareOpen}
-      loading={comparing}
-      error={compareError}
-      result={compareResult}
-      unit={unit}
-      onClose={() => setCompareOpen(false)}
-    />
+      <GymCompareModal
+        open={compareOpen}
+        loading={comparing}
+        error={compareError}
+        result={compareResult}
+        unit={unit}
+        onClose={() => setCompareOpen(false)}
+      />
     </>
   );
 }

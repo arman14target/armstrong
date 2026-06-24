@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { WelcomeBackButton } from "@/components/welcome/WelcomeBackButton";
 import { WelcomeBrand } from "@/components/welcome/WelcomeBrand";
@@ -23,6 +24,7 @@ export function PlainTextPlanScreen({
   onSkip,
   onBack,
 }: PlainTextPlanScreenProps) {
+  const { t } = useTranslation();
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -32,12 +34,12 @@ export function PlainTextPlanScreen({
     setError(null);
 
     if (!configured) {
-      setError("AI import needs NEXT_PUBLIC_GEMINI_API_KEY in your environment.");
+      setError(t("welcome.aiNotConfigured"));
       return;
     }
 
     if (!text.trim()) {
-      setError("Write your plan before continuing, or tap Skip.");
+      setError(t("welcome.writePlanOrSkip"));
       return;
     }
 
@@ -65,7 +67,9 @@ export function PlainTextPlanScreen({
         <p className="welcome-panel__copy">{prompt}</p>
 
         <label className="stack-sm">
-          <span className="text-[11px] tracking-wide text-dim uppercase">Your plan</span>
+          <span className="text-[11px] tracking-wide text-dim uppercase">
+            {t("welcome.yourPlanLabel")}
+          </span>
           <textarea
             value={text}
             onChange={(event) => setText(event.target.value)}
@@ -90,7 +94,7 @@ export function PlainTextPlanScreen({
             onClick={handleDone}
             disabled={loading}
           >
-            {loading ? "Building your plan..." : "Done"}
+            {loading ? t("welcome.buildingPlan") : t("common.done")}
           </CyberButton>
 
           <button
@@ -99,7 +103,7 @@ export function PlainTextPlanScreen({
             onClick={onSkip}
             disabled={loading}
           >
-            Skip
+            {t("common.skip")}
           </button>
         </div>
       </div>

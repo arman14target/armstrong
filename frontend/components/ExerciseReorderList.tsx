@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { GripIcon } from "@/components/icons/ActionIcons";
 import { MoveCard } from "@/components/MoveCard";
 import { Move, SetConfig } from "@/lib/types";
@@ -53,6 +54,7 @@ export function ExerciseReorderList({
   onReorder,
   moveRefs,
 }: ExerciseReorderListProps) {
+  const { t } = useTranslation();
   const [draggingIndex, setDraggingIndex] = useState<number | null>(null);
   const [dropIndex, setDropIndex] = useState<number | null>(null);
   const dragPointerIdRef = useRef<number | null>(null);
@@ -167,7 +169,9 @@ export function ExerciseReorderList({
                 <button
                   type="button"
                   className="exercise-drag-handle"
-                  aria-label={`Reorder ${move.name || "exercise"}`}
+                  aria-label={t("aria.reorderExercise", {
+                    name: move.name || t("common.exercise"),
+                  })}
                   onPointerDown={(event) => startDrag(moveIndex, event)}
                 >
                   <GripIcon className="text-dim" />

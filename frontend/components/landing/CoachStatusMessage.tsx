@@ -1,62 +1,15 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CoachIcon } from "@/components/icons/ActionIcons";
 
-const COACH_THINKING_EARLY = [
-  "Reviewing your goal...",
-  "Checking your age and weight...",
-  "Understanding what you want to achieve...",
-  "Matching training to your experience level...",
-  "Figuring out how many days you can train...",
-  "Considering recovery between sessions...",
-  "Looking at what equipment you likely have...",
-  "Sketching the right training split for you...",
-  "Weighing strength vs. muscle size for your goal...",
-  "Almost ready to start building your plan...",
-] as const;
-
-const COACH_THINKING_PLAN = [
-  "Designing your weekly split...",
-  "Picking exercises for each training day...",
-  "Setting sets, reps, and rest times...",
-  "Adjusting volume to your body stats...",
-  "Balancing push, pull, and recovery...",
-  "Ordering exercises from compound to isolation...",
-  "Tuning intensity for your goal...",
-  "Adding warm-up and working sets...",
-  "Double-checking muscle group balance...",
-  "Writing notes for each training day...",
-  "Putting your full plan together...",
-  "Polishing the details — almost there...",
-] as const;
-
-const COACH_THINKING_DIET = [
-  "Calculating your protein target...",
-  "Planning breakfast around your goal...",
-  "Building a simple lunch...",
-  "Adding dinner and snacks...",
-  "Spreading protein across the day...",
-  "Keeping meals easy to prep...",
-  "Checking total daily macros...",
-  "Adjusting for allergies if needed...",
-  "Balancing calories with your goal...",
-  "Finalizing your meal plan...",
-] as const;
-
-const COACH_IMPORTING = [
-  "Reading your coach conversation...",
-  "Extracting your training days...",
-  "Loading exercises into your split...",
-  "Assigning stickers and day colors...",
-  "Calculating your daily macros...",
-  "Importing your meal plan...",
-  "Setting up your nutrition...",
-  "Mapping workouts to your calendar...",
-  "Saving your profile...",
-  "Preparing your dashboard...",
-  "Finalizing your Armstrong plan...",
-] as const;
+const PHASE_COUNTS = {
+  "thinking-early": 10,
+  "thinking-plan": 12,
+  "thinking-diet": 10,
+  importing: 11,
+} as const;
 
 interface CoachStatusMessageProps {
   active: boolean;
@@ -64,17 +17,22 @@ interface CoachStatusMessageProps {
   intervalMs?: number;
 }
 
-function getMessages(phase: CoachStatusMessageProps["phase"]): readonly string[] {
-  switch (phase) {
-    case "thinking-early":
-      return COACH_THINKING_EARLY;
-    case "thinking-plan":
-      return COACH_THINKING_PLAN;
-    case "thinking-diet":
-      return COACH_THINKING_DIET;
-    case "importing":
-      return COACH_IMPORTING;
-  }
+function usePhaseMessages(phase: CoachStatusMessageProps["phase"]): string[] {
+  const { t } = useTranslation();
+
+  return useMemo(() => {
+    const count = PHASE_COUNTS[phase];
+    const prefixByPhase = {
+      "thinking-early": "coach.thinking.early",
+      "thinking-plan": "coach.thinking.plan",
+      "thinking-diet": "coach.thinking.diet",
+      importing: "coach.thinking.importing",
+    } as const;
+
+    return Array.from({ length: count }, (_, index) =>
+      t(`${prefixByPhase[phase]}.${index}`),
+    );
+  }, [phase, t]);
 }
 
 export function CoachStatusMessage({
@@ -82,7 +40,8 @@ export function CoachStatusMessage({
   phase,
   intervalMs = 3200,
 }: CoachStatusMessageProps) {
-  const messages = getMessages(phase);
+  const { t } = useTranslation();
+  const messages = usePhaseMessages(phase);
   const [index, setIndex] = useState(0);
 
   useEffect(() => {
@@ -118,7 +77,7 @@ export function CoachStatusMessage({
         <CoachIcon />
       </span>
       <div className="onboarding-coach-status__bubble">
-        <p className="onboarding-coach-status__label">Coach is thinking</p>
+        <p className="onboarding-coach-status__label">{t("coach.thinkingLabel")}</p>
         <p
           key={`${phase}-${index}`}
           className="onboarding-coach-status__text coach-status-message"

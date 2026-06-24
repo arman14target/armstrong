@@ -1,3 +1,7 @@
+"use client";
+
+import { useTranslation } from "react-i18next";
+
 interface WelcomeStepProgressProps {
   stepIndex: number;
   totalSteps?: number;
@@ -7,8 +11,10 @@ export function WelcomeStepProgress({
   stepIndex,
   totalSteps = 4,
 }: WelcomeStepProgressProps) {
+  const { t } = useTranslation();
+
   return (
-    <nav className="welcome-steps" aria-label="Onboarding progress">
+    <nav className="welcome-steps" aria-label={t("welcome.onboardingProgressAria")}>
       <ol className="welcome-steps__track">
         {Array.from({ length: totalSteps }, (_, index) => {
           const isDone = index < stepIndex;
@@ -32,9 +38,11 @@ export function WelcomeStepProgress({
                 aria-current={isCurrent ? "step" : undefined}
               >
                 <span className="sr-only">
-                  Step {index + 1}
-                  {isDone ? ", completed" : ""}
-                  {isCurrent ? ", current" : ""}
+                  {t("welcome.stepSr", {
+                    index: index + 1,
+                    done: isDone ? t("welcome.stepDone") : "",
+                    current: isCurrent ? t("welcome.stepCurrent") : "",
+                  })}
                 </span>
               </span>
             </li>

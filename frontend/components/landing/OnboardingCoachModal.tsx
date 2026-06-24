@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { CoachChatMicButton } from "@/components/CoachChatMicButton";
@@ -75,12 +76,14 @@ function SendIcon() {
 }
 
 function SetupPanel() {
+  const { t } = useTranslation();
+
   return (
     <div className="onboarding-coach-modal__setup">
-      <p className="onboarding-coach-modal__setup-title">Coach unavailable</p>
+      <p className="onboarding-coach-modal__setup-title">{t("coach.unavailableTitle")}</p>
       <p className="onboarding-coach-modal__setup-copy">
-        Add <code>NEXT_PUBLIC_GEMINI_API_KEY</code> to{" "}
-        <code>.env.local</code> and restart the dev server to chat here.
+        Add <code>NEXT_PUBLIC_GEMINI_API_KEY</code> to <code>.env.local</code>{" "}
+        {t("coach.unavailableMiddle")}
       </p>
     </div>
   );
@@ -146,6 +149,7 @@ export function OnboardingCoachModal({
   open,
   onClose,
 }: OnboardingCoachModalProps) {
+  const { t } = useTranslation();
   const welcomeMessageRef = useRef(getWelcomeMessage());
   const [messages, setMessages] = useState<CoachChatMessage[]>(() => [
     welcomeMessageRef.current,
@@ -320,10 +324,10 @@ export function OnboardingCoachModal({
             </div>
             <div>
               <h2 id="onboarding-coach-title" className="onboarding-coach-modal__title">
-                Armstrong Coach
+                {t("coach.armstrongCoach")}
               </h2>
               <p className="onboarding-coach-modal__subtitle">
-                Your personal fitness coach
+                {t("coach.onboardingSubtitle")}
               </p>
             </div>
           </div>
@@ -335,11 +339,11 @@ export function OnboardingCoachModal({
                 disabled={loading || importing}
                 className="onboarding-coach-modal__restart"
               >
-                Start over
+                {t("coach.startOver")}
               </button>
             ) : null}
             <IconButton
-              label="Close coach chat"
+              label={t("coach.closeChat")}
               variant="ghost"
               className="size-8"
               onClick={onClose}
@@ -367,7 +371,7 @@ export function OnboardingCoachModal({
             </div>
             <div className="onboarding-coach-modal__composer">
               <p className="text-sm text-dim">
-                Add your API key above to chat with the coach.
+                {t("coach.addKeyHint")}
               </p>
             </div>
           </div>
@@ -404,7 +408,7 @@ export function OnboardingCoachModal({
                       disabled={importing}
                       onClick={() => void handleContinueWithApp()}
                     >
-                      {importing ? "Setting up your plans..." : "Continue in app"}
+                      {importing ? t("coach.settingUp") : t("coach.continueInApp")}
                     </CyberButton>
                     <CyberButton
                       variant="cyan"
@@ -412,7 +416,7 @@ export function OnboardingCoachModal({
                       onClick={handleKeepChatting}
                       disabled={importing}
                     >
-                      Keep chatting
+                      {t("coach.keepChatting")}
                     </CyberButton>
                   </div>
                 ) : null}
@@ -443,10 +447,10 @@ export function OnboardingCoachModal({
                       }
                     }}
                     rows={2}
-                    placeholder="Tell me your goal — e.g. I want to bulk, train 4 days, and hit my protein"
+                    placeholder={t("coach.onboardingPlaceholder")}
                     disabled={loading || importing}
                     className="onboarding-coach-modal__input"
-                    aria-label="Message to coach"
+                    aria-label={t("coach.messageAria")}
                   />
                   <CoachChatMicButton
                     disabled={loading || importing}
@@ -457,7 +461,7 @@ export function OnboardingCoachModal({
                     type="submit"
                     disabled={loading || !input.trim()}
                     className="onboarding-coach-modal__send"
-                    aria-label="Send message"
+                    aria-label={t("coach.sendAria")}
                   >
                     <SendIcon />
                   </button>

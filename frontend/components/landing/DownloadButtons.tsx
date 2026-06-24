@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useTranslation } from "react-i18next";
 import { cn } from "@/lib/cn";
 import {
   getDownloadLink,
@@ -10,24 +11,24 @@ import {
 
 interface DownloadOption {
   platform: DownloadPlatform;
-  label: string;
+  labelKey: "landing.download.apple" | "landing.download.android" | "landing.download.pwa";
   icon: React.ReactNode;
 }
 
 const options: DownloadOption[] = [
   {
     platform: "apple",
-    label: "Download on Apple App Store",
+    labelKey: "landing.download.apple",
     icon: <AppleIcon />,
   },
   {
     platform: "android",
-    label: "Get it on Android (Google Play)",
+    labelKey: "landing.download.android",
     icon: <PlayStoreIcon />,
   },
   {
     platform: "pwa",
-    label: "Launch Web Version",
+    labelKey: "landing.download.pwa",
     icon: <WebIcon />,
   },
 ];
@@ -57,7 +58,9 @@ export function DownloadButtons({
   );
 }
 
-function DownloadButton({ platform, label, icon }: DownloadOption) {
+function DownloadButton({ platform, labelKey, icon }: DownloadOption) {
+  const { t } = useTranslation();
+  const label = t(labelKey);
   const href = getDownloadLink(platform);
   const available = isDownloadAvailable(platform);
   const isExternal = platform !== "pwa";
@@ -75,7 +78,7 @@ function DownloadButton({ platform, label, icon }: DownloadOption) {
       <span className="download-btn__copy">
         <span className="download-btn__label">{label}</span>
         {!available ? (
-          <span className="download-btn__hint">Coming soon</span>
+          <span className="download-btn__hint">{t("landing.download.comingSoon")}</span>
         ) : null}
       </span>
     </>
@@ -87,7 +90,7 @@ function DownloadButton({ platform, label, icon }: DownloadOption) {
         type="button"
         className={classes}
         disabled
-        aria-label={`${label} — coming soon`}
+        aria-label={t("landing.download.comingSoonAria", { label })}
       >
         {content}
       </button>

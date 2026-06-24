@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { useCallback, useEffect, type CSSProperties } from "react";
 import { cn } from "@/lib/cn";
 import {
@@ -44,6 +45,7 @@ export function CoachChatMicButton({
   onAppendTranscript,
   onError,
 }: CoachChatMicButtonProps) {
+  const { t } = useTranslation();
   const appendTranscript = useCallback(
     (text: string) => {
       onAppendTranscript(text);
@@ -93,16 +95,16 @@ export function CoachChatMicButton({
           <div className="coach-chat-voice__status">
             <span className="coach-chat-voice__rec">
               <span className="coach-chat-voice__rec-dot" aria-hidden />
-              REC
+              {t("coach.voice.rec")}
             </span>
             <span className="coach-chat-voice__timer">
               {formatRecordingTime(elapsedMs)}
             </span>
           </div>
           <p className="coach-chat-voice__preview">
-            {previewText || "Listening… speak now"}
+            {previewText || t("coach.voice.listening")}
           </p>
-          <p className="coach-chat-voice__hint">Tap stop when done — text goes in the box</p>
+          <p className="coach-chat-voice__hint">{t("coach.voice.hint")}</p>
         </div>
       ) : null}
 
@@ -133,9 +135,9 @@ export function CoachChatMicButton({
             "onboarding-coach-modal__mic",
             listening && "onboarding-coach-modal__mic--listening",
           )}
-          aria-label={listening ? "Stop recording" : "Start voice input"}
+          aria-label={listening ? t("coach.voice.stopRecording") : t("coach.voice.startRecording")}
           aria-pressed={listening}
-          title={listening ? "Stop recording" : "Speak your message"}
+          title={listening ? t("coach.voice.stopRecording") : t("coach.voice.speakMessage")}
         >
           <MicIcon recording={listening} />
         </button>

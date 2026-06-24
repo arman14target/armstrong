@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { ManualPlanIcon, PlainTextPlanIcon } from "@/components/welcome/WelcomeIcons";
 import { WelcomeBackButton } from "@/components/welcome/WelcomeBackButton";
 import { WelcomeBrand } from "@/components/welcome/WelcomeBrand";
@@ -19,6 +20,8 @@ export function PlanEntryChoiceScreen({
   onManualAdd,
   onBack,
 }: PlanEntryChoiceScreenProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="welcome-choice stack-lg">
       {onBack ? (
@@ -36,20 +39,16 @@ export function PlanEntryChoiceScreen({
       <div className="welcome-cards">
         <button type="button" className="welcome-card" onClick={onPlainText}>
           <div className="welcome-card__content">
-            <h2 className="welcome-card__title">Plain text</h2>
-            <p className="welcome-card__copy">
-              Paste your plan as text and we will import it for you.
-            </p>
+            <h2 className="welcome-card__title">{t("welcome.plainTextTitle")}</h2>
+            <p className="welcome-card__copy">{t("welcome.plainTextCopy")}</p>
           </div>
           <PlainTextPlanIcon />
         </button>
 
         <button type="button" className="welcome-card" onClick={onManualAdd}>
           <div className="welcome-card__content">
-            <h2 className="welcome-card__title">Add manually</h2>
-            <p className="welcome-card__copy">
-              Build your plan step by step inside the app.
-            </p>
+            <h2 className="welcome-card__title">{t("welcome.manualTitle")}</h2>
+            <p className="welcome-card__copy">{t("welcome.manualCopy")}</p>
           </div>
           <ManualPlanIcon />
         </button>

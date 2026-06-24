@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { cn } from "@/lib/cn";
 import { extractWorkoutFromText } from "@/lib/workoutTextImport";
@@ -22,10 +23,12 @@ Tricep pushdown 3x12`;
 
 export function WorkoutBatchEditor({
   batch,
-  importLabel = "Import workout",
+  importLabel,
   onImport,
   className,
 }: WorkoutBatchEditorProps) {
+  const { t } = useTranslation();
+  const resolvedImportLabel = importLabel ?? t("batch.importWorkout");
   const [text, setText] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -34,7 +37,7 @@ export function WorkoutBatchEditor({
     setError(null);
 
     if (!text.trim()) {
-      setError("Describe your workout before importing.");
+      setError(t("batch.describeBeforeImport"));
       return;
     }
 
@@ -46,7 +49,7 @@ export function WorkoutBatchEditor({
       setError(
         importError instanceof Error
           ? importError.message
-          : "Import failed. Try again.",
+          : t("batch.importFailed"),
       );
     } finally {
       setLoading(false);
@@ -59,14 +62,13 @@ export function WorkoutBatchEditor({
         <p className="text-sm font-semibold text-heading">{batch.name}</p>
         <p className="mt-1 text-xs text-dim">{batch.description}</p>
         <p className="mt-[var(--space-gap)] text-xs text-dim">
-          Type your whole program in plain language — sets, reps, weight, rest,
-          holds. Armstrong uses AI to turn it into exercises for this day.
+          {t("batch.plainLanguageHint")}
         </p>
       </div>
 
       <label className="stack-sm">
         <span className="text-[11px] tracking-wide text-dim uppercase">
-          Your program
+          {t("batch.yourProgram")}
         </span>
         <textarea
           value={text}
@@ -91,7 +93,7 @@ export function WorkoutBatchEditor({
         onClick={handleImport}
         disabled={loading}
       >
-        {loading ? "Parsing with AI..." : importLabel}
+        {loading ? t("batch.parsing") : resolvedImportLabel}
       </CyberButton>
     </div>
   );

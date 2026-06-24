@@ -1,5 +1,6 @@
 "use client";
 
+import { useTranslation } from "react-i18next";
 import { DumbbellIcon, FlashIcon, FoodIcon, MoneyIcon } from "@/components/icons/ActionIcons";
 import { ExistingPlanIcon, PlanSparkIcon } from "@/components/welcome/WelcomeIcons";
 
@@ -10,39 +11,37 @@ interface WelcomeChoiceProps {
 }
 
 export function WelcomeChoice({ onMakePlan, onHavePlan, onLogin }: WelcomeChoiceProps) {
+  const { t } = useTranslation();
+
   return (
     <div className="welcome-choice stack-lg">
       <header className="welcome-choice__header">
-        <h1 className="welcome-choice__title">Welcome</h1>
-        <p className="welcome-choice__subtitle">
-          Choose how you want to start. Armstrong works offline — sign in later to sync.
-        </p>
+        <h1 className="welcome-choice__title">{t("welcome.title")}</h1>
+        <p className="welcome-choice__subtitle">{t("welcome.subtitle")}</p>
       </header>
 
       <div className="welcome-cards">
         <button type="button" className="welcome-card welcome-card--primary" onClick={onMakePlan}>
           <div className="welcome-card__content">
-            <p className="welcome-card__eyebrow">Recommended</p>
-            <h2 className="welcome-card__title">Armstrong, make a diet and exercise plan</h2>
-            <p className="welcome-card__copy">
-              Answer a few questions and we will build your split, meals, and macros.
-            </p>
+            <p className="welcome-card__eyebrow">{t("welcome.recommended")}</p>
+            <h2 className="welcome-card__title">{t("welcome.makePlanTitle")}</h2>
+            <p className="welcome-card__copy">{t("welcome.makePlanCopy")}</p>
             <div className="welcome-card__badges">
               <span className="welcome-card__badge welcome-card__badge--instant">
                 <FlashIcon className="welcome-card__badge-icon" />
-                Instant
+                {t("welcome.badgeInstant")}
               </span>
               <span className="welcome-card__badge welcome-card__badge--free">
                 <MoneyIcon className="welcome-card__badge-icon" />
-                Free
+                {t("welcome.badgeFree")}
               </span>
               <span className="welcome-card__badge welcome-card__badge--diet">
                 <FoodIcon className="welcome-card__badge-icon" />
-                Diet plan
+                {t("welcome.badgeDiet")}
               </span>
               <span className="welcome-card__badge welcome-card__badge--exercise">
                 <DumbbellIcon className="welcome-card__badge-icon" />
-                Exercise plan
+                {t("welcome.badgeExercise")}
               </span>
             </div>
           </div>
@@ -51,10 +50,8 @@ export function WelcomeChoice({ onMakePlan, onHavePlan, onLogin }: WelcomeChoice
 
         <button type="button" className="welcome-card" onClick={onHavePlan}>
           <div className="welcome-card__content">
-            <h2 className="welcome-card__title">I already have a plan</h2>
-            <p className="welcome-card__copy">
-              Jump straight into the app with the default workout days and nutrition tracking.
-            </p>
+            <h2 className="welcome-card__title">{t("welcome.havePlanTitle")}</h2>
+            <p className="welcome-card__copy">{t("welcome.havePlanCopy")}</p>
           </div>
           <ExistingPlanIcon />
         </button>
@@ -62,7 +59,7 @@ export function WelcomeChoice({ onMakePlan, onHavePlan, onLogin }: WelcomeChoice
 
       <p className="welcome-choice__login">
         <button type="button" className="welcome-choice__login-link" onClick={onLogin}>
-          I already have an account
+          {t("welcome.haveAccount")}
         </button>
       </p>
     </div>

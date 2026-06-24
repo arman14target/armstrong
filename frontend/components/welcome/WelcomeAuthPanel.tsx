@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { GoogleSignInButton } from "@/components/GoogleSignInButton";
 import { AppleSignInButton } from "@/components/AppleSignInButton";
 import { CyberButton } from "@/components/ui/CyberButton";
@@ -18,6 +19,7 @@ interface WelcomeAuthPanelProps {
 type AuthMode = "sign-in" | "sign-up";
 
 export function WelcomeAuthPanel({ onBack, onSuccess }: WelcomeAuthPanelProps) {
+  const { t } = useTranslation();
   const { configured, googleConfigured, appleConfigured, signIn, signUp, signInWithGoogle, signInWithApple } =
     useAuth();
   const { syncAfterAuth } = useGymStore();
@@ -49,14 +51,14 @@ export function WelcomeAuthPanel({ onBack, onSuccess }: WelcomeAuthPanelProps) {
       }
 
       if (!userId) {
-        setError("Could not start your session. Please try again.");
+        setError(t("auth.sessionError"));
         return;
       }
 
       await finishAuth(userId, mode);
       setPassword("");
     } catch {
-      setError("Something went wrong. Please try again.");
+      setError(t("auth.genericError"));
     } finally {
       setSubmitting(false);
     }
@@ -71,7 +73,7 @@ export function WelcomeAuthPanel({ onBack, onSuccess }: WelcomeAuthPanelProps) {
     }
 
     if (!result.userId) {
-      setError("Could not start your session. Please try again.");
+      setError(t("auth.sessionError"));
       return;
     }
 
@@ -83,11 +85,9 @@ export function WelcomeAuthPanel({ onBack, onSuccess }: WelcomeAuthPanelProps) {
       <div className="welcome-panel stack-md">
         <WelcomeBackButton onClick={onBack} />
         <WelcomeBrand compact />
-        <p className="text-sm text-dim">
-          Cloud login is not configured on this build. You can still use Armstrong locally.
-        </p>
+        <p className="text-sm text-dim">{t("auth.cloudNotConfigured")}</p>
         <CyberButton variant="cyan" onClick={onSuccess}>
-          Continue without account
+          {t("auth.continueWithoutAccount")}
         </CyberButton>
       </div>
     );
@@ -102,11 +102,9 @@ export function WelcomeAuthPanel({ onBack, onSuccess }: WelcomeAuthPanelProps) {
 
       <div>
         <h2 className="welcome-panel__title">
-          {mode === "sign-in" ? "Sign in" : "Create account"}
+          {mode === "sign-in" ? t("auth.signIn") : t("auth.createAccount")}
         </h2>
-        <p className="welcome-panel__copy">
-          Pick up your saved workouts and diet plan on any device.
-        </p>
+        <p className="welcome-panel__copy">{t("auth.syncDevicesHint")}</p>
       </div>
 
       <div className="grid grid-cols-2 gap-1 rounded-cyber border border-line p-1">
@@ -125,14 +123,14 @@ export function WelcomeAuthPanel({ onBack, onSuccess }: WelcomeAuthPanelProps) {
                 : "text-dim hover:text-heading",
             )}
           >
-            {value === "sign-in" ? "Sign in" : "Sign up"}
+            {value === "sign-in" ? t("auth.signIn") : t("auth.signUp")}
           </button>
         ))}
       </div>
 
       <form className="stack-md" onSubmit={handleSubmit}>
         <label className="stack-xs">
-          <span className="text-xs uppercase tracking-wide text-dim">Email</span>
+          <span className="text-xs uppercase tracking-wide text-dim">{t("auth.email")}</span>
           <input
             type="email"
             autoComplete="email"
@@ -144,7 +142,7 @@ export function WelcomeAuthPanel({ onBack, onSuccess }: WelcomeAuthPanelProps) {
         </label>
 
         <label className="stack-xs">
-          <span className="text-xs uppercase tracking-wide text-dim">Password</span>
+          <span className="text-xs uppercase tracking-wide text-dim">{t("auth.password")}</span>
           <input
             type="password"
             autoComplete={mode === "sign-in" ? "current-password" : "new-password"}
@@ -159,13 +157,19 @@ export function WelcomeAuthPanel({ onBack, onSuccess }: WelcomeAuthPanelProps) {
         {error ? <p className="text-sm text-magenta">{error}</p> : null}
 
         <CyberButton variant="cyan" type="submit" disabled={submitting}>
-          {submitting ? "Working..." : mode === "sign-in" ? "Sign in" : "Create account"}
+          {submitting
+            ? t("common.working")
+            : mode === "sign-in"
+              ? t("auth.signIn")
+              : t("auth.createAccount")}
         </CyberButton>
       </form>
 
       {googleConfigured || appleConfigured ? (
         <div className="stack-sm">
-          <p className="text-center text-xs uppercase tracking-wide text-dim">Or continue with</p>
+          <p className="text-center text-xs uppercase tracking-wide text-dim">
+            {t("auth.orContinueWith")}
+          </p>
           <div className="flex flex-col gap-[var(--space-gap)]">
             {googleConfigured ? (
               <GoogleSignInButton

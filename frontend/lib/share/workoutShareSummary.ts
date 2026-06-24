@@ -7,6 +7,7 @@ import type {
   WorkoutSessionSnapshot,
 } from "@/lib/types";
 import { getWorkoutLabel, getWorkoutTemplate } from "@/lib/workouts";
+import { t } from "@/lib/i18n/t";
 
 /** One completed exercise, distilled for the share card. */
 export interface ShareExercise {
@@ -180,7 +181,7 @@ export function buildHistoryShareSummary(
     totalVolume,
     heroStat: {
       kind: "volume",
-      label: "Total volume",
+      label: t("share.totalVolume"),
       value: KG(totalVolume),
     },
   };
@@ -227,17 +228,21 @@ function pickHeroStat({
   if (bestPr) {
     return {
       kind: "pr",
-      label: "New PR",
-      value: `${bestPr.name} · ${bestPr.weight} kg`,
+      label: t("share.newPr"),
+      value: t("share.prValue", { name: bestPr.name, weight: bestPr.weight }),
     };
   }
 
   const streak = computeStreak(completionDates, completedAt);
   if (streak >= 2) {
-    return { kind: "streak", label: "Streak", value: `${streak} day streak` };
+    return {
+      kind: "streak",
+      label: t("share.streak"),
+      value: t("share.dayStreak", { count: streak }),
+    };
   }
 
-  return { kind: "volume", label: "Total volume", value: KG(totalVolume) };
+  return { kind: "volume", label: t("share.totalVolume"), value: KG(totalVolume) };
 }
 
 /** Local YYYY-MM-DD for a date. */

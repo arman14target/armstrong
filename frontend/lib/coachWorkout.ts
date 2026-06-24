@@ -13,6 +13,7 @@ import {
   updateWorkoutMoves,
 } from "@/lib/workouts";
 import { appendDietCoachPrompt } from "@/lib/coachDiet";
+import { t } from "@/lib/i18n/t";
 import { COACH_SYSTEM_PROMPT } from "@/lib/gemini";
 import {
   BatchExercisePreset,
@@ -453,14 +454,24 @@ export function describeWorkoutChange(
   const dayLabel = getWorkoutLabel(data, change.workoutId);
 
   if (change.action === "add") {
-    return `Added ${change.exercise} to ${dayLabel}.`;
+    return t("coach.applyWorkout.add", {
+      exercise: change.exercise,
+      day: dayLabel,
+    });
   }
 
   if (change.action === "remove") {
-    return `Removed ${change.exercise} from ${dayLabel}.`;
+    return t("coach.applyWorkout.remove", {
+      exercise: change.exercise,
+      day: dayLabel,
+    });
   }
 
-  return `Swapped ${change.fromExercise} → ${change.toExercise} on ${dayLabel}.`;
+  return t("coach.applyWorkout.replace", {
+    from: change.fromExercise,
+    to: change.toExercise,
+    day: dayLabel,
+  });
 }
 
 export function describeGymPlan(plan: CoachGymPlan): string {
@@ -470,23 +481,27 @@ export function describeGymPlan(plan: CoachGymPlan): string {
     0,
   );
   const dayNames = plan.days.map((day) => day.name).join(", ");
-  return `Added your ${dayCount}-day plan (${exerciseCount} exercises) — ${dayNames}. Open the Workouts tab to start training.`;
+  return t("coach.applyWorkout.describeGym", {
+    dayCount,
+    exerciseCount,
+    dayNames,
+  });
 }
 
 export function getWorkoutChangeApplyLabel(change: CoachWorkoutChange): string {
   if (change.action === "replace") {
-    return `Swap to ${change.toExercise}`;
+    return t("coach.applyWorkout.swapTo", { exercise: change.toExercise });
   }
 
   if (change.action === "add") {
-    return `Add ${change.exercise}`;
+    return t("coach.applyWorkout.addExercise", { exercise: change.exercise });
   }
 
-  return `Remove ${change.exercise}`;
+  return t("coach.applyWorkout.removeExercise", { exercise: change.exercise });
 }
 
 export function getGymPlanApplyLabel(): string {
-  return "Add to workout days";
+  return t("coach.applyWorkout.addToWorkoutDays");
 }
 
 export function formatGymPlanPreview(plan: CoachGymPlan): string {
@@ -495,7 +510,11 @@ export function formatGymPlanPreview(plan: CoachGymPlan): string {
       const exercises = day.exercises
         .map(
           (exercise) =>
-            `${exercise.name} (${exercise.sets ?? 3}×${exercise.reps ?? 10})`,
+            t("coach.applyWorkout.previewExercise", {
+              name: exercise.name,
+              sets: exercise.sets ?? 3,
+              reps: exercise.reps ?? 10,
+            }),
         )
         .join(", ");
       return `${day.name}: ${exercises}`;

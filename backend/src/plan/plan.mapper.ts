@@ -30,6 +30,7 @@ function planMetaScalars(appData: AppData) {
     targetWeightKg: appData.targetWeightKg ?? null,
     weightUnit: appData.weightUnit ?? null,
     advancedNutrition: appData.advancedNutrition ?? false,
+    locale: appData.locale ?? null,
   };
 }
 
@@ -357,6 +358,7 @@ export function toPayload(user: UserWithPlan): UserPlanPayload {
       ? { weightUnit: user.meta.weightUnit as AppData["weightUnit"] }
       : {}),
     advancedNutrition: user.meta?.advancedNutrition ?? false,
+    ...(user.meta?.locale ? { locale: user.meta.locale } : {}),
   };
 
   return {

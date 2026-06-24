@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { useMemo, useState } from "react";
+import { Trans, useTranslation } from "react-i18next";
 import { LandingFooter } from "@/components/landing/LandingFooter";
 import { NavigationHeader } from "@/components/NavigationHeader";
 import { ExperienceBar } from "@/components/planner/ExperienceBar";
@@ -10,16 +11,19 @@ import { WorkoutPlanDisplay } from "@/components/planner/WorkoutPlanDisplay";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { useGymStore } from "@/hooks/useGymStore";
-import { gymPlannerAbout, gymPlannerFaq, gymPlannerHero } from "@/lib/planner/gymContent";
-import { EXPERIENCE_DESCRIPTIONS } from "@/lib/planner/experience";
+import {
+  getGymPlannerAbout,
+  getGymPlannerFaq,
+  getGymPlannerHero,
+} from "@/lib/planner/gymContent";
 import {
   DEFAULT_GYM_INPUTS,
   generateGymPlan,
   type DaysPerWeek,
   type GymEquipment,
-  GYM_FOCUS_LABELS,
   GYM_FOCUS_OPTIONS,
   type GymPlanInputs,
+  type GymFocus,
 } from "@/lib/planner/gymPlan";
 import type { NutritionSex } from "@/lib/nutrition";
 import {
@@ -33,13 +37,24 @@ import {
 
 type Step = "stats" | "program" | "plan";
 
+const STEP_LABELS: Record<Step, string> = {
+  stats: "planner.common.yourStats",
+  program: "planner.gym.steps.program",
+  plan: "planner.gym.steps.yourSplit",
+};
+
 export function GymPlannerPage() {
+  const { t } = useTranslation();
   const { importGymPlanner } = useGymStore();
   const [step, setStep] = useState<Step>("stats");
   const [weightUnit, setWeightUnit] = useState<WeightUnit>("kg");
   const [heightUnit, setHeightUnit] = useState<HeightUnit>("cm");
   const [inputs, setInputs] = useState<GymPlanInputs>(DEFAULT_GYM_INPUTS);
   const [planKey, setPlanKey] = useState(0);
+
+  const gymPlannerHero = getGymPlannerHero(t);
+  const gymPlannerAbout = getGymPlannerAbout(t);
+  const gymPlannerFaq = getGymPlannerFaq(t);
 
   const livePreview = useMemo(() => generateGymPlan(inputs), [inputs]);
 
@@ -93,16 +108,16 @@ export function GymPlannerPage() {
       </section>
 
       <section className="planner-page__tool" aria-labelledby="gym-planner-tool">
-        <SectionHead index="01" title="Build Your Split" />
+        <SectionHead index="01" title={t("planner.gym.steps.buildSplit")} />
 
         <div className="planner-shell">
-          <nav className="planner-steps" aria-label="Planner steps">
+          <nav className="planner-steps" aria-label={t("planner.common.stepsNav")}>
             {(["stats", "program", "plan"] as const).map((s, i) => (
               <span
                 key={s}
                 className={`planner-steps__item${step === s ? " planner-steps__item--active" : ""}${(["stats", "program", "plan"].indexOf(step) > i ? " planner-steps__item--done" : "")}`}
               >
-                {i + 1}. {s === "stats" ? "Your stats" : s === "program" ? "Program" : "Your split"}
+                {i + 1}. {t(STEP_LABELS[s])}
               </span>
             ))}
           </nav>
@@ -112,12 +127,12 @@ export function GymPlannerPage() {
               {step === "stats" ? (
                 <div className="planner-form stack-md">
                   <h2 id="gym-planner-tool" className="planner-panel__title">
-                    Body stats
+                    {t("planner.common.bodyStats")}
                   </h2>
 
                   <div className="planner-field">
                     <div className="planner-field__head">
-                      <label htmlFor="gym-weight">Weight</label>
+                      <label htmlFor="gym-weight">{t("planner.common.weight")}</label>
                       <div className="planner-unit-toggle">
                         {(["kg", "lb"] as const).map((u) => (
                           <button
@@ -145,7 +160,7 @@ export function GymPlannerPage() {
 
                   <div className="planner-field">
                     <div className="planner-field__head">
-                      <label htmlFor="gym-height">Height</label>
+                      <label htmlFor="gym-height">{t("planner.common.height")}</label>
                       <div className="planner-unit-toggle">
                         {(["cm", "ft"] as const).map((u) => (
                           <button
@@ -175,7 +190,7 @@ export function GymPlannerPage() {
 
                   <div className="planner-field">
                     <div className="planner-field__head">
-                      <label htmlFor="gym-age">Age</label>
+                      <label htmlFor="gym-age">{t("planner.common.age")}</label>
                       <span className="planner-field__value-inline">{inputs.age}</span>
                     </div>
                     <input
@@ -192,7 +207,7 @@ export function GymPlannerPage() {
                   </div>
 
                   <fieldset className="planner-segment">
-                    <legend>Sex</legend>
+                    <legend>{t("planner.common.sex")}</legend>
                     <div className="planner-segment__options">
                       {(["male", "female"] as const).map((sex) => (
                         <button
@@ -201,24 +216,24 @@ export function GymPlannerPage() {
                           className={inputs.sex === sex ? "is-active" : undefined}
                           onClick={() => setInputs((prev) => ({ ...prev, sex: sex as NutritionSex }))}
                         >
-                          {sex === "male" ? "Male" : "Female"}
+                          {t(`planner.common.${sex}`)}
                         </button>
                       ))}
                     </div>
                   </fieldset>
 
                   <CyberButton variant="cyan" onClick={() => setStep("program")}>
-                    Next: Program →
+                    {t("planner.gym.steps.nextProgram")}
                   </CyberButton>
                 </div>
               ) : null}
 
               {step === "program" ? (
                 <div className="planner-form stack-md">
-                  <h2 className="planner-panel__title">Program setup</h2>
+                  <h2 className="planner-panel__title">{t("planner.gym.steps.programSetup")}</h2>
 
                   <fieldset className="planner-segment">
-                    <legend>Days per week</legend>
+                    <legend>{t("planner.gym.steps.daysPerWeek")}</legend>
                     <div className="planner-segment__options planner-segment__options--wrap">
                       {([3, 4, 5, 6] as const).map((days) => (
                         <button
@@ -229,14 +244,14 @@ export function GymPlannerPage() {
                             setInputs((prev) => ({ ...prev, daysPerWeek: days as DaysPerWeek }))
                           }
                         >
-                          {days} days
+                          {t("planner.common.days", { count: days })}
                         </button>
                       ))}
                     </div>
                   </fieldset>
 
                   <fieldset className="planner-segment">
-                    <legend>Focus</legend>
+                    <legend>{t("planner.gym.steps.focus")}</legend>
                     <div className="planner-segment__options">
                       {GYM_FOCUS_OPTIONS.map((focus) => (
                         <button
@@ -245,21 +260,21 @@ export function GymPlannerPage() {
                           className={inputs.focus === focus ? "is-active" : undefined}
                           onClick={() => setInputs((prev) => ({ ...prev, focus }))}
                         >
-                          {GYM_FOCUS_LABELS[focus]}
+                          {t(`planner.gym.focus.${focus as GymFocus}`)}
                         </button>
                       ))}
                     </div>
                   </fieldset>
 
                   <fieldset className="planner-segment">
-                    <legend>Equipment</legend>
+                    <legend>{t("planner.gym.steps.equipment")}</legend>
                     <div className="planner-segment__options">
                       {(
                         [
-                          ["full_gym", "Full gym"],
-                          ["home", "Home"],
+                          ["full_gym", "planner.gym.steps.fullGym"],
+                          ["home", "planner.gym.steps.home"],
                         ] as const
-                      ).map(([equipment, label]) => (
+                      ).map(([equipment, labelKey]) => (
                         <button
                           key={equipment}
                           type="button"
@@ -271,7 +286,7 @@ export function GymPlannerPage() {
                             }))
                           }
                         >
-                          {label}
+                          {t(labelKey)}
                         </button>
                       ))}
                     </div>
@@ -281,14 +296,14 @@ export function GymPlannerPage() {
                     value={inputs.experience}
                     onChange={(experience) => setInputs((prev) => ({ ...prev, experience }))}
                   />
-                  <p className="planner-hint">{EXPERIENCE_DESCRIPTIONS[inputs.experience]}</p>
+                  <p className="planner-hint">{t(`experience.descriptions.${inputs.experience}`)}</p>
 
                   <div className="planner-form__actions">
                     <CyberButton variant="magenta" onClick={() => setStep("stats")}>
-                      ← Back
+                      {t("planner.common.back")}
                     </CyberButton>
                     <CyberButton variant="cyan" onClick={generatePlan}>
-                      Generate workout split
+                      {t("planner.gym.steps.generate")}
                     </CyberButton>
                   </div>
                 </div>
@@ -298,10 +313,10 @@ export function GymPlannerPage() {
                 <div className="stack-md">
                   <ImportPlanButton
                     onImport={handleImportToApp}
-                    label="Add workout split to app"
+                    label={t("planner.import.workout")}
                   />
                   <CyberButton variant="magenta" onClick={() => setStep("program")}>
-                    ← Adjust inputs
+                    {t("planner.common.adjustInputs")}
                   </CyberButton>
                 </div>
               ) : null}
@@ -312,22 +327,20 @@ export function GymPlannerPage() {
                 <WorkoutPlanDisplay plan={livePreview} onImportToApp={handleImportToApp} />
               ) : (
                 <div className="planner-preview">
-                  <p className="planner-preview__label">Live split preview</p>
+                  <p className="planner-preview__label">{t("planner.gym.preview.label")}</p>
                   <p className="planner-preview__calories">{livePreview.splitName}</p>
                   <div className="planner-preview__macros">
-                    <span>{livePreview.days.length} training days</span>
-                    <span>{livePreview.weeklySets} sets / week</span>
+                    <span>{t("planner.gym.preview.trainingDays", { count: livePreview.days.length })}</span>
+                    <span>{t("planner.gym.preview.setsPerWeek", { count: livePreview.weeklySets })}</span>
                   </div>
                   <ul className="planner-preview__days">
                     {livePreview.days.map((day) => (
                       <li key={day.dayLabel}>
-                        {day.dayLabel}: {day.name}
+                        {t("planner.gym.preview.daySummary", { dayLabel: day.dayLabel, name: day.name })}
                       </li>
                     ))}
                   </ul>
-                  <p className="planner-hint">
-                    Generate to unlock full exercise lists with sets, reps, and rest.
-                  </p>
+                  <p className="planner-hint">{t("planner.gym.preview.hint")}</p>
                 </div>
               )}
             </div>
@@ -336,9 +349,9 @@ export function GymPlannerPage() {
       </section>
 
       <section className="landing-section" aria-labelledby="gym-faq-heading">
-        <SectionHead index="02" title="FAQ" />
+        <SectionHead index="02" title={t("planner.common.faq")} />
         <h2 id="gym-faq-heading" className="sr-only">
-          Gym planner frequently asked questions
+          {t("planner.gym.steps.faqSrOnly")}
         </h2>
         <div className="landing-faq">
           {gymPlannerFaq.map((item) => (
@@ -353,22 +366,22 @@ export function GymPlannerPage() {
       <section className="landing-footer-cta" aria-labelledby="gym-cta">
         <div className="landing-footer-cta__inner">
           <h2 id="gym-cta" className="font-display text-2xl tracking-[2px] text-heading uppercase sm:text-3xl">
-            Execute Your Split in Armstrong
+            {t("planner.gym.cta.headline")}
           </h2>
           <p className="max-w-lg text-base text-dim sm:text-lg">
-            Log sets, track PRs, and sync your plan to the cloud — free, no credit card.
-            Need macros too?{" "}
-            <Link href="/diet-planner/" className="text-cyan hover:text-heading">
-              Try the free diet planner
-            </Link>
-            .
+            <Trans
+              i18nKey="planner.gym.cta.copy"
+              components={[
+                <Link key="diet" href="/diet-planner/" className="text-cyan hover:text-heading" />,
+              ]}
+            />
           </p>
           <div className="flex flex-wrap gap-3">
             <CyberButton href="/app/" variant="cyan">
-              Open App
+              {t("planner.common.openApp")}
             </CyberButton>
             <CyberButton href="/diet-planner/" variant="magenta">
-              Diet Planner
+              {t("planner.gym.cta.dietPlanner")}
             </CyberButton>
           </div>
         </div>

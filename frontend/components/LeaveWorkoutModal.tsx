@@ -1,9 +1,11 @@
 "use client";
 
 import { useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { PanelDot } from "@/components/ui/PanelDot";
 import { cn } from "@/lib/cn";
+
 interface LeaveWorkoutModalProps {
   open: boolean;
   label: string;
@@ -21,6 +23,7 @@ export function LeaveWorkoutModal({
   onCancelSession,
   onStay,
 }: LeaveWorkoutModalProps) {
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!open) {
@@ -67,7 +70,7 @@ export function LeaveWorkoutModal({
         <div className="panel-header">
           <PanelDot />
           <span className="ml-[var(--space-inline)] tracking-wide text-cyan">
-            Leave workout
+            {t("workout.leavePanelTitle")}
           </span>
         </div>
 
@@ -76,35 +79,35 @@ export function LeaveWorkoutModal({
             id="leave-workout-title"
             className="font-display text-lg tracking-wide text-heading"
           >
-            Save or cancel {label}?
+            {t("workout.leaveSaveOrCancel", { label })}
           </h2>
           <p className="mt-[var(--space-gap)] text-sm leading-relaxed text-dim">
             {completedSetCount > 0 ? (
               <>
-                You&apos;ve completed{" "}
-                <span className="text-green">{completedSetCount}</span>{" "}
-                {completedSetCount === 1 ? "set" : "sets"} this session.
+                {t("workout.leaveCompletedSets", {
+                  count: completedSetCount,
+                  setLabel: t("common.set", { count: completedSetCount }),
+                })}{" "}
               </>
             ) : (
-              <>Your session is in progress.</>
-            )}{" "}
-            Save your progress to pick up where you left off, or cancel to
-            discard everything from this session.
+              <>{t("workout.leaveInProgress")} </>
+            )}
+            {t("workout.leaveDescription")}
           </p>
 
           <div className="mt-[var(--space-section)] stack-sm">
             <CyberButton variant="green" className="w-full" onClick={onSave}>
-              Save workout &amp; go home
+              {t("workout.saveAndGoHome")}
             </CyberButton>
             <CyberButton
               variant="red"
               className="w-full min-h-12 border-red-500/40 bg-red-500/10"
               onClick={onCancelSession}
             >
-              Cancel this session
+              {t("workout.cancelSession")}
             </CyberButton>
             <CyberButton variant="cyan" className="w-full" onClick={onStay}>
-              Keep training
+              {t("workout.keepTraining")}
             </CyberButton>
           </div>
         </div>

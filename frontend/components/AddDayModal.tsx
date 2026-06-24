@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CloseIcon } from "@/components/icons/ActionIcons";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { IconButton } from "@/components/ui/IconButton";
@@ -14,6 +15,7 @@ interface AddDayModalProps {
 }
 
 export function AddDayModal({ open, onAdd, onClose }: AddDayModalProps) {
+  const { t } = useTranslation();
   const [name, setName] = useState("");
   const [error, setError] = useState(false);
 
@@ -76,11 +78,11 @@ export function AddDayModal({ open, onAdd, onClose }: AddDayModalProps) {
           <div className="inline-flex min-w-0 items-center">
             <PanelDot />
             <span className="ml-[var(--space-inline)] tracking-wide text-cyan">
-              New day
+              {t("addDay.panelTitle")}
             </span>
           </div>
           <IconButton
-            label="Close add day"
+            label={t("addDay.closeAria")}
             variant="ghost"
             className="size-8"
             onClick={onClose}
@@ -94,16 +96,15 @@ export function AddDayModal({ open, onAdd, onClose }: AddDayModalProps) {
             id="add-day-title"
             className="font-display text-lg tracking-wide text-heading"
           >
-            Name your workout day
+            {t("addDay.heading")}
           </h2>
           <p className="mt-[var(--space-gap)] text-sm leading-relaxed text-dim">
-            Pick a label for this split. You can set up exercises after creating
-            it.
+            {t("addDay.description")}
           </p>
 
           <label className="mt-[var(--space-gap-md)] block">
             <span className="mb-1 block text-xs tracking-wide text-dim uppercase">
-              Day name
+              {t("addDay.nameLabel")}
             </span>
             <input
               type="text"
@@ -119,7 +120,7 @@ export function AddDayModal({ open, onAdd, onClose }: AddDayModalProps) {
                   handleSubmit();
                 }
               }}
-              placeholder="e.g. Upper Body"
+              placeholder={t("addDay.namePlaceholder")}
               autoFocus
               className={cn(
                 "cyber-input",
@@ -129,17 +130,17 @@ export function AddDayModal({ open, onAdd, onClose }: AddDayModalProps) {
             />
             {error ? (
               <p className="mt-1 text-xs text-magenta" role="alert">
-                Enter a name with at least 2 characters.
+                {t("addDay.nameError")}
               </p>
             ) : null}
           </label>
 
           <div className="mt-[var(--space-section)] stack-sm">
             <CyberButton variant="green" className="w-full" onClick={handleSubmit}>
-              Create day
+              {t("addDay.createDay")}
             </CyberButton>
             <CyberButton variant="cyan" className="w-full" onClick={onClose}>
-              Cancel
+              {t("common.cancel")}
             </CyberButton>
           </div>
         </div>

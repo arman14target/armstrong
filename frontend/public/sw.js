@@ -1,4 +1,19 @@
-const CACHE_NAME = "armstrong-v3";
+const CACHE_NAME = "armstrong-v4";
+
+const DAY_STICKER_FILES = [
+  "dumbbell-3d-orange.png",
+  "bench-3d-orange.png",
+  "kettlebell-3d-orange.png",
+  "weight-plate-3d-orange.png",
+  "jump-rope-3d-orange.png",
+  "medicine-ball-3d-orange.png",
+];
+
+const IMAGE_PATH_PREFIXES = ["/images/", "/icons/"];
+const IMAGE_HOSTS = new Set([
+  "raw.githubusercontent.com",
+  "res.cloudinary.com",
+]);
 
 function scopePath() {
   const scope = self.registration.scope;
@@ -16,19 +31,37 @@ function assetUrl(path) {
   return `${base}${normalized}`;
 }
 
+function installAssets() {
+  return [
+    assetUrl("/app/"),
+    assetUrl("/manifest.json"),
+    assetUrl("/icons/favicon-32.png"),
+    assetUrl("/icons/apple-touch-icon.png"),
+    assetUrl("/icons/icon-192.png"),
+    assetUrl("/icons/icon-512.png"),
+    assetUrl("/icons/icon-maskable-512.png"),
+    ...DAY_STICKER_FILES.map((file) =>
+      assetUrl(`/images/day-stickers/${file}`),
+    ),
+  ];
+}
+
+function isCacheableImage(request) {
+  if (request.method !== "GET") {
+    return false;
+  }
+
+  const url = new URL(request.url);
+  if (url.origin === self.location.origin) {
+    return IMAGE_PATH_PREFIXES.some((prefix) => url.pathname.includes(prefix));
+  }
+
+  return IMAGE_HOSTS.has(url.hostname);
+}
+
 self.addEventListener("install", (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) =>
-      cache.addAll([
-        assetUrl("/app/"),
-        assetUrl("/manifest.json"),
-        assetUrl("/icons/favicon-32.png"),
-        assetUrl("/icons/apple-touch-icon.png"),
-        assetUrl("/icons/icon-192.png"),
-        assetUrl("/icons/icon-512.png"),
-        assetUrl("/icons/icon-maskable-512.png"),
-      ]),
-    ),
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(installAssets())),
   );
   self.skipWaiting();
 });
@@ -48,6 +81,27 @@ self.addEventListener("activate", (event) => {
 
 self.addEventListener("fetch", (event) => {
   if (event.request.method !== "GET") {
+    return;
+  }
+
+  if (isCacheableImage(event.request)) {
+    event.respondWith(
+      caches
+        .open(CACHE_NAME)
+        .then(async (cache) => {
+          const cached = await cache.match(event.request);
+          if (cached) {
+            return cached;
+          }
+
+          const response = await fetch(event.request);
+          if (response.ok) {
+            await cache.put(event.request, response.clone());
+          }
+          return response;
+        })
+        .catch(() => fetch(event.request)),
+    );
     return;
   }
 

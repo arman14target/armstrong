@@ -1,12 +1,14 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { PanelDot } from "@/components/ui/PanelDot";
 import { useGymStore } from "@/hooks/useGymStore";
 import type { SyncConflictStrategy } from "@/lib/userPlanSync";
 
 export function SyncConflictModal() {
+  const { t } = useTranslation();
   const { syncConflict, resolveDataConflict } = useGymStore();
   const [pending, setPending] = useState<SyncConflictStrategy | null>(null);
 
@@ -45,7 +47,7 @@ export function SyncConflictModal() {
           <div className="inline-flex min-w-0 items-center">
             <PanelDot />
             <span className="ml-[var(--space-inline)] tracking-wide text-cyan">
-              Sync
+              {t("sync.panelTitle")}
             </span>
           </div>
         </div>
@@ -55,11 +57,10 @@ export function SyncConflictModal() {
             id="sync-conflict-title"
             className="font-display text-lg tracking-wide text-heading"
           >
-            Keep your data from this device?
+            {t("sync.conflictTitle")}
           </h2>
           <p className="mt-[var(--space-gap)] text-sm leading-relaxed text-dim">
-            This device has workouts not yet in your account. What should we
-            keep?
+            {t("sync.conflictMessage")}
           </p>
 
           <div className="mt-[var(--space-gap-md)] stack-sm">
@@ -69,7 +70,7 @@ export function SyncConflictModal() {
               disabled={busy}
               onClick={() => choose("merge")}
             >
-              {pending === "merge" ? "Combining…" : "Combine both (recommended)"}
+              {pending === "merge" ? t("sync.merging") : t("sync.merge")}
             </CyberButton>
             <CyberButton
               variant="cyan"
@@ -77,7 +78,7 @@ export function SyncConflictModal() {
               disabled={busy}
               onClick={() => choose("use-remote")}
             >
-              {pending === "use-remote" ? "Updating…" : "Keep my account only"}
+              {pending === "use-remote" ? t("sync.updating") : t("sync.useRemote")}
             </CyberButton>
             <CyberButton
               variant="red"
@@ -85,12 +86,12 @@ export function SyncConflictModal() {
               disabled={busy}
               onClick={() => choose("use-local")}
             >
-              {pending === "use-local" ? "Saving…" : "Keep this device only"}
+              {pending === "use-local" ? t("sync.saving") : t("sync.useLocal")}
             </CyberButton>
           </div>
 
           <p className="mt-[var(--space-gap)] text-[11px] leading-snug text-dim">
-            Combine merges both. Keeping one side deletes the other.
+            {t("sync.mergeHint")}
           </p>
         </div>
       </div>

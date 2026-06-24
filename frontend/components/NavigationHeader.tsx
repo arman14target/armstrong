@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { useTranslation } from "react-i18next";
 import { CloseIcon, MenuIcon } from "@/components/icons/ActionIcons";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { IconButton } from "@/components/ui/IconButton";
@@ -10,10 +11,10 @@ import { withBasePath } from "@/lib/basePath";
 import { cn } from "@/lib/cn";
 
 const navLinks = [
-  { href: "/blog/", label: "Blog" },
-  { href: "/diet-planner/", label: "Diet Planner" },
-  { href: "/gym-planner/", label: "Gym Planner" },
-  { href: "/gym-finder/", label: "Gym Finder" },
+  { href: "/blog/", key: "navigation.blog" },
+  { href: "/diet-planner/", key: "navigation.dietPlanner" },
+  { href: "/gym-planner/", key: "navigation.gymPlanner" },
+  { href: "/gym-finder/", key: "navigation.gymFinder" },
 ] as const;
 
 interface NavigationHeaderProps {
@@ -21,6 +22,7 @@ interface NavigationHeaderProps {
 }
 
 export function NavigationHeader({ className }: NavigationHeaderProps) {
+  const { t } = useTranslation();
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
@@ -56,7 +58,7 @@ export function NavigationHeader({ className }: NavigationHeaderProps) {
         </Link>
 
         <IconButton
-          label={menuOpen ? "Close menu" : "Open menu"}
+          label={menuOpen ? t("navigation.closeMenu") : t("navigation.openMenu")}
           variant="ghost"
           className="nav-header__menu-btn"
           aria-expanded={menuOpen}
@@ -70,16 +72,16 @@ export function NavigationHeader({ className }: NavigationHeaderProps) {
           )}
         </IconButton>
 
-        <nav aria-label="Main navigation" className="nav-header__nav">
+        <nav aria-label={t("navigation.mainNav")} className="nav-header__nav">
           <div className="nav-header__links">
             {navLinks.map((link) => (
               <Link key={link.href} href={link.href} className="nav-header__link">
-                {link.label}
+                {t(link.key)}
               </Link>
             ))}
           </div>
           <CyberButton href="/app/" variant="cyan" className="nav-header__cta">
-            Open App
+            {t("navigation.openApp")}
           </CyberButton>
         </nav>
       </div>
@@ -89,12 +91,12 @@ export function NavigationHeader({ className }: NavigationHeaderProps) {
           <button
             type="button"
             className="nav-header__backdrop"
-            aria-label="Close menu"
+            aria-label={t("navigation.closeMenu")}
             onClick={closeMenu}
           />
           <nav
             id="nav-header-mobile-menu"
-            aria-label="Mobile navigation"
+            aria-label={t("navigation.mobileNav")}
             className="nav-header__mobile-menu"
           >
             {navLinks.map((link) => (
@@ -104,7 +106,7 @@ export function NavigationHeader({ className }: NavigationHeaderProps) {
                 className="nav-header__mobile-link"
                 onClick={closeMenu}
               >
-                {link.label}
+                {t(link.key)}
               </Link>
             ))}
             <CyberButton
@@ -113,7 +115,7 @@ export function NavigationHeader({ className }: NavigationHeaderProps) {
               className="nav-header__mobile-cta"
               onClick={closeMenu}
             >
-              Open App
+              {t("navigation.openApp")}
             </CyberButton>
           </nav>
         </>

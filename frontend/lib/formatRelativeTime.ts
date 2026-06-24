@@ -1,6 +1,8 @@
+import { t } from "@/lib/i18n/t";
+
 export function formatTimeAgo(iso?: string, now = Date.now()): string {
   if (!iso) {
-    return "never";
+    return t("time.never");
   }
 
   const seconds = Math.max(
@@ -9,21 +11,21 @@ export function formatTimeAgo(iso?: string, now = Date.now()): string {
   );
 
   if (seconds < 60) {
-    return seconds === 1 ? "1 sec ago" : `${seconds} secs ago`;
+    return t("time.secAgo", { count: seconds });
   }
 
   const minutes = Math.floor(seconds / 60);
   if (minutes < 60) {
-    return minutes === 1 ? "1 min ago" : `${minutes} mins ago`;
+    return t("time.minAgo", { count: minutes });
   }
 
   const hours = Math.floor(minutes / 60);
   if (hours < 24) {
-    return hours === 1 ? "1 hour ago" : `${hours} hours ago`;
+    return t("time.hourAgo", { count: hours });
   }
 
   const days = Math.floor(hours / 24);
-  return days === 1 ? "1 day ago" : `${days} days ago`;
+  return t("time.dayAgo", { count: days });
 }
 
 export function formatDuration(totalSeconds?: number): string {
@@ -32,20 +34,23 @@ export function formatDuration(totalSeconds?: number): string {
   }
 
   if (totalSeconds < 60) {
-    return totalSeconds === 1 ? "1 sec" : `${totalSeconds} secs`;
+    return t("time.sec", { count: totalSeconds });
   }
 
   const minutes = Math.floor(totalSeconds / 60);
   if (minutes < 60) {
-    return minutes === 1 ? "1 min" : `${minutes} mins`;
+    return t("time.min", { count: minutes });
   }
 
   const hours = Math.floor(minutes / 60);
   const remainingMinutes = minutes % 60;
 
   if (remainingMinutes === 0) {
-    return hours === 1 ? "1 hour" : `${hours} hours`;
+    return t("time.hour", { count: hours });
   }
 
-  return `${hours}h ${remainingMinutes}m`;
+  return t("time.durationHoursMinutes", {
+    hours,
+    minutes: remainingMinutes,
+  });
 }

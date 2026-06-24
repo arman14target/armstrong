@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import type { GymPlanResult } from "@/lib/planner/gymPlan";
-import { EXPERIENCE_LABELS } from "@/lib/planner/experience";
 import { ImportPlanButton } from "@/components/planner/ImportPlanButton";
 
 interface WorkoutPlanDisplayProps {
@@ -11,6 +11,7 @@ interface WorkoutPlanDisplayProps {
 }
 
 export function WorkoutPlanDisplay({ plan, onImportToApp }: WorkoutPlanDisplayProps) {
+  const { t } = useTranslation();
   const [openDay, setOpenDay] = useState(plan.days[0]?.dayLabel ?? "");
 
   return (
@@ -19,13 +20,13 @@ export function WorkoutPlanDisplay({ plan, onImportToApp }: WorkoutPlanDisplayPr
         <p className="planner-result__kicker">{plan.splitName}</p>
         <p className="planner-result__calories">
           {plan.weeklySets}
-          <span className="planner-result__calories-unit">sets / week</span>
+          <span className="planner-result__calories-unit">{t("planner.gym.display.setsPerWeek")}</span>
         </p>
 
         <div className="planner-volume">
           <div className="planner-volume__head">
-            <span>Weekly volume</span>
-            <span>{EXPERIENCE_LABELS[plan.experience]} tier</span>
+            <span>{t("planner.gym.display.weeklyVolume")}</span>
+            <span>{t("planner.gym.display.tier", { level: t(`experience.labels.${plan.experience}`) })}</span>
           </div>
           <div className="planner-volume__track" aria-hidden>
             <div
@@ -36,15 +37,15 @@ export function WorkoutPlanDisplay({ plan, onImportToApp }: WorkoutPlanDisplayPr
         </div>
 
         <p className="planner-result__meta">
-          <strong>Progression:</strong> {plan.progressionNote}
+          <strong>{t("planner.gym.display.progression")}</strong> {plan.progressionNote}
         </p>
         <p className="planner-result__meta">
-          <strong>Recovery:</strong> {plan.recoveryNote}
+          <strong>{t("planner.gym.display.recovery")}</strong> {plan.recoveryNote}
         </p>
         {onImportToApp ? (
           <ImportPlanButton
             onImport={onImportToApp}
-            label="Add workout split to app"
+            label={t("planner.import.workout")}
             className="w-full"
           />
         ) : null}
@@ -64,7 +65,9 @@ export function WorkoutPlanDisplay({ plan, onImportToApp }: WorkoutPlanDisplayPr
                 <span className="planner-workout__day">{day.dayLabel}</span>
                 <span className="planner-workout__name">{day.name}</span>
                 <span className="planner-workout__meta">
-                  {day.exercises.length} exercises · ~{day.estimatedMinutes} min
+                  {t("planner.gym.display.exercises", { count: day.exercises.length })}
+                  {" · "}
+                  {t("planner.gym.display.minutes", { count: day.estimatedMinutes })}
                 </span>
               </button>
 
@@ -74,10 +77,10 @@ export function WorkoutPlanDisplay({ plan, onImportToApp }: WorkoutPlanDisplayPr
                   <table className="planner-workout__table">
                     <thead>
                       <tr>
-                        <th scope="col">Exercise</th>
-                        <th scope="col">Sets</th>
-                        <th scope="col">Reps</th>
-                        <th scope="col">Rest</th>
+                        <th scope="col">{t("planner.gym.display.exercise")}</th>
+                        <th scope="col">{t("planner.gym.display.sets")}</th>
+                        <th scope="col">{t("planner.gym.display.reps")}</th>
+                        <th scope="col">{t("planner.gym.display.rest")}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -91,7 +94,7 @@ export function WorkoutPlanDisplay({ plan, onImportToApp }: WorkoutPlanDisplayPr
                           </td>
                           <td>{ex.sets}</td>
                           <td>{ex.reps}</td>
-                          <td>{ex.restSeconds}s</td>
+                          <td>{t("planner.gym.display.restSeconds", { seconds: ex.restSeconds })}</td>
                         </tr>
                       ))}
                     </tbody>
