@@ -1041,28 +1041,6 @@
       "compareError": "Couldn't compare these gyms. Please try again."
     }
   },
-  "keyboard": {
-    "keypadAria": "Numeric keypad",
-    "backspaceAria": "Backspace",
-    "hideCustomAria": "Hide custom keyboard and use device keyboard",
-    "increaseAria": "Increase value",
-    "decreaseAria": "Decrease value",
-    "done": "Done",
-    "next": "Next"
-  },
-  "batch": {
-    "importWorkout": "Import workout",
-    "describeBeforeImport": "Describe your workout before importing.",
-    "importFailed": "Import failed. Try again.",
-    "plainLanguageHint": "Type your whole program in plain language — sets, reps, weight, rest, holds. Armstrong uses AI to turn it into exercises for this day.",
-    "yourProgram": "Your program",
-    "parsing": "Parsing with AI..."
-  },
-  "aria": {
-    "bodyWeightTrend": "Body weight trend",
-    "homeSections": "Home sections",
-    "reorderExercise": "Reorder {{name}}"
-  },
   "legal": {
     "backLink": "← Armstrong",
     "lastUpdated": "Last updated: {{date}}",

@@ -68,7 +68,7 @@
     "removeDayCancel": "Keep day",
     "removeDayAria": "Remove {{name}}",
     "addDay": "Add day",
-    "finish": "Finish workout",
+    "finish": "Finish",
     "finishFull": "Finish workout",
     "cancelWorkout": "Cancel workout",
     "leaveTitle": "Leave workout?",
@@ -118,7 +118,7 @@
     "heading": "Name your workout day",
     "description": "Pick a label for this split. You can set up exercises after creating it.",
     "nameLabel": "Day name",
-    "namePlaceholder": "e.g. Upper body",
+    "namePlaceholder": "e.g. Upper Body",
     "nameError": "Enter a name with at least 2 characters.",
     "createDay": "Create day",
     "submit": "Add day",
@@ -183,7 +183,15 @@
     "continueApple": "Continue with Apple",
     "signInFailed": "Sign-in failed. Try again.",
     "appleSignInFailed": "Apple sign-in failed. Try again.",
-    "signingInEllipsis": "Signing in…"
+    "signingInEllipsis": "Signing in…",
+    "errors": {
+      "invalidCredentials": "Email or password is incorrect.",
+      "userExists": "An account with this email already exists. Try signing in.",
+      "passwordTooShort": "Password must be at least 6 characters.",
+      "googleFailed": "Google sign-in failed. Please try again.",
+      "appleFailed": "Apple sign-in failed. Please try again.",
+      "notConfigured": "That sign-in method is not available right now."
+    }
   },
   "history": {
     "title": "History",
@@ -510,7 +518,8 @@
     "notFound": "Exercise details not found.",
     "loadFailed": "Failed to load exercise details.",
     "howToPerform": "How to perform",
-    "noInstructions": "No instructions available for this exercise yet."
+    "noInstructions": "No instructions available for this exercise yet.",
+    "generalMuscle": "General"
   },
   "sets": {
     "setHeader": "Set",
@@ -1040,6 +1049,13 @@
       "compareCount": "Compare ({{count}})",
       "compareError": "Couldn't compare these gyms. Please try again."
     }
+  },
+  "onboarding": {
+    "focusChest": "Chest Focus",
+    "focusShoulders": "Shoulders Focus",
+    "focusBack": "Back Focus",
+    "focusQuads": "Quads Focus",
+    "focusPosterior": "Posterior Chain"
   },
   "keyboard": {
     "keypadAria": "Numeric keypad",
