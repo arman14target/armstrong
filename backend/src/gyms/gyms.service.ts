@@ -204,6 +204,7 @@ export class GymsService {
         fsqPlaceId: input.id,
         name: input.name,
         address: input.address ?? null,
+        country: input.country ?? null,
         latitude: input.latitude ?? null,
         longitude: input.longitude ?? null,
         website: input.website ?? null,
@@ -213,6 +214,7 @@ export class GymsService {
       update: {
         name: input.name,
         address: input.address ?? null,
+        country: input.country ?? null,
         website: input.website ?? null,
         rating: input.rating ?? null,
         photoUrl: input.photoUrl ?? null,

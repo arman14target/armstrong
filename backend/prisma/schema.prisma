@@ -294,6 +294,8 @@ model Gym {
   fsqPlaceId     String         @unique @map("fsq_place_id")
   name           String
   address        String?
+  /// ISO country code (e.g. "US", "UG") — pins price currency on enrichment.
+  country        String?
   latitude       Float?
   longitude      Float?
   website        String?

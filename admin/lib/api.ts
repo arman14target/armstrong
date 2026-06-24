@@ -283,3 +283,117 @@ export function deleteExerciseMedia(
     method: "DELETE",
   });
 }
+
+// ---- Gyms (curated catalog built from user comparisons) ----
+
+export type GymDataSource = "crawl" | "admin" | "user";
+
+export interface GymPricePlanRow {
+  id: string;
+  name: string;
+  priceText: string;
+  period: string | null;
+  source: GymDataSource;
+}
+
+export interface GymAmenityRow {
+  id: string;
+  name: string;
+  source: GymDataSource;
+}
+
+export interface GymListItem {
+  id: string;
+  fsqPlaceId: string;
+  name: string;
+  address: string | null;
+  country: string | null;
+  website: string | null;
+  rating: number | null;
+  quietTimes: string | null;
+  pricePlanCount: number;
+  amenityCount: number;
+  lastEnrichedAt: string | null;
+}
+
+export interface GymDetail {
+  id: string;
+  fsqPlaceId: string;
+  name: string;
+  address: string | null;
+  country: string | null;
+  website: string | null;
+  rating: number | null;
+  quietTimes: string | null;
+  lastEnrichedAt: string | null;
+  pricePlans: GymPricePlanRow[];
+  amenities: GymAmenityRow[];
+}
+
+export function fetchGyms(params: {
+  page: number;
+  pageSize: number;
+  search?: string;
+}): Promise<{
+  total: number;
+  page: number;
+  pageSize: number;
+  gyms: GymListItem[];
+}> {
+  const q = new URLSearchParams({
+    page: String(params.page),
+    pageSize: String(params.pageSize),
+  });
+  if (params.search) q.set("search", params.search);
+  return apiFetch(`/admin/gyms?${q.toString()}`);
+}
+
+export function fetchGym(id: string): Promise<GymDetail> {
+  return apiFetch(`/admin/gyms/${id}`);
+}
+
+export function updateGym(
+  id: string,
+  body: { name?: string; website?: string | null; quietTimes?: string | null },
+): Promise<GymDetail> {
+  return apiFetch(`/admin/gyms/${id}`, { method: "PATCH", body });
+}
+
+export function deleteGym(id: string): Promise<void> {
+  return apiFetch(`/admin/gyms/${id}`, { method: "DELETE" });
+}
+
+export function addGymPricePlan(
+  id: string,
+  body: { name: string; priceText: string; period?: string | null },
+): Promise<GymPricePlanRow> {
+  return apiFetch(`/admin/gyms/${id}/price-plans`, { method: "POST", body });
+}
+
+export function updateGymPricePlan(
+  planId: string,
+  body: { name?: string; priceText?: string; period?: string | null },
+): Promise<GymPricePlanRow> {
+  return apiFetch(`/admin/gyms/price-plans/${planId}`, {
+    method: "PATCH",
+    body,
+  });
+}
+
+export function deleteGymPricePlan(planId: string): Promise<void> {
+  return apiFetch(`/admin/gyms/price-plans/${planId}`, { method: "DELETE" });
+}
+
+export function addGymAmenity(
+  id: string,
+  name: string,
+): Promise<GymAmenityRow> {
+  return apiFetch(`/admin/gyms/${id}/amenities`, {
+    method: "POST",
+    body: { name },
+  });
+}
+
+export function deleteGymAmenity(amenityId: string): Promise<void> {
+  return apiFetch(`/admin/gyms/amenities/${amenityId}`, { method: "DELETE" });
+}
