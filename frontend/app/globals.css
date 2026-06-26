@@ -562,9 +562,21 @@
     inset: 0;
     z-index: 50;
     display: flex;
-    align-items: center;
     justify-content: center;
     padding: var(--space-modal);
+    /* Scroll the overlay (body is locked) so tall modals are fully reachable. */
+    overflow-y: auto;
+  }
+
+  /*
+   * Center the modal panel vertically when it fits, but fall back to top-anchored
+   * scrolling when it's taller than the viewport. `margin: auto` does this where
+   * `align-items: center` fails: with flex overflow the auto top-margin collapses
+   * to 0, keeping the panel's top reachable instead of clipped above the overlay.
+   * Absolute-positioned backdrops are out of flow, so this is a no-op for them.
+   */
+  .modal-overlay > :not([aria-hidden="true"]) {
+    margin-block: auto;
   }
 
   .modal-body {
@@ -659,7 +671,14 @@
 
   html.reveal-js .reveal-hidden.reveal-visible {
     opacity: 1;
-    transform: translate3d(0, 0, 0);
+    /*
+     * Clear the transform and will-change once revealed. A non-`none` transform
+     * (or lingering `will-change: transform`) makes the element a containing block
+     * for `position: fixed`, which anchors nested modal overlays to this section
+     * instead of the viewport — clipping them off-screen when the page is scrolled.
+     */
+    transform: none;
+    will-change: auto;
   }
 
   @media (prefers-reduced-motion: reduce) {
