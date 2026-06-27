@@ -7,6 +7,8 @@ interface RestTimerProps {
   endsAt?: string;
   durationSeconds: number;
   onComplete?: () => void;
+  onTimeClick?: () => void;
+  timeAriaLabel?: string;
   className?: string;
 }
 
@@ -14,6 +16,8 @@ export function RestTimer({
   endsAt,
   durationSeconds,
   onComplete,
+  onTimeClick,
+  timeAriaLabel,
   className,
 }: RestTimerProps) {
   const remaining = useCountdown(endsAt, onComplete);
@@ -63,14 +67,28 @@ export function RestTimer({
         >
           Rest
         </span>
-        <span
-          className={cn(
-            "font-display text-sm font-bold tabular-nums tracking-wider",
-            isUrgent ? "text-magenta animate-pulse" : "text-amber",
-          )}
-        >
-          {formatTime(remaining)}
-        </span>
+        {onTimeClick ? (
+          <button
+            type="button"
+            onClick={onTimeClick}
+            aria-label={timeAriaLabel ?? `Rest time remaining: ${formatTime(remaining)}. Click to edit.`}
+            className={cn(
+              "cursor-pointer font-display text-sm font-bold tabular-nums tracking-wider transition-colors hover:text-magenta",
+              isUrgent ? "text-magenta animate-pulse" : "text-amber",
+            )}
+          >
+            {formatTime(remaining)}
+          </button>
+        ) : (
+          <span
+            className={cn(
+              "font-display text-sm font-bold tabular-nums tracking-wider",
+              isUrgent ? "text-magenta animate-pulse" : "text-amber",
+            )}
+          >
+            {formatTime(remaining)}
+          </span>
+        )}
       </div>
     </div>
   );

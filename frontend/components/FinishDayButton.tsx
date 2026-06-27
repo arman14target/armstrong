@@ -1,10 +1,8 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { useTranslation } from "react-i18next";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { cn } from "@/lib/cn";
-import { APP_ROUTE } from "@/lib/routes";
 
 interface WorkoutActionButtonProps {
   onFinish?: () => void;
@@ -22,7 +20,6 @@ export function FinishWorkoutButton({
   onFinish: () => void;
   compact?: boolean;
 }) {
-  const router = useRouter();
   const { t } = useTranslation();
 
   const handleFinish = () => {
@@ -33,7 +30,6 @@ export function FinishWorkoutButton({
       }
     }
     onFinish();
-    router.push(APP_ROUTE);
   };
 
   return (
@@ -56,7 +52,6 @@ export function CancelWorkoutButton({
   hasCompletedSets,
   className,
 }: Omit<WorkoutActionButtonProps, "onFinish">) {
-  const router = useRouter();
   const { t } = useTranslation();
 
   const handleCancel = () => {
@@ -69,7 +64,6 @@ export function CancelWorkoutButton({
       return;
     }
     onCancel();
-    router.push(APP_ROUTE);
   };
 
   return (

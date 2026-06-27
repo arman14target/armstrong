@@ -1,4 +1,5 @@
-import type { ActiveSession, WorkoutTemplate } from "@/lib/types";
+import type { ActiveSession, AppData, WorkoutTemplate } from "@/lib/types";
+import { getWorkoutTemplate } from "@/lib/workouts";
 import { toLocalDateKey } from "@/lib/workoutCalendar";
 
 export function shouldReuseActiveSession(
@@ -24,6 +25,20 @@ export function shouldReuseActiveSession(
   }
 
   return true;
+}
+
+export function getInProgressSessionWorkoutId(data: AppData): string | null {
+  const session = data.activeSession;
+  if (!session?.workoutType || !session.startedAt) {
+    return null;
+  }
+
+  const template = getWorkoutTemplate(data, session.workoutType);
+  if (!shouldReuseActiveSession(session, session.workoutType, template)) {
+    return null;
+  }
+
+  return session.workoutType;
 }
 
 // Stores typed-but-not-completed set values on the session so a half-logged

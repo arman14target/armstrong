@@ -47,7 +47,6 @@ services:
         NEXT_PUBLIC_GEMINI_MODEL: ${NEXT_PUBLIC_GEMINI_MODEL:-}
         # URL the browser uses to reach the API (baked into the static bundle).
         NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL:-http://localhost:4000}
-        NEXT_PUBLIC_USDA_API_KEY: ${NEXT_PUBLIC_USDA_API_KEY:-}
     ports:
       - "8080:80"
     depends_on:

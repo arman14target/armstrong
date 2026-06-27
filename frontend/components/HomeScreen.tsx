@@ -1,13 +1,13 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { useSearchParams } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
+import { ActiveWorkoutConflictSheet } from "@/components/ActiveWorkoutConflictSheet";
 import { AddDayButton } from "@/components/AddDayButton";
 import { AddDayModal } from "@/components/AddDayModal";
 import { RevealOnScroll } from "@/components/effects/RevealOnScroll";
 import { DayButton } from "@/components/DayButton";
-import { WorkoutEntryChoiceModal } from "@/components/WorkoutEntryChoiceModal";
 import { HistorySection } from "@/components/HistorySection";
 import { CoachChatSection } from "@/components/CoachChatSection";
 import { HomeBottomNav, type HomeTab } from "@/components/HomeBottomNav";
@@ -27,8 +27,16 @@ import { GlitchText } from "@/components/ui/GlitchText";
 import { WorkoutCompleteToast } from "@/components/share/WorkoutCompleteToast";
 import { SectionHead } from "@/components/ui/SectionHead";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
+import {
+  WorkoutBottomSheet,
+  type WorkoutSheetMode,
+} from "@/components/WorkoutBottomSheet";
+import { WorkoutMinimizedBar } from "@/components/WorkoutMinimizedBar";
+import { WorkoutStartChoiceSheet } from "@/components/WorkoutStartChoiceSheet";
 import { useGymStore } from "@/hooks/useGymStore";
+import { getInProgressSessionWorkoutId } from "@/lib/activeSession";
 import { cn } from "@/lib/cn";
+import { cancelRestNotification } from "@/lib/restNotifications";
 import { WORKOUT_TYPES } from "@/lib/types";
 import {
   countLoggedWorkouts,
@@ -36,18 +44,28 @@ import {
   getWorkoutTemplate,
 } from "@/lib/workouts";
 import { OPEN_PROFILE_SIGNUP_EVENT } from "@/lib/localSaveReminder";
-import { setWorkoutSetupIntent } from "@/lib/workoutSetupIntent";
 
 export function HomeScreen() {
   const { t } = useTranslation();
-  const router = useRouter();
-  const { data, hydrated, resetAll, syncAfterAuth, addCustomDay, removeCustomDay, saveNutritionProfile, addFoodEntry, addPlannedFoodEntry, updatePlannedFoodEntry, removeFoodEntry, applyCoachWorkoutChange, applyCoachGymPlan, applyCoachDietPlan, togglePlannedMealComplete } =
+  const searchParams = useSearchParams();
+  const { data, hydrated, resetAll, syncAfterAuth, addCustomDay, removeCustomDay, saveNutritionProfile, addFoodEntry, addPlannedFoodEntry, updatePlannedFoodEntry, removeFoodEntry, applyCoachWorkoutChange, applyCoachGymPlan, applyCoachDietPlan, togglePlannedMealComplete, finishDay, cancelSession } =
     useGymStore();
   const [showAddDayModal, setShowAddDayModal] = useState(false);
   const [activeTab, setActiveTab] = useState<HomeTab>("workout");
-  const [entryChoiceId, setEntryChoiceId] = useState<string | null>(null);
+  const [choiceWorkoutId, setChoiceWorkoutId] = useState<string | null>(null);
+  const [openWorkout, setOpenWorkout] = useState<{
+    workoutId: string;
+    mode: WorkoutSheetMode;
+    minimized: boolean;
+  } | null>(null);
   const [removeDayId, setRemoveDayId] = useState<string | null>(null);
+  const [sessionConflict, setSessionConflict] = useState<{
+    activeWorkoutId: string;
+    pendingWorkoutId: string;
+    pendingMode: WorkoutSheetMode;
+  } | null>(null);
   const [profileSignupRequestId, setProfileSignupRequestId] = useState(0);
+  const sessionRestoredRef = useRef(false);
 
   const homeTabs = useMemo(
     () =>
@@ -77,36 +95,184 @@ export function HomeScreen() {
     };
   }, []);
 
-  const needsSetup = (workoutId: string) => {
-    const template = getWorkoutTemplate(data, workoutId);
-    return (
-      (template?.moves.length ?? 0) === 0 && !data.workoutSetupSeen?.[workoutId]
+  const openWorkoutChoice = useCallback((workoutId: string) => {
+    if (openWorkout?.workoutId === workoutId && !openWorkout.minimized) {
+      return;
+    }
+
+    setChoiceWorkoutId(workoutId);
+  }, [openWorkout]);
+
+  const openWorkoutSheet = useCallback(
+    (workoutId: string, mode: WorkoutSheetMode) => {
+      setChoiceWorkoutId(null);
+      setSessionConflict(null);
+      setOpenWorkout({ workoutId, mode, minimized: false });
+    },
+    [],
+  );
+
+  const proceedToPendingWorkout = useCallback(
+    (pendingWorkoutId: string, pendingMode: WorkoutSheetMode) => {
+      setSessionConflict(null);
+      setChoiceWorkoutId(null);
+      setOpenWorkout(null);
+      openWorkoutSheet(pendingWorkoutId, pendingMode);
+    },
+    [openWorkoutSheet],
+  );
+
+  const handleWorkoutStart = useCallback(() => {
+    if (!choiceWorkoutId) {
+      return;
+    }
+
+    const inProgressId = getInProgressSessionWorkoutId(data);
+    if (inProgressId && inProgressId !== choiceWorkoutId) {
+      setSessionConflict({
+        activeWorkoutId: inProgressId,
+        pendingWorkoutId: choiceWorkoutId,
+        pendingMode: "session",
+      });
+      setChoiceWorkoutId(null);
+      return;
+    }
+
+    openWorkoutSheet(choiceWorkoutId, "session");
+  }, [choiceWorkoutId, data, openWorkoutSheet]);
+
+  const handleWorkoutEditLayout = useCallback(() => {
+    if (!choiceWorkoutId) {
+      return;
+    }
+    openWorkoutSheet(choiceWorkoutId, "layout");
+  }, [choiceWorkoutId, openWorkoutSheet]);
+
+  const handleWorkoutMinimize = useCallback(() => {
+    setOpenWorkout((current) =>
+      current ? { ...current, minimized: true } : current,
     );
-  };
+  }, []);
 
-  const handleBatchEntry = () => {
-    if (!entryChoiceId) {
+  const handleWorkoutExpand = useCallback(() => {
+    setOpenWorkout((current) =>
+      current ? { ...current, minimized: false } : current,
+    );
+  }, []);
+
+  const handleWorkoutClose = useCallback(() => {
+    const closingMode = openWorkout?.mode;
+    const inProgressId = getInProgressSessionWorkoutId(data);
+
+    if (closingMode === "layout" && inProgressId) {
+      setOpenWorkout({
+        workoutId: inProgressId,
+        mode: "session",
+        minimized: true,
+      });
       return;
     }
 
-    setWorkoutSetupIntent(entryChoiceId, "batch");
-    router.push(`/workout/?type=${entryChoiceId}`);
-    setEntryChoiceId(null);
-  };
+    setOpenWorkout(null);
+  }, [data, openWorkout?.mode]);
 
-  const handleManualEntry = () => {
-    if (!entryChoiceId) {
+  const handleConflictFinish = useCallback(() => {
+    if (!sessionConflict) {
       return;
     }
 
-    setWorkoutSetupIntent(entryChoiceId, "manual");
-    router.push(`/workout/?type=${entryChoiceId}`);
-    setEntryChoiceId(null);
-  };
+    const completedCount = data.activeSession?.completedSetIds.length ?? 0;
+    if (completedCount === 0) {
+      const confirmed = window.confirm(t("workout.finishNoSetsConfirm"));
+      if (!confirmed) {
+        return;
+      }
+    }
+
+    cancelRestNotification();
+    finishDay(sessionConflict.activeWorkoutId);
+    proceedToPendingWorkout(
+      sessionConflict.pendingWorkoutId,
+      sessionConflict.pendingMode,
+    );
+  }, [data.activeSession?.completedSetIds.length, finishDay, proceedToPendingWorkout, sessionConflict, t]);
+
+  const handleConflictCancel = useCallback(() => {
+    if (!sessionConflict) {
+      return;
+    }
+
+    const completedCount = data.activeSession?.completedSetIds.length ?? 0;
+    const confirmed = window.confirm(
+      completedCount > 0
+        ? t("workout.cancelWithProgressConfirm")
+        : t("workout.cancelConfirm"),
+    );
+    if (!confirmed) {
+      return;
+    }
+
+    cancelRestNotification();
+    cancelSession(sessionConflict.activeWorkoutId);
+    proceedToPendingWorkout(
+      sessionConflict.pendingWorkoutId,
+      sessionConflict.pendingMode,
+    );
+  }, [cancelSession, data.activeSession?.completedSetIds.length, proceedToPendingWorkout, sessionConflict, t]);
+
+  const handleConflictKeep = useCallback(() => {
+    if (!sessionConflict) {
+      setSessionConflict(null);
+      return;
+    }
+
+    const activeId = sessionConflict.activeWorkoutId;
+    setSessionConflict(null);
+    setChoiceWorkoutId(null);
+    setOpenWorkout({
+      workoutId: activeId,
+      mode: "session",
+      minimized: false,
+    });
+  }, [sessionConflict]);
+
+  useEffect(() => {
+    if (!hydrated || sessionRestoredRef.current) {
+      return;
+    }
+
+    sessionRestoredRef.current = true;
+    const inProgressId = getInProgressSessionWorkoutId(data);
+    if (!inProgressId) {
+      return;
+    }
+
+    setOpenWorkout((current) =>
+      current ?? {
+        workoutId: inProgressId,
+        mode: "session",
+        minimized: true,
+      },
+    );
+  }, [data, hydrated]);
+
+  useEffect(() => {
+    const workoutId = searchParams.get("workout");
+    if (!workoutId || !hydrated) {
+      return;
+    }
+
+    if (!getWorkoutTemplate(data, workoutId)) {
+      return;
+    }
+
+    openWorkoutChoice(workoutId);
+    window.history.replaceState({}, "", "/app");
+  }, [data, hydrated, openWorkoutChoice, searchParams]);
 
   const handleAddDay = (name: string) => {
     const workoutId = addCustomDay(name);
-    setEntryChoiceId(workoutId);
+    setChoiceWorkoutId(workoutId);
   };
 
   const handleRemoveDayConfirm = () => {
@@ -119,8 +285,22 @@ export function HomeScreen() {
   };
 
   const completedCount = countLoggedWorkouts(data);
-  const entryChoiceLabel = entryChoiceId
-    ? getWorkoutLabel(data, entryChoiceId)
+  const choiceWorkoutLabel = choiceWorkoutId
+    ? getWorkoutLabel(data, choiceWorkoutId)
+    : "";
+  const openWorkoutLabel = openWorkout
+    ? getWorkoutLabel(data, openWorkout.workoutId)
+    : "";
+  const activeSessionStartedAt =
+    openWorkout?.mode === "session" &&
+    data.activeSession?.workoutType === openWorkout.workoutId
+      ? data.activeSession.startedAt
+      : undefined;
+  const conflictCurrentLabel = sessionConflict
+    ? getWorkoutLabel(data, sessionConflict.activeWorkoutId)
+    : "";
+  const conflictNextLabel = sessionConflict
+    ? getWorkoutLabel(data, sessionConflict.pendingWorkoutId)
     : "";
   const removeDayLabel = removeDayId
     ? getWorkoutLabel(data, removeDayId)
@@ -161,15 +341,13 @@ export function HomeScreen() {
                 ? WORKOUT_TYPES.map((type, index) => (
                     <DayButton
                       key={type}
-                      workoutId={type}
                       label={getWorkoutLabel(data, type)}
                       iconIndex={index}
                       lastCompletedAt={data.workouts[type].lastCompletedAt}
                       lastSessionDurationSeconds={
                         data.workouts[type].lastSessionDurationSeconds
                       }
-                      setupRequired={needsSetup(type)}
-                      onSetupClick={() => setEntryChoiceId(type)}
+                      onClick={() => openWorkoutChoice(type)}
                     />
                   ))
                 : null}
@@ -177,16 +355,14 @@ export function HomeScreen() {
               {data.customWorkouts.map((workout, index) => (
                 <DayButton
                   key={workout.id}
-                  workoutId={workout.id}
                   label={workout.name}
                   iconIndex={
                     data.coachPlanActive ? index : WORKOUT_TYPES.length + index
                   }
                   lastCompletedAt={workout.lastCompletedAt}
                   lastSessionDurationSeconds={workout.lastSessionDurationSeconds}
-                  setupRequired={needsSetup(workout.id)}
                   removable
-                  onSetupClick={() => setEntryChoiceId(workout.id)}
+                  onClick={() => openWorkoutChoice(workout.id)}
                   onRemove={() => setRemoveDayId(workout.id)}
                 />
               ))}
@@ -280,14 +456,45 @@ export function HomeScreen() {
         onClose={() => setShowAddDayModal(false)}
       />
 
-      {entryChoiceId ? (
-        <WorkoutEntryChoiceModal
+      {choiceWorkoutId ? (
+        <WorkoutStartChoiceSheet
           open
-          label={entryChoiceLabel}
-          onBatch={handleBatchEntry}
-          onManual={handleManualEntry}
-          onClose={() => setEntryChoiceId(null)}
+          label={choiceWorkoutLabel}
+          onStart={handleWorkoutStart}
+          onEditLayout={handleWorkoutEditLayout}
+          onClose={() => setChoiceWorkoutId(null)}
         />
+      ) : null}
+
+      {sessionConflict ? (
+        <ActiveWorkoutConflictSheet
+          open
+          currentLabel={conflictCurrentLabel}
+          nextLabel={conflictNextLabel}
+          onFinish={handleConflictFinish}
+          onCancelSession={handleConflictCancel}
+          onKeepCurrent={handleConflictKeep}
+        />
+      ) : null}
+
+      {openWorkout ? (
+        <>
+          <WorkoutBottomSheet
+            open
+            minimized={openWorkout.minimized}
+            workoutId={openWorkout.workoutId}
+            mode={openWorkout.mode}
+            onMinimize={handleWorkoutMinimize}
+            onClose={handleWorkoutClose}
+          />
+          {openWorkout.minimized ? (
+            <WorkoutMinimizedBar
+              label={openWorkoutLabel}
+              startedAt={activeSessionStartedAt}
+              onExpand={handleWorkoutExpand}
+            />
+          ) : null}
+        </>
       ) : null}
 
       <ConfirmModal

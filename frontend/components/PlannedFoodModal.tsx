@@ -2,16 +2,12 @@
 
 import { useTranslation } from "react-i18next";
 import { useEffect, useState } from "react";
-import { CloseIcon } from "@/components/icons/ActionIcons";
 import {
-  FoodSearchModal,
-  type FoodSearchSelection,
-} from "@/components/FoodSearchModal";
-import { CyberButton } from "@/components/ui/CyberButton";
-import { IconButton } from "@/components/ui/IconButton";
-import { PanelDot } from "@/components/ui/PanelDot";
+  AiFoodEntryForm,
+  type AiFoodEntryValues,
+} from "@/components/AiFoodEntryForm";
+import { MealFormModalShell } from "@/components/MealFormModalShell";
 import { cn } from "@/lib/cn";
-import type { FoodSearchResult } from "@/lib/foodSearch";
 import {
   type FoodEntry,
   type MealSlot,
@@ -29,24 +25,6 @@ interface PlannedFoodModalProps {
 
 const MEAL_SLOTS: MealSlot[] = ["breakfast", "lunch", "dinner", "snack"];
 
-function parseMacroOrZero(value: string): number {
-  const trimmed = value.trim();
-  if (!trimmed) {
-    return 0;
-  }
-
-  const parsed = Number.parseFloat(trimmed);
-  if (!Number.isFinite(parsed) || parsed < 0) {
-    return 0;
-  }
-
-  return Math.round(parsed);
-}
-
-function formatMacro(value: number): string {
-  return String(Math.round(value));
-}
-
 function FieldLabel({
   children,
   required = false,
@@ -62,12 +40,6 @@ function FieldLabel({
   );
 }
 
-function isFoodSearchResult(
-  selection: FoodSearchSelection,
-): selection is FoodSearchResult {
-  return "calories" in selection;
-}
-
 export function PlannedFoodModal({
   open,
   initialEntry,
@@ -77,289 +49,110 @@ export function PlannedFoodModal({
 }: PlannedFoodModalProps) {
   const { t } = useTranslation();
   const isEditing = initialEntry !== undefined;
-  const [name, setName] = useState("");
-  const [calories, setCalories] = useState("");
-  const [proteinG, setProteinG] = useState("");
-  const [carbsG, setCarbsG] = useState("");
-  const [fatG, setFatG] = useState("");
   const [mealSlot, setMealSlot] = useState<MealSlot | null>(null);
-  const [errors, setErrors] = useState<Record<string, boolean>>({});
-  const [foodSearchOpen, setFoodSearchOpen] = useState(false);
+  const [mealSlotError, setMealSlotError] = useState(false);
 
   useEffect(() => {
     if (!open) {
-      setName("");
-      setCalories("");
-      setProteinG("");
-      setCarbsG("");
-      setFatG("");
       setMealSlot(null);
-      setErrors({});
-      setFoodSearchOpen(false);
+      setMealSlotError(false);
       return;
     }
 
-    if (initialEntry) {
-      setName(initialEntry.name);
-      setCalories(formatMacro(initialEntry.calories));
-      setProteinG(formatMacro(initialEntry.proteinG));
-      setCarbsG(formatMacro(initialEntry.carbsG));
-      setFatG(formatMacro(initialEntry.fatG));
-      setMealSlot(initialEntry.mealSlot ?? null);
-    }
+    setMealSlot(initialEntry?.mealSlot ?? null);
+    setMealSlotError(false);
+  }, [initialEntry, open]);
 
-    const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape" && !foodSearchOpen) {
-        onClose();
+  const initialValues = initialEntry
+    ? {
+        name: initialEntry.name,
+        calories: initialEntry.calories,
+        proteinG: initialEntry.proteinG,
+        carbsG: initialEntry.carbsG,
+        fatG: initialEntry.fatG,
       }
-    };
+    : undefined;
 
-    document.addEventListener("keydown", onKeyDown);
-    document.body.style.overflow = "hidden";
-
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.body.style.overflow = "";
-    };
-  }, [foodSearchOpen, initialEntry, onClose, open]);
-
-  if (!open) {
-    return null;
-  }
-
-  const applyFoodSelection = (selection: FoodSearchSelection) => {
-    if (isFoodSearchResult(selection)) {
-      setName(selection.name);
-      setCalories(formatMacro(selection.calories));
-      setProteinG(formatMacro(selection.proteinG));
-      setCarbsG(formatMacro(selection.carbsG));
-      setFatG(formatMacro(selection.fatG));
-    } else {
-      setName(selection.name.trim());
-    }
-
-    setErrors({});
-    setFoodSearchOpen(false);
-  };
-
-  const handleSubmit = () => {
-    const trimmedName = name.trim();
-    const proteinValue = Number.parseFloat(proteinG);
-    const nextErrors: Record<string, boolean> = {};
-
-    if (trimmedName.length < 2) {
-      nextErrors.name = true;
-    }
-    if (!Number.isFinite(proteinValue) || proteinValue <= 0) {
-      nextErrors.proteinG = true;
-    }
+  const handleSubmit = (values: AiFoodEntryValues) => {
     if (!mealSlot) {
-      nextErrors.mealSlot = true;
-    }
-
-    if (Object.keys(nextErrors).length > 0) {
-      setErrors(nextErrors);
+      setMealSlotError(true);
       return;
     }
 
     onSave({
-      name: trimmedName,
-      calories: parseMacroOrZero(calories),
-      proteinG: Math.round(proteinValue),
-      carbsG: parseMacroOrZero(carbsG),
-      fatG: parseMacroOrZero(fatG),
-      mealSlot: mealSlot!,
+      ...values,
+      mealSlot,
     });
     onClose();
   };
 
+  const mealSlotPicker = (
+    <div>
+      <FieldLabel required>{t("nutrition.meal")}</FieldLabel>
+      <div className="grid grid-cols-2 gap-2">
+        {MEAL_SLOTS.map((slot) => (
+          <button
+            key={slot}
+            type="button"
+            onClick={() => {
+              setMealSlot(slot);
+              setMealSlotError(false);
+            }}
+            className={cn(
+              "rounded-cyber border py-2 text-xs tracking-wide uppercase transition-colors",
+              mealSlot === slot
+                ? "border-cyan/50 bg-cyan/10 text-heading"
+                : "border-line bg-bg/40 text-dim hover:border-cyan/30",
+            )}
+          >
+            {formatMealSlotLabel(slot)}
+          </button>
+        ))}
+      </div>
+      {mealSlotError ? (
+        <p className="mt-1 text-xs text-magenta" role="alert">
+          {t("nutrition.pickMealSlot")}
+        </p>
+      ) : null}
+    </div>
+  );
+
   return (
-    <>
-      <div
-        className="modal-overlay"
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="planned-food-title"
+    <MealFormModalShell
+      open={open}
+      titleId="planned-food-title"
+      headerLabel={
+        isEditing ? t("nutrition.editPlannedMeal") : t("nutrition.addPlannedMeal")
+      }
+      closeLabel={t("nutrition.closePlannedMeal")}
+      onClose={onClose}
+    >
+      <h2
+        id="planned-food-title"
+        className="font-display text-lg tracking-wide text-heading"
       >
-        <div
-          className="absolute inset-0 bg-bg/85 backdrop-blur-[3px]"
-          aria-hidden="true"
-          onClick={onClose}
-        />
+        {isEditing ? t("nutrition.updateMeal") : t("nutrition.planMeal")}
+      </h2>
+      <p className="mt-[var(--space-gap)] text-sm leading-relaxed text-dim">
+        {t("nutrition.plannedMealHint")}
+      </p>
 
-        <div className="relative w-full max-w-md overflow-hidden rounded-panel border border-cyan/35 bg-panel shadow-[var(--shadow-modal)]">
-          <div className="panel-header justify-between">
-            <div className="inline-flex min-w-0 items-center">
-              <PanelDot />
-              <span className="ml-[var(--space-inline)] tracking-wide text-cyan">
-                {isEditing ? t("nutrition.editPlannedMeal") : t("nutrition.addPlannedMeal")}
-              </span>
-            </div>
-            <IconButton
-              label={t("nutrition.closePlannedMeal")}
-              variant="ghost"
-              className="size-8"
-              onClick={onClose}
-            >
-              <CloseIcon />
-            </IconButton>
-          </div>
+      <div className="mt-[var(--space-gap-md)]">
+        {mealSlotPicker}
 
-          <div className="modal-body">
-            <h2
-              id="planned-food-title"
-              className="font-display text-lg tracking-wide text-heading"
-            >
-              {isEditing ? t("nutrition.updateMeal") : t("nutrition.planMeal")}
-            </h2>
-            <p className="mt-[var(--space-gap)] text-sm leading-relaxed text-dim">
-              {t("nutrition.plannedMealHint")}
-            </p>
-
-            <div className="mt-[var(--space-gap-md)]">
-              <FieldLabel required>{t("nutrition.meal")}</FieldLabel>
-              <div className="grid grid-cols-2 gap-2">
-                {MEAL_SLOTS.map((slot) => (
-                  <button
-                    key={slot}
-                    type="button"
-                    onClick={() => {
-                      setMealSlot(slot);
-                      if (errors.mealSlot) {
-                        setErrors((prev) => ({ ...prev, mealSlot: false }));
-                      }
-                    }}
-                    className={cn(
-                      "rounded-cyber border py-2 text-xs tracking-wide uppercase transition-colors",
-                      mealSlot === slot
-                        ? "border-cyan/50 bg-cyan/10 text-heading"
-                        : "border-line bg-bg/40 text-dim hover:border-cyan/30",
-                    )}
-                  >
-                    {formatMealSlotLabel(slot)}
-                  </button>
-                ))}
-              </div>
-              {errors.mealSlot ? (
-                <p className="mt-1 text-xs text-magenta" role="alert">
-                  {t("nutrition.pickMealSlot")}
-                </p>
-              ) : null}
-            </div>
-
-            <div className="mt-[var(--space-gap)] block">
-              <FieldLabel required>{t("nutrition.foodName")}</FieldLabel>
-              <button
-                type="button"
-                onClick={() => setFoodSearchOpen(true)}
-                className={cn(
-                  "cyber-input flex min-h-12 w-full items-center text-left",
-                  name ? "text-heading" : "text-dim",
-                  errors.name && "border-magenta/60",
-                )}
-              >
-                {name.trim() || t("nutrition.plannedFoodPlaceholder")}
-              </button>
-              {errors.name ? (
-                <p className="mt-1 text-xs text-magenta" role="alert">
-                  {t("nutrition.foodNameError")}
-                </p>
-              ) : null}
-            </div>
-
-            <label className={cn("mt-[var(--space-gap)] block", !advancedNutrition && "sr-only")}>
-              <FieldLabel>{t("nutrition.caloriesKcal")}</FieldLabel>
-              <input
-                type="number"
-                inputMode="decimal"
-                min={0}
-                value={calories}
-                onChange={(event) => setCalories(event.target.value)}
-                placeholder="450"
-                className="cyber-input"
-                tabIndex={advancedNutrition ? 0 : -1}
-              />
-            </label>
-
-            <div
-              className={cn(
-                "mt-[var(--space-gap)] grid gap-[var(--space-gap)]",
-                advancedNutrition ? "grid-cols-3" : "grid-cols-2",
-              )}
-            >
-              <label className="block">
-                <FieldLabel required>{t("nutrition.proteinG")}</FieldLabel>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  min={0}
-                  required
-                  value={proteinG}
-                  onChange={(event) => {
-                    setProteinG(event.target.value);
-                    if (errors.proteinG) {
-                      setErrors((prev) => ({ ...prev, proteinG: false }));
-                    }
-                  }}
-                  placeholder="30"
-                  className={cn(
-                    "cyber-input",
-                    errors.proteinG && "border-magenta/60",
-                  )}
-                  aria-invalid={errors.proteinG}
-                />
-                {errors.proteinG ? (
-                  <p className="mt-1 text-xs text-magenta" role="alert">
-                    {t("nutrition.proteinRequired")}
-                  </p>
-                ) : null}
-              </label>
-              <label className="block">
-                <FieldLabel>{t("nutrition.carbsG")}</FieldLabel>
-                <input
-                  type="number"
-                  inputMode="decimal"
-                  min={0}
-                  value={carbsG}
-                  onChange={(event) => setCarbsG(event.target.value)}
-                  placeholder="0"
-                  className="cyber-input"
-                />
-              </label>
-              {advancedNutrition ? (
-                <label className="block">
-                  <FieldLabel>{t("nutrition.fatG")}</FieldLabel>
-                  <input
-                    type="number"
-                    inputMode="decimal"
-                    min={0}
-                    value={fatG}
-                    onChange={(event) => setFatG(event.target.value)}
-                    placeholder="0"
-                    className="cyber-input"
-                  />
-                </label>
-              ) : null}
-            </div>
-
-            <div className="mt-[var(--space-section)] stack-sm">
-              <CyberButton variant="green" className="w-full" onClick={handleSubmit}>
-                {isEditing ? t("nutrition.saveChanges") : t("nutrition.addToPlan")}
-              </CyberButton>
-              <CyberButton variant="cyan" className="w-full" onClick={onClose}>
-                {t("common.cancel")}
-              </CyberButton>
-            </div>
-          </div>
+        <div className="mt-[var(--space-gap-md)]">
+          <AiFoodEntryForm
+            key={initialEntry?.id ?? "new"}
+            advancedNutrition={advancedNutrition}
+            initialValues={initialValues}
+            submitLabel={
+              isEditing ? t("nutrition.saveChanges") : t("nutrition.addToPlan")
+            }
+            onSubmit={handleSubmit}
+            onCancel={onClose}
+          />
         </div>
       </div>
-
-      <FoodSearchModal
-        open={foodSearchOpen}
-        initialValue={name}
-        onConfirm={applyFoodSelection}
-        onClose={() => setFoodSearchOpen(false)}
-      />
-    </>
+    </MealFormModalShell>
   );
 }

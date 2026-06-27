@@ -55,7 +55,7 @@ export function PrivacyPageClient() {
         <ul>
           <LegalListItem i18nKey="legal.privacy.sections.thirdParty.itemSignIn" />
           <LegalListItem i18nKey="legal.privacy.sections.thirdParty.itemGemini" />
-          <LegalListItem i18nKey="legal.privacy.sections.thirdParty.itemUsda" />
+          <LegalListItem i18nKey="legal.privacy.sections.thirdParty.itemGeminiMeals" />
           <LegalListItem i18nKey="legal.privacy.sections.thirdParty.itemHosting" />
         </ul>
         <p>{t("legal.privacy.sections.thirdParty.footer")}</p>
