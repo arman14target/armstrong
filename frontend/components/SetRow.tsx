@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { CheckIcon } from "@/components/icons/ActionIcons";
 import { NumericKeyboardInput } from "@/components/NumericKeyboardInput";
@@ -67,8 +67,6 @@ export function SetRow({
   );
   const [weightError, setWeightError] = useState(false);
   const [repsError, setRepsError] = useState(false);
-  const lastClickTimeRef = useRef(0);
-
   useEffect(() => {
     if (sessionWeight !== undefined) {
       setWeight(String(sessionWeight));
@@ -192,20 +190,12 @@ export function SetRow({
   };
 
   const handleCompleteClick = () => {
-    const now = Date.now();
-    const isDoubleClick = now - lastClickTimeRef.current < 350;
-
-    if (isCompleted && isDoubleClick && onUncomplete) {
+    if (isCompleted && onUncomplete) {
       onUncomplete();
-      lastClickTimeRef.current = 0;
       return;
     }
 
-    lastClickTimeRef.current = now;
-
-    if (!isCompleted) {
-      handleComplete();
-    }
+    handleComplete();
   };
 
   const previous = formatPreviousSet(lastWeight, lastReps, isTimeBased);

@@ -11,6 +11,7 @@ import {
   type ReactNode,
   type RefObject,
 } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDownIcon, KeyboardIcon } from "@/components/icons/ActionIcons";
 import { useTouchDevice } from "@/lib/useTouchDevice";
 import {
@@ -303,6 +304,11 @@ export function NumericKeyboardProvider({ children }: { children: ReactNode }) {
   const isTouchDevice = useTouchDevice();
   const [session, setSession] = useState<NumericKeyboardSession | null>(null);
   const [preferNativeKeyboard, setPreferNativeKeyboard] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     setPreferNativeKeyboard(readNativeKeyboardPreference());
@@ -359,9 +365,12 @@ export function NumericKeyboardProvider({ children }: { children: ReactNode }) {
   return (
     <NumericKeyboardContext.Provider value={value}>
       {children}
-      {isTouchDevice && session && !preferNativeKeyboard ? (
-        <NumericKeyboardPanel session={session} onClose={close} />
-      ) : null}
+      {mounted && isTouchDevice && session && !preferNativeKeyboard
+        ? createPortal(
+            <NumericKeyboardPanel session={session} onClose={close} />,
+            document.body,
+          )
+        : null}
     </NumericKeyboardContext.Provider>
   );
 }

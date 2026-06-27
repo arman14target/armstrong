@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { CyberButton } from "@/components/ui/CyberButton";
+import { useInteractiveBottomSheet } from "@/hooks/useInteractiveBottomSheet";
 
 interface WorkoutStartChoiceSheetProps {
   open: boolean;
@@ -22,6 +23,20 @@ export function WorkoutStartChoiceSheet({
 }: WorkoutStartChoiceSheetProps) {
   const { t } = useTranslation();
   const [mounted, setMounted] = useState(false);
+  const scrollRef = useRef<HTMLDivElement>(null);
+
+  const {
+    present,
+    panelRef,
+    handleProps,
+    scrollTouchHandlers,
+    panelStyle,
+    backdropStyle,
+  } = useInteractiveBottomSheet({
+    isActive: open,
+    onDismiss: onClose,
+    scrollRef,
+  });
 
   useEffect(() => {
     setMounted(true);
@@ -44,47 +59,68 @@ export function WorkoutStartChoiceSheet({
     };
   }, [onClose, open]);
 
-  if (!open || !mounted) {
+  useEffect(() => {
+    if (!present) {
+      document.body.style.overflow = "";
+      return;
+    }
+
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [present]);
+
+  if (!mounted || !present) {
     return null;
   }
 
   return createPortal(
     <div
-      className="fixed inset-0 z-[110] flex items-end justify-center"
+      className="workout-bottom-sheet"
       role="dialog"
       aria-modal="true"
       aria-labelledby="workout-start-choice-title"
     >
-      <button
-        type="button"
-        className="absolute inset-0 bg-bg/55 backdrop-blur-[2px]"
-        aria-label={t("workout.startChoiceCloseAria")}
-        onClick={onClose}
+      <div
+        className="workout-bottom-sheet__backdrop"
+        style={backdropStyle}
+        aria-hidden="true"
       />
 
-      <div className="relative w-full max-w-lg rounded-t-[1.35rem] border border-line border-b-0 bg-panel px-4 pt-3 pb-[max(1rem,env(safe-area-inset-bottom))] shadow-[var(--shadow-modal)]">
+      <div
+        ref={panelRef}
+        className="workout-bottom-sheet__panel workout-bottom-sheet__panel--compact"
+        style={panelStyle}
+      >
+        <div className="workout-bottom-sheet__handle-zone" {...handleProps}>
+          <div className="workout-bottom-sheet__handle" aria-hidden="true" />
+          <span className="sr-only">{t("workout.sheetHandleAria")}</span>
+        </div>
+
         <div
-          className="mx-auto mb-4 h-1 w-10 rounded-full bg-line/80"
-          aria-hidden="true"
-        />
-
-        <h2
-          id="workout-start-choice-title"
-          className="font-display text-base tracking-wide text-heading"
+          ref={scrollRef}
+          className="workout-bottom-sheet__scroll workout-bottom-sheet__scroll--compact"
+          {...scrollTouchHandlers}
         >
-          {t("workout.startChoiceTitle", { name: label })}
-        </h2>
-        <p className="mt-2 text-sm leading-relaxed text-dim">
-          {t("workout.startChoiceBody")}
-        </p>
+          <h2
+            id="workout-start-choice-title"
+            className="font-display text-base tracking-wide text-heading"
+          >
+            {t("workout.startChoiceTitle", { name: label })}
+          </h2>
+          <p className="mt-2 text-sm leading-relaxed text-dim">
+            {t("workout.startChoiceBody")}
+          </p>
 
-        <div className="mt-5 stack-sm">
-          <CyberButton variant="green" className="w-full" onClick={onStart}>
-            {t("workout.startWorkout")}
-          </CyberButton>
-          <CyberButton variant="cyan" className="w-full" onClick={onEditLayout}>
-            {t("workout.editLayout")}
-          </CyberButton>
+          <div className="mt-5 stack-sm">
+            <CyberButton variant="green" className="w-full" onClick={onStart}>
+              {t("workout.startWorkout")}
+            </CyberButton>
+            <CyberButton variant="cyan" className="w-full" onClick={onEditLayout}>
+              {t("workout.editLayout")}
+            </CyberButton>
+          </div>
         </div>
       </div>
     </div>,

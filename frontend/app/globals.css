@@ -449,6 +449,15 @@
     padding-bottom: max(1.5rem, var(--safe-bottom));
   }
 
+  .workout-bottom-sheet__panel--compact {
+    flex: 0 1 auto;
+  }
+
+  .workout-bottom-sheet__scroll--compact {
+    flex: 0 1 auto;
+    overflow-y: visible;
+  }
+
   .workout-screen--embedded {
     padding-top: 0;
     padding-bottom: 0;
@@ -1235,7 +1244,7 @@
     right: 0;
     bottom: 0;
     left: 0;
-    z-index: 45;
+    z-index: 120;
     display: flex;
     flex-direction: column;
     gap: 0.5rem;
