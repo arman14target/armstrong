@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { Suspense, useMemo, useState } from "react";
 import { HomeScreen } from "@/components/HomeScreen";
 import { AppLoadingScreen } from "@/components/welcome/AppLoadingScreen";
 import { WelcomeFlow } from "@/components/welcome/WelcomeFlow";
@@ -57,5 +57,9 @@ export function AppGate() {
     );
   }
 
-  return <HomeScreen />;
+  return (
+    <Suspense fallback={<AppLoadingScreen />}>
+      <HomeScreen />
+    </Suspense>
+  );
 }

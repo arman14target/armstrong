@@ -109,7 +109,23 @@
     "leaveDescription": "Save your progress to pick up where you left off, or cancel to discard everything from this session.",
     "saveAndGoHome": "Save workout & go home",
     "cancelSession": "Cancel this session",
-    "keepTraining": "Keep training"
+    "keepTraining": "Keep training",
+    "startChoiceTitle": "Ready for {{name}}?",
+    "startChoiceBody": "Start your session or edit exercises and sets without logging reps.",
+    "startWorkout": "Start workout",
+    "editLayout": "Edit layout only",
+    "startChoiceCloseAria": "Close workout options",
+    "minimizedBarAria": "Resume {{name}} workout",
+    "sheetAria": "Workout session",
+    "sheetHandleAria": "Drag down to minimize workout",
+    "layoutModeLabel": "Layout editor",
+    "layoutDone": "Done",
+    "conflictTitle": "Workout in progress",
+    "conflictBody": "{{current}} is still running. Finish or cancel it before starting {{next}}.",
+    "conflictFinish": "Finish & start {{next}}",
+    "conflictCancel": "Cancel current session",
+    "conflictKeep": "Keep {{current}}",
+    "conflictCloseAria": "Close workout conflict options"
   },
   "addDay": {
     "title": "Aggiungi giorno di allenamento",
@@ -1078,7 +1094,7 @@
           "intro": "We share the minimum data needed with service providers that help run the Service:",
           "itemSignIn": "<strong>Google & Apple</strong> — \"Sign in with\" authentication.",
           "itemGemini": "<strong>Google (Gemini)</strong> — when you use the AI coach, your chat messages and relevant plan context are sent to Google to generate responses.",
-          "itemUsda": "<strong>USDA FoodData Central</strong> — food search queries you enter.",
+          "itemGeminiMeals": "<strong>Google Gemini</strong> — meal descriptions you enter for nutrition estimates.",
           "itemHosting": "<strong>Hosting & analytics providers</strong> — to serve the app and measure anonymous performance/usage.",
           "footer": "These providers process data under their own privacy policies. We do not control, and are not responsible for, their practices."
         },
@@ -1146,7 +1162,7 @@
         },
         "thirdParty": {
           "heading": "7. Third-party services",
-          "body": "The Service integrates third parties (e.g. Google, Apple, USDA). Your use of those features may be subject to their terms, and we are not responsible for them."
+          "body": "The Service integrates third parties (e.g. Google, Apple). Your use of those features may be subject to their terms, and we are not responsible for them."
         },
         "disclaimers": {
           "heading": "8. Disclaimers",

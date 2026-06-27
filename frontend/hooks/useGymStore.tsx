@@ -401,20 +401,65 @@ function useGymStoreState() {
       setId: string,
       updates: Partial<SetConfig>,
     ) => {
-      persist((prev) =>
-        updateWorkoutMoves(prev, workoutId, (moves) =>
-          moves.map((move) =>
-            move.id === moveId
-              ? {
-                  ...move,
-                  sets: move.sets.map((set) =>
-                    set.id === setId ? { ...set, ...updates } : set,
-                  ),
-                }
-              : move,
+      persist((prev) => {
+        const session = prev.activeSession;
+        let activeSession = session;
+
+        if (
+          session?.workoutType === workoutId &&
+          session.activeRestSetId === setId &&
+          updates.restSeconds !== undefined &&
+          session.restEndsAt
+        ) {
+          const template = getWorkoutTemplate(prev, workoutId);
+          const move = template?.moves.find((entry) => entry.id === moveId);
+          const set = move?.sets.find((entry) => entry.id === setId);
+          const oldRestSeconds = set?.restSeconds ?? 0;
+          const delta = updates.restSeconds - oldRestSeconds;
+          const newEndsAtMs =
+            new Date(session.restEndsAt).getTime() + delta * 1000;
+
+          if (updates.restSeconds <= 0 || newEndsAtMs <= Date.now()) {
+            activeSession = {
+              ...session,
+              activeRestSetId: undefined,
+              restEndsAt: undefined,
+            };
+          } else {
+            activeSession = {
+              ...session,
+              restEndsAt: new Date(newEndsAtMs).toISOString(),
+            };
+          }
+        }
+
+        return {
+          ...updateWorkoutMoves(prev, workoutId, (moves) =>
+            moves.map((move) =>
+              move.id === moveId
+                ? {
+                    ...move,
+                    sets: move.sets.map((set) => {
+                      if (set.id !== setId) {
+                        return set;
+                      }
+
+                      const next = { ...set, ...updates };
+                      if (updates.lastWeight === undefined) {
+                        delete next.lastWeight;
+                      }
+                      if (updates.lastReps === undefined) {
+                        delete next.lastReps;
+                      }
+                      return next;
+                    }),
+                  }
+                : move,
+            ),
           ),
-        ),
-      );
+          activeSession,
+        };
+      });
     },
     [persist],
   );

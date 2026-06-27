@@ -86,23 +86,29 @@ export function SetRestDivider({
     setEditing(false);
   };
 
-  if (isActive && restEndsAt) {
-    return (
-      <div className="set-rest-divider set-rest-divider--active">
+  const showActiveTimer = isActive && restEndsAt && !editing;
+
+  return (
+    <div
+      className={
+        showActiveTimer
+          ? "set-rest-divider set-rest-divider--active"
+          : "set-rest-divider"
+      }
+    >
+      {!showActiveTimer ? (
+        <span className="set-rest-divider__line" aria-hidden />
+      ) : null}
+      {showActiveTimer ? (
         <RestTimer
           endsAt={restEndsAt}
           durationSeconds={restSeconds}
           onComplete={onRestComplete}
+          onTimeClick={startEditing}
+          timeAriaLabel={t("sets.restEditAria", { time: formattedRest })}
           className="w-full"
         />
-      </div>
-    );
-  }
-
-  return (
-    <div className="set-rest-divider">
-      <span className="set-rest-divider__line" aria-hidden />
-      {editing ? (
+      ) : editing ? (
         <NumericKeyboardInput
           ref={inputRef}
           type="text"
@@ -135,7 +141,9 @@ export function SetRestDivider({
           {formattedRest}
         </button>
       )}
-      <span className="set-rest-divider__line" aria-hidden />
+      {!showActiveTimer ? (
+        <span className="set-rest-divider__line" aria-hidden />
+      ) : null}
     </div>
   );
 }

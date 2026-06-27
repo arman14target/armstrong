@@ -1,7 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { AddMoveForm } from "@/components/AddMoveForm";
 import { ExerciseReorderList } from "@/components/ExerciseReorderList";
@@ -9,12 +8,13 @@ import {
   CancelWorkoutButton,
   FinishWorkoutButton,
 } from "@/components/FinishDayButton";
-import { LeaveWorkoutModal } from "@/components/LeaveWorkoutModal";
 import { RestNotificationBanner } from "@/components/RestNotificationBanner";
 import { SessionTimer } from "@/components/SessionTimer";
 import { WorkoutEntryChoiceModal } from "@/components/WorkoutEntryChoiceModal";
 import { WorkoutSetupModal } from "@/components/WorkoutSetupModal";
+import type { WorkoutSheetMode } from "@/components/WorkoutBottomSheet";
 import { TerminalWindow } from "@/components/ui/TerminalWindow";
+import { CyberButton } from "@/components/ui/CyberButton";
 import { useGymStore } from "@/hooks/useGymStore";
 import {
   cancelRestNotification,
@@ -22,7 +22,6 @@ import {
   scheduleRestNotification,
 } from "@/lib/restNotifications";
 import { shouldReuseActiveSession } from "@/lib/activeSession";
-import { APP_ROUTE } from "@/lib/routes";
 import { BatchExercisePreset } from "@/lib/workoutBatches";
 import { consumeWorkoutSetupIntent } from "@/lib/workoutSetupIntent";
 import {
@@ -31,13 +30,21 @@ import {
   isBuiltinWorkoutType,
   isValidWorkoutId,
 } from "@/lib/workouts";
+import { cn } from "@/lib/cn";
 
 interface WorkoutScreenProps {
   workoutId: string;
+  mode?: WorkoutSheetMode;
+  embedded?: boolean;
+  onClose?: () => void;
 }
 
-export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
-  const router = useRouter();
+export function WorkoutScreen({
+  workoutId,
+  mode = "session",
+  embedded = false,
+  onClose,
+}: WorkoutScreenProps) {
   const { t } = useTranslation();
   const {
     data,
@@ -62,13 +69,38 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
   } = useGymStore();
 
   const workout = getWorkoutTemplate(data, workoutId);
+  const isLayoutMode = mode === "layout";
+  const layoutSetValues = useMemo(() => {
+    if (!workout) {
+      return { weights: {}, reps: {}, completed: [] as string[] };
+    }
+
+    const weights: Record<string, number> = {};
+    const reps: Record<string, number> = {};
+    const completed: string[] = [];
+
+    for (const move of workout.moves) {
+      for (const set of move.sets) {
+        if (set.lastWeight !== undefined) {
+          weights[set.id] = set.lastWeight;
+        }
+        if (set.lastReps !== undefined) {
+          reps[set.id] = set.lastReps;
+        }
+        if (set.lastWeight !== undefined && set.lastReps !== undefined) {
+          completed.push(set.id);
+        }
+      }
+    }
+
+    return { weights, reps, completed };
+  }, [workout]);
   const session =
-    data.activeSession?.workoutType === workoutId
+    mode === "session" && data.activeSession?.workoutType === workoutId
       ? data.activeSession
       : null;
   const [showEntryChoice, setShowEntryChoice] = useState(false);
   const [showSetupModal, setShowSetupModal] = useState(false);
-  const [showLeaveModal, setShowLeaveModal] = useState(false);
   const [headerStuck, setHeaderStuck] = useState(false);
   const [headerBarHeight, setHeaderBarHeight] = useState(0);
   const headerSentinelRef = useRef<HTMLDivElement>(null);
@@ -79,7 +111,7 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
   const [dayNameDraft, setDayNameDraft] = useState("");
 
   useEffect(() => {
-    if (!hydrated) {
+    if (!hydrated || mode !== "session") {
       return;
     }
 
@@ -92,7 +124,7 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
     ) {
       startSession(workoutId);
     }
-  }, [hydrated, workoutId, data, startSession]);
+  }, [hydrated, workoutId, data, startSession, mode]);
 
   useEffect(() => {
     const sentinel = headerSentinelRef.current;
@@ -188,54 +220,23 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
 
   const handleSetupCancel = useCallback(() => {
     cancelRestNotification();
-    cancelSession(workoutId);
-    router.push(APP_ROUTE);
-  }, [cancelSession, router, workoutId]);
-
-  const handleLeaveRequest = useCallback(() => {
-    if (showSetupModal || showEntryChoice) {
-      handleSetupCancel();
-      return;
+    if (mode === "session") {
+      cancelSession(workoutId);
     }
-    if (session) {
-      setShowLeaveModal(true);
-      return;
-    }
-    router.push(APP_ROUTE);
-  }, [handleSetupCancel, router, session, showEntryChoice, showSetupModal]);
-
-  const handleSaveAndLeave = useCallback(() => {
-    const completedSetCount = session?.completedSetIds.length ?? 0;
-
-    if (completedSetCount === 0) {
-      const confirmed = window.confirm(t("workout.finishNoSetsConfirm"));
-      if (!confirmed) {
-        return;
-      }
-    }
-
-    cancelRestNotification();
-    finishDay(workoutId);
-    setShowLeaveModal(false);
-    router.push(APP_ROUTE);
-  }, [finishDay, router, session?.completedSetIds.length, t, workoutId]);
-
-  const handleCancelSessionAndLeave = useCallback(() => {
-    cancelRestNotification();
-    cancelSession(workoutId);
-    setShowLeaveModal(false);
-    router.push(APP_ROUTE);
-  }, [cancelSession, router, workoutId]);
+    onClose?.();
+  }, [cancelSession, mode, onClose, workoutId]);
 
   const handleFinishWorkout = useCallback(() => {
     cancelRestNotification();
     finishDay(workoutId);
-  }, [finishDay, workoutId]);
+    onClose?.();
+  }, [finishDay, onClose, workoutId]);
 
   const handleCancelWorkout = useCallback(() => {
     cancelRestNotification();
     cancelSession(workoutId);
-  }, [cancelSession, workoutId]);
+    onClose?.();
+  }, [cancelSession, onClose, workoutId]);
 
   const label = getWorkoutLabel(data, workoutId);
   const isCustomDay = !isBuiltinWorkoutType(workoutId);
@@ -289,6 +290,39 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
     [completeSet, workoutId],
   );
 
+  const handleLayoutSaveSet = useCallback(
+    (moveId: string, setId: string, weight: number, reps: number) => {
+      updateSet(workoutId, moveId, setId, { lastWeight: weight, lastReps: reps });
+    },
+    [updateSet, workoutId],
+  );
+
+  const handleLayoutDraftSet = useCallback(
+    (moveId: string, setId: string, weight?: number, reps?: number) => {
+      const updates: { lastWeight?: number; lastReps?: number } = {};
+      if (weight !== undefined) {
+        updates.lastWeight = weight;
+      }
+      if (reps !== undefined) {
+        updates.lastReps = reps;
+      }
+      if (Object.keys(updates).length > 0) {
+        updateSet(workoutId, moveId, setId, updates);
+      }
+    },
+    [updateSet, workoutId],
+  );
+
+  const handleLayoutUncompleteSet = useCallback(
+    (moveId: string, setId: string) => {
+      updateSet(workoutId, moveId, setId, {
+        lastWeight: undefined,
+        lastReps: undefined,
+      });
+    },
+    [updateSet, workoutId],
+  );
+
   const handleMoveAllSetsComplete = useCallback(
     (moveIndex: number) => {
       const nextMove = workout?.moves[moveIndex + 1];
@@ -319,60 +353,45 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
     cancelRestNotification();
   }, [hydrated, session?.restEndsAt, restNotificationBody]);
 
-  useEffect(() => {
-    if (!session || showSetupModal || showEntryChoice) {
-      return;
-    }
-
-    window.history.pushState({ workoutLeaveGuard: true }, "");
-
-    const handlePopState = () => {
-      window.history.pushState({ workoutLeaveGuard: true }, "");
-      setShowLeaveModal(true);
-    };
-
-    window.addEventListener("popstate", handlePopState);
-    return () => window.removeEventListener("popstate", handlePopState);
-  }, [session, showEntryChoice, showSetupModal]);
-
   if (!hydrated) {
     return (
-      <main className="page-shell--center">
+      <div className="flex min-h-[12rem] items-center justify-center">
         <p className="animate-blink text-sm text-green">{t("workout.loading")}</p>
-      </main>
+      </div>
     );
   }
 
   if (!isValidWorkoutId(data, workoutId) || !workout) {
     return (
-      <main className="page-shell--center stack-md text-center">
+      <div className="stack-md py-8 text-center">
         <p className="text-sm text-magenta">{t("workout.notFound")}</p>
-        <button
-          type="button"
-          onClick={() => router.push(APP_ROUTE)}
-          className="text-sm text-cyan transition-colors hover:text-magenta"
-        >
-          {t("workout.backHome")}
-        </button>
-      </main>
+      </div>
     );
   }
 
-  const sessionWeights = session?.setWeights ?? {};
-  const sessionReps = session?.setReps ?? {};
-  const completedSetIds = session?.completedSetIds ?? [];
+  const sessionWeights = isLayoutMode
+    ? layoutSetValues.weights
+    : (session?.setWeights ?? {});
+  const sessionReps = isLayoutMode
+    ? layoutSetValues.reps
+    : (session?.setReps ?? {});
+  const completedSetIds = isLayoutMode
+    ? layoutSetValues.completed
+    : (session?.completedSetIds ?? []);
+  const showSessionActions = mode === "session";
 
   return (
-    <main className="page-shell">
-      <div className="mb-2 flex items-center justify-between gap-2">
-        <button
-          type="button"
-          onClick={handleLeaveRequest}
-          className="min-h-9 px-3 text-xs text-white transition-colors hover:text-dim"
-        >
-          {t("workout.backHome")}
-        </button>
-        {!headerStuck ? (
+    <div className={cn(embedded ? "workout-screen--embedded" : "page-shell")}>
+      <div className="mb-2 flex items-center justify-end gap-2">
+        {isLayoutMode && !headerStuck ? (
+          <CyberButton
+            variant="green"
+            className="min-h-9 shrink-0 border-green bg-green/15 px-3 text-xs"
+            onClick={() => onClose?.()}
+          >
+            {t("workout.layoutDone")}
+          </CyberButton>
+        ) : !isLayoutMode && !headerStuck ? (
           <FinishWorkoutButton
             onFinish={handleFinishWorkout}
             hasCompletedSets={completedSetIds.length > 0}
@@ -389,7 +408,7 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
       ) : null}
       <div
         ref={headerBarRef}
-        className={`workout-sticky-bar${headerStuck ? " workout-sticky-bar--stuck" : ""}`}
+        className={`workout-sticky-bar${headerStuck ? " workout-sticky-bar--stuck" : ""}${embedded ? " workout-sticky-bar--embedded" : ""}`}
       >
         <div className="workout-sticky-bar__inner">
           {editingDayName && isCustomDay ? (
@@ -428,16 +447,29 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
               {label}
             </h1>
           )}
-          <div className="workout-sticky-bar__timer">
-            <SessionTimer startedAt={session?.startedAt} compact />
-          </div>
-          {headerStuck ? (
+          {showSessionActions ? (
+            <div className="workout-sticky-bar__timer">
+              <SessionTimer startedAt={session?.startedAt} compact />
+            </div>
+          ) : null}
+          {headerStuck && showSessionActions ? (
             <div className="workout-sticky-bar__finish">
               <FinishWorkoutButton
                 compact
                 onFinish={handleFinishWorkout}
                 hasCompletedSets={completedSetIds.length > 0}
               />
+            </div>
+          ) : null}
+          {headerStuck && isLayoutMode ? (
+            <div className="workout-sticky-bar__finish">
+              <CyberButton
+                variant="green"
+                className="min-h-8 shrink-0 border-green bg-green/15 px-3 text-xs"
+                onClick={() => onClose?.()}
+              >
+                {t("workout.layoutDone")}
+              </CyberButton>
             </div>
           ) : null}
         </div>
@@ -475,13 +507,26 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
             onUpdateSet={(moveId, setId, updates) =>
               updateSet(workoutId, moveId, setId, updates)
             }
-            onDraftSet={(moveId, setId, weight, reps) =>
-              updateSetDraft(workoutId, setId, weight, reps)
+            onDraftSet={
+              isLayoutMode
+                ? (moveId, setId, weight, reps) =>
+                    handleLayoutDraftSet(moveId, setId, weight, reps)
+                : (moveId, setId, weight, reps) =>
+                    updateSetDraft(workoutId, setId, weight, reps)
             }
-            onCompleteSet={(moveId, setId, weight, reps, restSeconds) =>
-              handleCompleteSet(moveId, setId, weight, reps, restSeconds)
+            onCompleteSet={
+              isLayoutMode
+                ? (moveId, setId, weight, reps) =>
+                    handleLayoutSaveSet(moveId, setId, weight, reps)
+                : (moveId, setId, weight, reps, restSeconds) =>
+                    handleCompleteSet(moveId, setId, weight, reps, restSeconds)
             }
             onUncompleteSet={(moveId, setId) => {
+              if (isLayoutMode) {
+                handleLayoutUncompleteSet(moveId, setId);
+                return;
+              }
+
               cancelRestNotification();
               uncompleteSet(workoutId, moveId, setId);
             }}
@@ -496,10 +541,12 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
           />
         )}
         <AddMoveForm onAdd={(name) => addMove(workoutId, name)} />
-        <CancelWorkoutButton
-          onCancel={handleCancelWorkout}
-          hasCompletedSets={completedSetIds.length > 0}
-        />
+        {showSessionActions ? (
+          <CancelWorkoutButton
+            onCancel={handleCancelWorkout}
+            hasCompletedSets={completedSetIds.length > 0}
+          />
+        ) : null}
       </section>
 
       <WorkoutEntryChoiceModal
@@ -517,15 +564,6 @@ export function WorkoutScreen({ workoutId }: WorkoutScreenProps) {
         onImport={handleImportPresets}
         onCancel={handleSetupCancel}
       />
-
-      <LeaveWorkoutModal
-        open={showLeaveModal}
-        label={label}
-        completedSetCount={completedSetIds.length}
-        onSave={handleSaveAndLeave}
-        onCancelSession={handleCancelSessionAndLeave}
-        onStay={() => setShowLeaveModal(false)}
-      />
-    </main>
+    </div>
   );
 }

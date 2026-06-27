@@ -13,10 +13,15 @@ import {
 import { WeightUnitPicker } from "@/components/nutrition/WeightUnitPicker";
 import { MacroBars } from "@/components/planner/MacroBars";
 import { PlannedFoodModal } from "@/components/PlannedFoodModal";
+import { NutritionCaloriesHintSheet } from "@/components/NutritionCaloriesHintSheet";
 import { CyberButton } from "@/components/ui/CyberButton";
 import { IconButton } from "@/components/ui/IconButton";
 import { useGymStore } from "@/hooks/useGymStore";
 import { cn } from "@/lib/cn";
+import {
+  isFoodLogCaloriesHintSeen,
+  markFoodLogCaloriesHintSeen,
+} from "@/lib/foodLogHintStorage";
 import {
   FoodEntry,
   NutritionInputs,
@@ -1026,6 +1031,10 @@ export function FoodTrackerSection({
   const [recalibrating, setRecalibrating] = useState(false);
   const [showAddFoodModal, setShowAddFoodModal] = useState(false);
   const [showPlannedFoodModal, setShowPlannedFoodModal] = useState(false);
+  const [showCaloriesHint, setShowCaloriesHint] = useState(false);
+  const [pendingFoodAction, setPendingFoodAction] = useState<
+    "meal" | "planned" | null
+  >(null);
   const [editingPlannedEntry, setEditingPlannedEntry] = useState<
     FoodEntry | undefined
   >();
@@ -1064,6 +1073,48 @@ export function FoodTrackerSection({
     setShowPlannedFoodModal(true);
   };
 
+  const openAddFoodModal = () => {
+    setShowAddFoodModal(true);
+  };
+
+  const openAddPlannedFoodModal = () => {
+    setEditingPlannedEntry(undefined);
+    setShowPlannedFoodModal(true);
+  };
+
+  const requestAddFood = () => {
+    if (!isFoodLogCaloriesHintSeen()) {
+      setPendingFoodAction("meal");
+      setShowCaloriesHint(true);
+      return;
+    }
+
+    openAddFoodModal();
+  };
+
+  const requestAddPlannedFood = () => {
+    if (!isFoodLogCaloriesHintSeen()) {
+      setPendingFoodAction("planned");
+      setShowCaloriesHint(true);
+      return;
+    }
+
+    openAddPlannedFoodModal();
+  };
+
+  const handleCaloriesHintDismiss = () => {
+    markFoodLogCaloriesHintSeen();
+    setShowCaloriesHint(false);
+
+    if (pendingFoodAction === "meal") {
+      openAddFoodModal();
+    } else if (pendingFoodAction === "planned") {
+      openAddPlannedFoodModal();
+    }
+
+    setPendingFoodAction(null);
+  };
+
   if (!profile || recalibrating) {
     return (
       <NutritionSetup
@@ -1085,12 +1136,9 @@ export function FoodTrackerSection({
           entries={dayEntries}
           onRecalibrate={() => setRecalibrating(true)}
           onDateChange={setSelectedDateKey}
-          onAddFood={() => setShowAddFoodModal(true)}
+          onAddFood={requestAddFood}
           onRemoveFood={(entryId) => onRemoveFood(selectedDateKey, entryId)}
-          onAddPlannedFood={() => {
-            setEditingPlannedEntry(undefined);
-            setShowPlannedFoodModal(true);
-          }}
+          onAddPlannedFood={requestAddPlannedFood}
           onEditPlannedFood={handleEditPlannedFood}
           onTogglePlannedMeal={(entryId, completed) =>
             onTogglePlannedMeal(selectedDateKey, entryId, completed)
@@ -1110,6 +1158,11 @@ export function FoodTrackerSection({
         advancedNutrition={advancedNutrition}
         onSave={handleSavePlannedFood}
         onClose={handleClosePlannedFoodModal}
+      />
+
+      <NutritionCaloriesHintSheet
+        open={showCaloriesHint}
+        onDismiss={handleCaloriesHintDismiss}
       />
     </>
   );

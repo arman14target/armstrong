@@ -1,6 +1,5 @@
 "use client";
 
-import Link from "next/link";
 import { useTranslation } from "react-i18next";
 import { CloseIcon } from "@/components/icons/ActionIcons";
 import { DaySticker } from "@/components/icons/DaySticker";
@@ -11,26 +10,22 @@ import { formatDuration } from "@/lib/formatRelativeTime";
 import { stickerForDayIndex } from "@/lib/workoutDayTheme";
 
 interface DayButtonProps {
-  workoutId: string;
   label: string;
   lastCompletedAt?: string;
   lastSessionDurationSeconds?: number;
-  setupRequired?: boolean;
   removable?: boolean;
   iconIndex?: number;
-  onSetupClick?: () => void;
+  onClick: () => void;
   onRemove?: () => void;
 }
 
 export function DayButton({
-  workoutId,
   label,
   lastCompletedAt,
   lastSessionDurationSeconds,
-  setupRequired = false,
   removable = false,
   iconIndex = 0,
-  onSetupClick,
+  onClick,
   onRemove,
 }: DayButtonProps) {
   const { t } = useTranslation();
@@ -67,16 +62,11 @@ export function DayButton({
     </div>
   );
 
-  const card =
-    setupRequired && onSetupClick ? (
-      <button type="button" onClick={onSetupClick} className={className}>
-        {cardContent}
-      </button>
-    ) : (
-      <Link href={`/workout/?type=${workoutId}`} className={className}>
-        {cardContent}
-      </Link>
-    );
+  const card = (
+    <button type="button" onClick={onClick} className={className}>
+      {cardContent}
+    </button>
+  );
 
   if (!removable || !onRemove) {
     return card;
