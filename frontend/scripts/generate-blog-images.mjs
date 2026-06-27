@@ -132,6 +132,16 @@ const SLUG_SCENES = {
     "modern UK budget gym in retail park unit with yellow accent equipment, squat racks and cardio machines, overcast daylight",
   "equinox-membership-guide":
     "luxury boutique gym interior with designer lighting, premium wood and leather finishes, high-end weight floor empty and immaculate",
+  "world-cup-top-teams-training-workouts":
+    "five elite international soccer players in training kits from Brazil Argentina Germany France and Spain standing side by side on a pitch, each national flag displayed behind them, dramatic stadium floodlights, editorial sports team portrait",
+  "lionel-messi-workout-routine":
+    "elite Argentine soccer player in blue and white training kit on a football pitch, large Argentina flag waving behind him, athletic pose, golden hour stadium lighting, editorial sports photograph",
+  "cristiano-ronaldo-workout-routine":
+    "elite Portuguese soccer player in red and green training kit on a football pitch, large Portugal flag waving behind him, powerful athletic stance, dramatic stadium lighting, editorial sports photograph",
+  "usmnt-training-workout-routine":
+    "United States men's national soccer team training session on a professional pitch, players in navy USA kits doing sprint drills and cones, American flag visible on sideline, bright athletic atmosphere",
+  "usmnt-body-fat-percentage-diet":
+    "athlete meal prep containers with grilled chicken rice broccoli and hydration bottles on a training table, soccer cleats and USA training bib beside the food, clean sports nutrition still life",
 };
 
 const DEFAULT_SCENE =

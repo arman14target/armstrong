@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
-import { StaticPageRoot } from "@/components/landing/StaticPageRoot";
+import Script from "next/script";
 import { BlogNav } from "@/components/blog/BlogNav";
+import { BlogPageRoot } from "@/components/blog/BlogPageRoot";
 import { blogSeo } from "@/lib/blogContent";
+import { BLOG_THEME_INIT_SCRIPT } from "@/lib/colorScheme";
 import { absoluteUrl } from "@/lib/siteUrl";
 
 export const metadata: Metadata = {
@@ -35,9 +37,14 @@ export default function BlogLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <StaticPageRoot>
-      <BlogNav />
-      {children}
-    </StaticPageRoot>
+    <>
+      <Script id="blog-theme-init" strategy="beforeInteractive">
+        {BLOG_THEME_INIT_SCRIPT}
+      </Script>
+      <BlogPageRoot>
+        <BlogNav />
+        {children}
+      </BlogPageRoot>
+    </>
   );
 }
