@@ -1,10 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { PostData } from "@/lib/posts";
+import type { PostData, PostListItem } from "@/lib/posts";
 import { withBasePath } from "@/lib/basePath";
+import { BlogAppCta } from "@/components/blog/BlogAppCta";
+import { BlogRelatedPosts } from "@/components/blog/BlogRelatedPosts";
 
 interface BlogPostProps {
   post: PostData;
+  relatedPosts: PostListItem[];
 }
 
 function formatDate(date: string): string {
@@ -16,7 +19,7 @@ function formatDate(date: string): string {
   });
 }
 
-export function BlogPost({ post }: BlogPostProps) {
+export function BlogPost({ post, relatedPosts }: BlogPostProps) {
   const published = formatDate(post.date);
   const updated = post.updated ? formatDate(post.updated) : null;
 
@@ -62,6 +65,9 @@ export function BlogPost({ post }: BlogPostProps) {
         className="blog-prose"
         dangerouslySetInnerHTML={{ __html: post.contentHtml }}
       />
+
+      <BlogAppCta />
+      <BlogRelatedPosts posts={relatedPosts} />
     </article>
   );
 }

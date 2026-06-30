@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { BlogPost } from "@/components/blog/BlogPost";
 import { BlogPostSchema } from "@/components/blog/BlogPostSchema";
-import { getAllPostIds, getPostData } from "@/lib/posts";
+import { getAllPostIds, getPostData, getRelatedPosts } from "@/lib/posts";
 import { absoluteAssetUrl, absoluteUrl } from "@/lib/siteUrl";
 
 interface BlogPostPageProps {
@@ -69,10 +69,12 @@ export default async function BlogPostPage({ params }: BlogPostPageProps) {
     notFound();
   }
 
+  const relatedPosts = getRelatedPosts(slug);
+
   return (
     <>
       <BlogPostSchema post={post} />
-      <BlogPost post={post} />
+      <BlogPost post={post} relatedPosts={relatedPosts} />
     </>
   );
 }

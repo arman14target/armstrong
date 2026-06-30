@@ -13,6 +13,7 @@ export interface PostFrontMatter {
   author: string;
   keywords: string[];
   image?: string;
+  related?: string[];
 }
 
 export interface PostListItem extends PostFrontMatter {
@@ -39,8 +40,55 @@ function parseFrontMatter(
     ? data.keywords.filter((item): item is string => typeof item === "string")
     : [];
   const image = typeof data.image === "string" ? data.image : undefined;
+  const related = Array.isArray(data.related)
+    ? data.related.filter((item): item is string => typeof item === "string")
+    : undefined;
 
-  return { title, description, date, updated, author, keywords, image };
+  return { title, description, date, updated, author, keywords, image, related };
+}
+
+function keywordOverlapScore(a: string[], b: string[]): number {
+  const setA = new Set(a.map((k) => k.toLowerCase()));
+  let score = 0;
+  for (const keyword of b) {
+    const lower = keyword.toLowerCase();
+    for (const candidate of setA) {
+      if (candidate.includes(lower) || lower.includes(candidate)) {
+        score += 1;
+      }
+    }
+  }
+  return score;
+}
+
+export function getRelatedPosts(
+  slug: string,
+  limit = 3,
+): PostListItem[] {
+  const allPosts = getSortedPostsData();
+  const current = allPosts.find((post) => post.id === slug);
+  if (!current) {
+    return [];
+  }
+
+  const manualSlugs = current.related ?? [];
+  if (manualSlugs.length > 0) {
+    const bySlug = new Map(allPosts.map((post) => [post.id, post]));
+    return manualSlugs
+      .map((id) => bySlug.get(id))
+      .filter((post): post is PostListItem => post != null && post.id !== slug)
+      .slice(0, limit);
+  }
+
+  return allPosts
+    .filter((post) => post.id !== slug)
+    .map((post) => ({
+      post,
+      score: keywordOverlapScore(current.keywords, post.keywords),
+    }))
+    .sort((a, b) => b.score - a.score || b.post.date.localeCompare(a.post.date))
+    .slice(0, limit)
+    .map(({ post }) => post);
 }
 
 export function getSortedPostsData(): PostListItem[] {
