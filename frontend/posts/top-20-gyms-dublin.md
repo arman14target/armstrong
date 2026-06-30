@@ -1,11 +1,16 @@
 ---
-title: 'Top 20 Gyms in Dublin (2026): Best Fitness Centres in Ireland''s Capital'
+title: 'Best Gyms in Dublin City Centre (2026) — Prices Compared'
 description: >-
-  Find the 20 best gyms in Dublin — Westwood, Flye Fit, Ben Dunne, and boutique
-  strength studios. Compare neighbourhoods, prices, and who each Dublin gym suits.
+  Compare the best gyms in Dublin city centre and suburbs — monthly prices,
+  contracts, and who each club suits. PureGym, Flye Fit, Ben Dunne, and premium
+  picks ranked for lifters.
 date: '2026-06-25'
-updated: '2026-06-23'
+updated: '2026-06-30'
 author: Armstrong Team
+related:
+  - puregym-membership-guide
+  - top-20-gyms-london
+  - anytime-fitness-membership-guide
 keywords:
   - best gyms in Dublin
   - top gyms Dublin Ireland
@@ -17,7 +22,7 @@ keywords:
 image: /images/blog/top-20-gyms-dublin.webp
 ---
 
-Dublin's tech boom and traditional pub culture coexist — and so do €30/month no-frills gyms and €200/month premium clubs in the Docklands. This guide ranks the **20 best gyms in Dublin** for lifters, class lovers, and budget members.
+Dublin's tech boom and traditional pub culture coexist — and so do €30/month no-frills gyms and €200/month premium clubs in the Docklands. This guide ranks the **20 best gyms in Dublin** for lifters, class lovers, and budget members — with **city-centre prices compared** across Ireland's main chains.
 
 ## How We Ranked Dublin Gyms
 
@@ -38,6 +43,18 @@ Dublin's tech boom and traditional pub culture coexist — and so do €30/month
 | [Ben Dunne Gyms](https://www.bendunnegyms.com/) | Value iron | ~€40–€65/mo | Irish-owned, serious equipment |
 | [FLYE Fitness](https://www.flyefitness.ie/) | Mid-tier convenience | ~€45–€70/mo | Growing Dublin chain |
 | [CrossFit Dublin](https://www.crossfitdublin.com/) | Functional fitness | ~€120–€180/mo | Strong coaching community |
+
+## Dublin Gym Chains Compared
+
+The three chains Dublin lifters search most — plus how they stack up on price, contract, and use case:
+
+| Chain | Est. monthly | Contract | Best for |
+| --- | --- | --- | --- |
+| PureGym | ~€25–€45 *(NI clubs; no Dublin ROI sites yet)* | No contract | 24/7 budget *(Northern Ireland)* |
+| Flye Fit | ~€30–€50 | No contract | Irish budget chain, 24/7 Dublin |
+| Ben Dunne | ~€40–€65 | Varies | Serious lifters, heavier free weights |
+
+PureGym does not operate in Dublin city centre as of 2026 — its Irish clubs are in **Northern Ireland** (Belfast, Newry, Derry). See our [PureGym membership prices](/blog/puregym-membership-guide/) guide for UK and Ireland tier breakdowns. Comparing **London vs Dublin** gym options? Our [best gyms in London](/blog/top-20-gyms-london/) guide covers the UK capital. For **24/7 key-fob clubs** with global access, check [Anytime Fitness membership prices](/blog/anytime-fitness-membership-guide/).
 
 ## The 20 Best Gyms in Dublin
 
@@ -105,13 +122,15 @@ F45 studios serve Dublin's young professional crowd with 45-minute sessions.
 
 Aura operates council-linked leisure centres with pools and gyms across Dublin.
 
-### 9. PureGym — Dublin expansion
+### 9. PureGym — Northern Ireland (Dublin comparison)
 
-**Best for:** Budget no-contract training  
-**Est. cost:** ~€25–€45/month *(approximate)*
+**Best for:** Budget no-contract training *(cross-border / brand research)*  
+**Est. cost:** ~€25–€45/month equivalent *(~£19–£31 in NI; approximate)*  
 **Website:** [PureGym Ireland](https://www.puregym.com/)
 
-PureGym's UK model has entered Dublin with 24/7 access and low monthly rates.
+PureGym is the chain Dublin lifters search most alongside Flye Fit — but **there are no PureGym clubs in Dublin or the Republic of Ireland** as of mid-2026. The brand operates across **Northern Ireland** instead: **Belfast city centre** (Adelaide Street), **Belfast suburbs** (Boucher Road, Lisburn, Newtownabbey), plus **Newry**, **Derry/Londonderry**, **Bangor**, **Antrim**, and **Ballymena**. All offer **24/7 Core access**, no-contract monthly billing, and compact free-weight floors matching the UK model.
+
+If you live in Dublin proper, **Flye Fit** is the local equivalent for 24/7 budget training. Cross-border commuters near Newry can join NI PureGym clubs on sterling rates — see our full [PureGym membership prices](/blog/puregym-membership-guide/) breakdown for Off-Peak, Core, and Plus tiers.
 
 ### 10. The Gym Group — Dublin (if available)
 
@@ -213,11 +232,15 @@ Budget: **€25–€40/month**. Mid-tier: **€50–€80/month**. Premium: **�
 
 ### Are there 24-hour gyms in Dublin?
 
-**Flye Fit**, **PureGym**, and several independents offer 24/7 access across Dublin.
+**Flye Fit** and several independents offer 24/7 access across Dublin. **PureGym** offers 24/7 clubs in Northern Ireland but not in Dublin city centre.
 
 ### What is the cheapest gym in Dublin?
 
 **Flye Fit** consistently offers the lowest no-contract monthly rates in Dublin.
+
+### Is there PureGym in Dublin?
+
+**Not in the Republic of Ireland** — PureGym's nearest clubs are in **Northern Ireland** (Belfast, Newry). See [PureGym membership prices](/blog/puregym-membership-guide/) for tier details.
 
 ## Bottom Line
 

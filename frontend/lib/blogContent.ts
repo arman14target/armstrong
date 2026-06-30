@@ -1,14 +1,15 @@
 export const blogSeo = {
-  title: "Blog — Workout Plans, Macros & Strength Training Guides",
+  title: "Blog — UK & Ireland Gym Guides, Workout Plans & Training Tips",
   description:
-    "Free guides on push-pull-legs routines, gym workout tracking, bodybuilding meal plans, and progressive overload. Built for lifters who want real results.",
+    "Compare gym memberships in the UK and Ireland — PureGym, Flye Fit, Ben Dunne, and city guides for Dublin and London. Plus PPL routines, macros, and workout tracking.",
   keywords: [
+    "UK gym guides",
+    "Ireland gym membership",
+    "PureGym prices",
+    "Dublin gyms",
     "gym workout guides",
-    "bodybuilding blog",
     "push pull legs routine",
     "workout tracking tips",
-    "bodybuilding meal plan",
-    "progressive overload",
     "strength training advice",
   ],
 } as const;

@@ -1,14 +1,22 @@
 ---
-title: 'PureGym UK Membership (2026): Prices, Locations & Equipment Guide'
+title: 'PureGym Membership Prices UK and Ireland (2026) — Off-Peak, Plus and Fees'
 description: >-
-  PureGym off-peak and Plus pricing across 500+ UK gyms, 24/7 no-contract access,
-  Technogym equipment, and how PureGym compares to The Gym Group and Virgin Active.
+  PureGym from ~£20/month UK and ~€25/month Ireland — Off-Peak, Core, and Plus
+  tiers, no-contract 24/7 access, and how pricing compares across England, Scotland,
+  Wales, and Ireland.
 date: '2026-06-24'
-updated: '2026-06-24'
+updated: '2026-06-30'
 author: Armstrong Team
+related:
+  - top-20-gyms-dublin
+  - top-20-gyms-london
+  - anytime-fitness-membership-guide
 keywords:
   - PureGym membership cost
   - PureGym prices UK
+  - PureGym Ireland
+  - PureGym Dublin
+  - PureGym membership cost Ireland
   - PureGym locations
   - PureGym equipment
   - cheap gym UK no contract
@@ -16,7 +24,7 @@ keywords:
 image: /images/blog/puregym-membership-guide.webp
 ---
 
-PureGym is the **largest gym operator in the United Kingdom** by club count — **500+ locations**, **24/7 access**, and **no-contract** memberships from roughly **£20/month**. It dominates Google searches for "cheap gym UK" and "no contract gym near me." This guide covers **PureGym pricing tiers**, **where clubs sit across England, Scotland, and Wales**, and **what equipment** you get for the money.
+PureGym is the **largest gym operator in the United Kingdom** by club count — **500+ locations**, **24/7 access**, and **no-contract** memberships from roughly **£20/month** in the UK. It dominates Google searches for "cheap gym UK," "PureGym Ireland," and "no contract gym near me." This guide covers **PureGym pricing tiers**, **where clubs sit across England, Scotland, Wales, and Ireland**, and **what equipment** you get for the money.
 
 ## PureGym Membership Pricing (2026)
 
@@ -43,7 +51,7 @@ PureGym targets **high-footfall urban and suburban sites** — retail parks, cit
 
 ### England — Major Markets
 
-- **London** — 80+ clubs from Zone 1 to outer boroughs; premium pricing in Central/West End
+- **London** — 80+ clubs from Zone 1 to outer boroughs; premium pricing in Central/West End. See our [best gyms in London](/blog/top-20-gyms-london/) guide for neighbourhood picks.
 - **Manchester, Birmingham, Leeds, Liverpool** — strong regional coverage
 - **Bristol, Newcastle, Sheffield, Nottingham** — city-centre and suburban clusters
 - **Coastal cities** — Brighton, Bournemouth, Plymouth
@@ -57,9 +65,42 @@ PureGym targets **high-footfall urban and suburban sites** — retail parks, cit
 
 - **Cardiff, Swansea, Newport** — urban coverage
 
-Northern Ireland operates under separate franchise arrangements — check local operators.
+Northern Ireland operates under separate franchise arrangements — see the Ireland section below.
 
 Use the [PureGym club finder](https://www.puregym.com/gyms/) to filter by 24/7 status, women's-only zones (select clubs), and parking.
+
+## PureGym in Ireland
+
+PureGym operates in **Ireland under the same brand** as the UK, but billing and club networks are **region-specific** — Northern Ireland clubs bill in **sterling** through puregym.com, while Republic of Ireland searches often compare PureGym's model to local chains like Flye Fit and Ben Dunne.
+
+> **Pricing note:** Ireland figures below are **approximate 2026 estimates** for Northern Ireland clubs (GBP) and typical Republic-of-Ireland comparisons. Confirm live rates on [puregym.com](https://www.puregym.com) before joining.
+
+| Tier | Est. Monthly Cost (NI) | Access |
+| --- | --- | --- |
+| **Off-Peak** | ~£11–£22/mo | Home club, restricted hours |
+| **Core** | ~£19–£25/mo | Home club, 24/7 |
+| **Plus** | ~£25–£31/mo | Multi-club access in your region |
+
+### Northern Ireland Clubs
+
+PureGym's **Irish footprint is strongest in Northern Ireland** — multiple Belfast sites and suburban coverage:
+
+- **Belfast city centre** — Adelaide Street (central, walkable from Queen's Quarter)
+- **Belfast suburbs** — Boucher Road, Lisburn Laganbank, Newtownabbey
+- **Greater NI** — Newry, Derry/Londonderry, Bangor, Antrim, Ballymena
+
+All offer **24/7 Core access**, no-contract memberships, and the same compact free-weight floors as UK clubs.
+
+### PureGym Dublin and the Republic
+
+**PureGym does not yet operate clubs in Dublin or the Republic of Ireland** as of mid-2026 — Dublin gym-hunters researching "PureGym Dublin" typically compare the brand's UK pricing to local options. For actual **Dublin city-centre and suburban gyms**, see our [best gyms in Dublin](/blog/top-20-gyms-dublin/) guide. Cross-border commuters near Newry or Belfast can access NI clubs on sterling billing.
+
+### PureGym vs Irish Budget Chains
+
+- **[Flye Fit](https://www.flyefit.ie/)** — Ireland's largest budget chain with **24/7 Dublin coverage** and multi-club access from roughly **€30–€50/month**; the default pick for Republic of Ireland lifters who want PureGym-style pricing locally.
+- **Ben Dunne Gyms** — Irish-owned with **heavier free-weight floors** and Jervis Street / Cork Street Dublin locations from roughly **€40–€65/month**; better for serious lifters who outgrow compact chain floors.
+
+For **24/7 key-fob access** with global reciprocity, compare [Anytime Fitness membership prices](/blog/anytime-fitness-membership-guide/) — typically higher monthly dues but smaller neighbourhood clubs.
 
 ## Equipment at PureGym
 
@@ -105,14 +146,15 @@ PureGym does not offer pools, saunas, or racquet courts — purely gym floor.
 - **London commuters** needing a club near home AND work (Plus tier)
 - **Night trainers** — 24/7 access beats most UK leisure centres
 - **Students and young professionals** — low entry, easy cancel
+- **Northern Ireland residents** — affordable 24/7 chain with UK-standard kit
 
-Less ideal for: swimmers, class addicts who want included Les Mills, or powerlifters needing dedicated platforms and calibrated plates.
+Less ideal for: swimmers, class addicts who want included Les Mills, powerlifters needing dedicated platforms, or **Dublin city-centre lifters** (no ROI clubs yet — Flye Fit or Ben Dunne are the local answer).
 
 ## FAQ: PureGym
 
 ### How much is PureGym per month?
 
-**Off-Peak ~£20–£28**, standard 24/7 **~£28–£40**, multi-club **~£35–£60** depending on region.
+**Off-Peak ~£20–£28**, standard 24/7 **~£28–£40**, multi-club **~£35–£60** depending on region. Northern Ireland clubs often undercut mainland UK on promo pricing.
 
 ### Can I cancel PureGym anytime?
 
@@ -124,7 +166,11 @@ Less ideal for: swimmers, class addicts who want included Les Mills, or powerlif
 
 ### Is PureGym open 24 hours?
 
-**Most UK clubs are 24/7** for Core tier and above. Off-Peak memberships restrict entry hours.
+**Most UK and NI clubs are 24/7** for Core tier and above. Off-Peak memberships restrict entry hours.
+
+### Is there PureGym in Dublin?
+
+**Not yet in the Republic of Ireland** — PureGym's Irish clubs are in **Northern Ireland** (Belfast, Newry, Derry, and surrounds). Dublin lifters should compare [Dublin gym prices](/blog/top-20-gyms-dublin/) for local 24/7 options.
 
 ### PureGym vs The Gym Group — which is cheaper?
 
@@ -132,4 +178,4 @@ Often **The Gym Group** undercuts by ~£2–£5/month; PureGym wins on **club co
 
 ## Bottom Line
 
-PureGym owns the UK budget 24/7 segment. Pick **Off-Peak** only if your schedule fits; most lifters need **Core or Plus** for evening rack access. Scout your club at 6 PM before joining. Armstrong logs every session so your strength data travels when you switch postcodes or upgrade to a premium club.
+PureGym owns the UK budget 24/7 segment and offers strong **Northern Ireland** coverage at low no-contract rates. Pick **Off-Peak** only if your schedule fits; most lifters need **Core or Plus** for evening rack access. Dublin readers: compare local chains first, then bookmark this guide if PureGym expands south. Scout your club at 6 PM before joining. Armstrong logs every session so your strength data travels when you switch postcodes or upgrade to a premium club.
