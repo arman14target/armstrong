@@ -41,6 +41,7 @@ export function WorkoutBottomSheet({
   } = useInteractiveBottomSheet({
     isActive,
     onDismiss: onMinimize,
+    notifyDismissOnStart: true,
     scrollRef,
   });
 

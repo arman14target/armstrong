@@ -23,12 +23,15 @@ function getDismissThreshold() {
 interface UseInteractiveBottomSheetOptions {
   isActive: boolean;
   onDismiss: () => void;
+  /** When true, onDismiss runs as soon as dismiss starts (not after the exit animation). */
+  notifyDismissOnStart?: boolean;
   scrollRef: RefObject<HTMLElement | null>;
 }
 
 export function useInteractiveBottomSheet({
   isActive,
   onDismiss,
+  notifyDismissOnStart = false,
   scrollRef,
 }: UseInteractiveBottomSheetOptions) {
   const panelRef = useRef<HTMLDivElement>(null);
@@ -73,6 +76,7 @@ export function useInteractiveBottomSheet({
   const finishExit = useCallback(() => {
     clearExitTimer();
     isExitingRef.current = false;
+    wasActiveRef.current = false;
     setIsExiting(false);
     setPresent(false);
     setMotionEnabled(false);
@@ -80,8 +84,10 @@ export function useInteractiveBottomSheet({
     dragOffsetRef.current = 0;
     isDraggingRef.current = false;
     setIsDragging(false);
-    onDismiss();
-  }, [clearExitTimer, onDismiss]);
+    if (!notifyDismissOnStart) {
+      onDismiss();
+    }
+  }, [clearExitTimer, notifyDismissOnStart, onDismiss]);
 
   const animateDismiss = useCallback(() => {
     if (isExitingRef.current) {
@@ -93,12 +99,15 @@ export function useInteractiveBottomSheet({
     setIsDragging(false);
     setIsExiting(true);
     setMotionEnabled(true);
+    if (notifyDismissOnStart) {
+      onDismiss();
+    }
     const exitOffset = window.innerHeight;
     setDragOffset(exitOffset);
     dragOffsetRef.current = exitOffset;
     clearExitTimer();
     exitTimerRef.current = window.setTimeout(finishExit, EXIT_MS);
-  }, [clearExitTimer, finishExit]);
+  }, [clearExitTimer, finishExit, notifyDismissOnStart, onDismiss]);
 
   const snapBack = useCallback(() => {
     isDraggingRef.current = false;
@@ -126,7 +135,7 @@ export function useInteractiveBottomSheet({
 
   useEffect(() => {
     if (isActive) {
-      if (wasActiveRef.current) {
+      if (wasActiveRef.current && present) {
         return;
       }
 
