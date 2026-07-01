@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { ActiveWorkoutConflictSheet } from "@/components/ActiveWorkoutConflictSheet";
 import { AddDayButton } from "@/components/AddDayButton";
@@ -31,6 +31,7 @@ import {
   WorkoutBottomSheet,
   type WorkoutSheetMode,
 } from "@/components/WorkoutBottomSheet";
+import type { WorkoutCloseReason } from "@/components/WorkoutScreen";
 import { WorkoutMinimizedBar } from "@/components/WorkoutMinimizedBar";
 import { WorkoutStartChoiceSheet } from "@/components/WorkoutStartChoiceSheet";
 import { useGymStore } from "@/hooks/useGymStore";
@@ -65,7 +66,11 @@ export function HomeScreen() {
     pendingMode: WorkoutSheetMode;
   } | null>(null);
   const [profileSignupRequestId, setProfileSignupRequestId] = useState(0);
-  const sessionRestoredRef = useRef(false);
+
+  const inProgressWorkoutId = useMemo(
+    () => getInProgressSessionWorkoutId(data),
+    [data],
+  );
 
   const homeTabs = useMemo(
     () =>
@@ -95,13 +100,16 @@ export function HomeScreen() {
     };
   }, []);
 
-  const openWorkoutChoice = useCallback((workoutId: string) => {
-    if (openWorkout?.workoutId === workoutId && !openWorkout.minimized) {
-      return;
-    }
+  const openWorkoutChoice = useCallback(
+    (workoutId: string) => {
+      if (openWorkout?.workoutId === workoutId && !openWorkout.minimized) {
+        return;
+      }
 
-    setChoiceWorkoutId(workoutId);
-  }, [openWorkout]);
+      setChoiceWorkoutId(workoutId);
+    },
+    [openWorkout],
+  );
 
   const openWorkoutSheet = useCallback(
     (workoutId: string, mode: WorkoutSheetMode) => {
@@ -127,10 +135,12 @@ export function HomeScreen() {
       return;
     }
 
-    const inProgressId = getInProgressSessionWorkoutId(data);
-    if (inProgressId && inProgressId !== choiceWorkoutId) {
+    if (
+      inProgressWorkoutId &&
+      inProgressWorkoutId !== choiceWorkoutId
+    ) {
       setSessionConflict({
-        activeWorkoutId: inProgressId,
+        activeWorkoutId: inProgressWorkoutId,
         pendingWorkoutId: choiceWorkoutId,
         pendingMode: "session",
       });
@@ -139,7 +149,7 @@ export function HomeScreen() {
     }
 
     openWorkoutSheet(choiceWorkoutId, "session");
-  }, [choiceWorkoutId, data, openWorkoutSheet]);
+  }, [choiceWorkoutId, inProgressWorkoutId, openWorkoutSheet]);
 
   const handleWorkoutEditLayout = useCallback(() => {
     if (!choiceWorkoutId) {
@@ -160,21 +170,37 @@ export function HomeScreen() {
     );
   }, []);
 
-  const handleWorkoutClose = useCallback(() => {
-    const closingMode = openWorkout?.mode;
-    const inProgressId = getInProgressSessionWorkoutId(data);
+  const handleWorkoutClose = useCallback(
+    (reason?: WorkoutCloseReason) => {
+      if (reason?.sessionEnded) {
+        setOpenWorkout(null);
+        return;
+      }
 
-    if (closingMode === "layout" && inProgressId) {
-      setOpenWorkout({
-        workoutId: inProgressId,
-        mode: "session",
-        minimized: true,
-      });
-      return;
-    }
+      const closingMode = openWorkout?.mode;
 
-    setOpenWorkout(null);
-  }, [data, openWorkout?.mode]);
+      if (closingMode === "layout" && inProgressWorkoutId) {
+        setOpenWorkout({
+          workoutId: inProgressWorkoutId,
+          mode: "session",
+          minimized: true,
+        });
+        return;
+      }
+
+      if (closingMode === "session" && inProgressWorkoutId) {
+        setOpenWorkout({
+          workoutId: inProgressWorkoutId,
+          mode: "session",
+          minimized: true,
+        });
+        return;
+      }
+
+      setOpenWorkout(null);
+    },
+    [inProgressWorkoutId, openWorkout?.mode],
+  );
 
   const handleConflictFinish = useCallback(() => {
     if (!sessionConflict) {
@@ -237,24 +263,22 @@ export function HomeScreen() {
   }, [sessionConflict]);
 
   useEffect(() => {
-    if (!hydrated || sessionRestoredRef.current) {
+    if (!hydrated || !inProgressWorkoutId) {
       return;
     }
 
-    sessionRestoredRef.current = true;
-    const inProgressId = getInProgressSessionWorkoutId(data);
-    if (!inProgressId) {
-      return;
-    }
+    setOpenWorkout((current) => {
+      if (current !== null) {
+        return current;
+      }
 
-    setOpenWorkout((current) =>
-      current ?? {
-        workoutId: inProgressId,
+      return {
+        workoutId: inProgressWorkoutId,
         mode: "session",
         minimized: true,
-      },
-    );
-  }, [data, hydrated]);
+      };
+    });
+  }, [hydrated, inProgressWorkoutId]);
 
   useEffect(() => {
     const workoutId = searchParams.get("workout");

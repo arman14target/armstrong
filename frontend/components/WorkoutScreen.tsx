@@ -32,11 +32,15 @@ import {
 } from "@/lib/workouts";
 import { cn } from "@/lib/cn";
 
+export type WorkoutCloseReason = {
+  sessionEnded?: boolean;
+};
+
 interface WorkoutScreenProps {
   workoutId: string;
   mode?: WorkoutSheetMode;
   embedded?: boolean;
-  onClose?: () => void;
+  onClose?: (reason?: WorkoutCloseReason) => void;
 }
 
 export function WorkoutScreen({
@@ -223,19 +227,19 @@ export function WorkoutScreen({
     if (mode === "session") {
       cancelSession(workoutId);
     }
-    onClose?.();
+    onClose?.({ sessionEnded: true });
   }, [cancelSession, mode, onClose, workoutId]);
 
   const handleFinishWorkout = useCallback(() => {
     cancelRestNotification();
     finishDay(workoutId);
-    onClose?.();
+    onClose?.({ sessionEnded: true });
   }, [finishDay, onClose, workoutId]);
 
   const handleCancelWorkout = useCallback(() => {
     cancelRestNotification();
     cancelSession(workoutId);
-    onClose?.();
+    onClose?.({ sessionEnded: true });
   }, [cancelSession, onClose, workoutId]);
 
   const label = getWorkoutLabel(data, workoutId);
